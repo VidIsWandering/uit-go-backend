@@ -4,6 +4,8 @@ Thumbs.db
 *.log
 .env
 .env.*
+# --- Thêm ngoại lệ cho file example ---
+!.env.example
 
 # Node.js (cho driver-service)
 node_modules/

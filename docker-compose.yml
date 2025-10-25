@@ -1,0 +1,83 @@
+# file: docker-compose.yml
+
+version: '3.8' # Sử dụng phiên bản Docker Compose hiện đại
+
+services:
+  # --- CSDL CHO USER-SERVICE (ROLE A) ---
+  postgres-user:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_USER_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_USER_DB}
+    ports:
+      - '5431:5432' # Map port 5431 ở máy bạn vào 5432 của container
+    volumes:
+      - postgres_user_data:/var/lib/postgresql/data
+
+  # --- CSDL CHO TRIP-SERVICE (ROLE A) ---
+  postgres-trip:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_TRIP_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_TRIP_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_TRIP_DB}
+    ports:
+      - '5432:5432' # Map port 5432 ở máy bạn vào 5432 của container
+    volumes:
+      - postgres_trip_data:/var/lib/postgresql/data
+
+  # --- CSDL CHO DRIVER-SERVICE (ROLE B) ---
+  redis-driver:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379' # Map port 6379 ở máy bạn
+    volumes:
+      - redis_driver_data:/data
+
+  # --- SERVICE 1: USER-SERVICE (JAVA) ---
+  user-service:
+    build: ./user-service # Tìm Dockerfile trong thư mục ./user-service
+    ports:
+      - '8080:8080' # Port đã thống nhất trong API Contract
+    environment:
+      # Cung cấp biến môi trường cho Spring Boot
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-user:5432/${POSTGRES_USER_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_USER_PASSWORD}
+    depends_on:
+      - postgres-user # Khởi động sau khi postgres-user chạy
+
+  # --- SERVICE 2: TRIP-SERVICE (JAVA) ---
+  trip-service:
+    build: ./trip-service # Tìm Dockerfile trong thư mục ./trip-service
+    ports:
+      - '8081:8081' # Port đã thống nhất trong API Contract
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-trip:5432/${POSTGRES_TRIP_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_TRIP_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_TRIP_PASSWORD}
+      # URL của các service khác mà nó cần gọi
+      - USER_SERVICE_URL=http://user-service:8080
+      - DRIVER_SERVICE_URL=http://driver-service:8082
+    depends_on:
+      - postgres-trip
+      - user-service # Khởi động sau khi các service này chạy
+      - driver-service
+
+  # --- SERVICE 3: DRIVER-SERVICE (NODE.JS) ---
+  driver-service:
+    build: ./driver-service # Tìm Dockerfile trong thư mục ./driver-service
+    ports:
+      - '8082:8082' # Port đã thống nhất trong API Contract
+    environment:
+      # Cung cấp biến môi trường cho Node.js
+      - REDIS_URL=redis://redis-driver:6379
+    depends_on:
+      - redis-driver # Khởi động sau khi redis-driver chạy
+
+# Định nghĩa các "ổ đĩa ảo" để CSDL lưu dữ liệu
+volumes:
+  postgres_user_data:
+  postgres_trip_data:
+  redis_driver_data:
