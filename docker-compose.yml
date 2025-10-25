@@ -1,7 +1,5 @@
 # file: docker-compose.yml
 
-version: '3.8' # Sử dụng phiên bản Docker Compose hiện đại
-
 services:
   # --- CSDL CHO USER-SERVICE (ROLE A) ---
   postgres-user:
@@ -11,7 +9,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_USER_PASSWORD}
       - POSTGRES_DB=${POSTGRES_USER_DB}
     ports:
-      - '5431:5432' # Map port 5431 ở máy bạn vào 5432 của container
+      - "5431:5432" # Map port 5431 ở máy bạn vào 5432 của container
     volumes:
       - postgres_user_data:/var/lib/postgresql/data
 
@@ -23,7 +21,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_TRIP_PASSWORD}
       - POSTGRES_DB=${POSTGRES_TRIP_DB}
     ports:
-      - '5432:5432' # Map port 5432 ở máy bạn vào 5432 của container
+      - "5432:5432" # Map port 5432 ở máy bạn vào 5432 của container
     volumes:
       - postgres_trip_data:/var/lib/postgresql/data
 
@@ -31,7 +29,7 @@ services:
   redis-driver:
     image: redis:7-alpine
     ports:
-      - '6379:6379' # Map port 6379 ở máy bạn
+      - "6379:6379" # Map port 6379 ở máy bạn
     volumes:
       - redis_driver_data:/data
 
@@ -39,7 +37,7 @@ services:
   user-service:
     build: ./user-service # Tìm Dockerfile trong thư mục ./user-service
     ports:
-      - '8080:8080' # Port đã thống nhất trong API Contract
+      - "8080:8080" # Port đã thống nhất trong API Contract
     environment:
       # Cung cấp biến môi trường cho Spring Boot
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-user:5432/${POSTGRES_USER_DB}
@@ -52,7 +50,7 @@ services:
   trip-service:
     build: ./trip-service # Tìm Dockerfile trong thư mục ./trip-service
     ports:
-      - '8081:8081' # Port đã thống nhất trong API Contract
+      - "8081:8081" # Port đã thống nhất trong API Contract
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-trip:5432/${POSTGRES_TRIP_DB}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_TRIP_USER}
@@ -69,7 +67,7 @@ services:
   driver-service:
     build: ./driver-service # Tìm Dockerfile trong thư mục ./driver-service
     ports:
-      - '8082:8082' # Port đã thống nhất trong API Contract
+      - "8082:8082" # Port đã thống nhất trong API Contract
     environment:
       # Cung cấp biến môi trường cho Node.js
       - REDIS_URL=redis://redis-driver:6379
