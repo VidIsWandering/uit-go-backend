@@ -4,32 +4,34 @@
 
 ## Bối cảnh
 
-Hệ thống UIT-Go được xây dựng trên kiến trúc microservices. Các service (UserService, TripService, DriverService) cần giao tiếp với nhau.
+Hệ thống UIT-Go được xây dựng trên kiến trúc microservices và chúng ta đã quyết định áp dụng **kiến trúc đa ngôn ngữ (polyglot)**:
+* **Role A (Nghiệp vụ):** `UserService` và `TripService` sẽ được xây dựng bằng **Java (Spring Boot)**.
+* **Role B (Nền tảng/Dữ liệu):** `DriverService` sẽ được xây dựng bằng **Node.js (Express)**.
+
+Do đó, chúng ta cần một tiêu chuẩn giao tiếp (communication standard) độc lập ngôn ngữ, cho phép hai hệ sinh thái này giao tiếp tin cậy.
 
 ## Các lựa chọn đã cân nhắc
 
 1.  **gRPC:**
-    * **Ưu điểm:** Hiệu năng cao (sử dụng Protobuf), phù hợp cho giao tiếp nội bộ (internal service-to-service).
-    * **Nhược điểm:** Cần file `.proto` để định nghĩa, phức tạp hơn khi debug, hệ sinh thái (Postman, browser) hỗ trợ không trực tiếp bằng REST.
+    * **Ưu điểm:** Hiệu năng cao (sử dụng Protobuf).
+    * **Nhược điểm:** Yêu cầu file `.proto` và thư viện client/server-stub phải được tạo riêng cho cả Java và Node.js. Phức tạp hơn trong việc thiết lập và debug ban đầu.
 
 2.  **RESTful API (với JSON):**
-    * **Ưu điểm:** Phổ biến, đơn giản, hệ sinh thái mạnh (OpenAPI, Postman, ...), dễ dàng debug.
+    * **Ưu điểm:** Là tiêu chuẩn phổ quát (lingua franca) của web. Mọi ngôn ngữ (Java, Node.js, Python, Go...) đều hỗ trợ xử lý HTTP và JSON một cách tự nhiên (native) mà không cần công cụ đặc thù.
     * **Nhược điểm:** Hiệu năng (độ trễ, kích thước payload) cao hơn gRPC.
 
 ## Quyết định
 
-Chúng ta quyết định chọn **RESTful API (với JSON)** cho toàn bộ giao tiếp service-to-service.
+Chúng ta quyết định chọn **RESTful API (với JSON)** làm tiêu chuẩn giao tiếp chính cho toàn bộ hệ thống.
 
 ## Lý do & Đánh đổi (Trade-offs)
 
-Đây là một quyết định đánh đổi có chủ đích, ưu tiên **Tốc độ Phát triển (Velocity)** và **Tính dễ Vận hành/Debug (Operability)** hơn là **Hiệu năng thô (Raw Performance)**.
+Đây là một quyết định kiến trúc có chủ đích để **hiện thực hóa kiến trúc Đa ngôn ngữ (Polyglot)**.
 
 * **Ưu điểm (Chúng ta có):**
-    * **Hệ sinh thái:** Có thể sử dụng ngay lập tức các công cụ như Postman/Insomnia để kiểm thử từng service độc lập mà không cần tạo client.
-    * **Tính đơn giản:** Dễ dàng cho cả hai thành viên trong nhóm nhanh chóng nắm bắt và triển khai API.
-    * **Dễ Debug:** Dữ liệu JSON con người có thể đọc được (human-readable), giúp việc debug luồng giao tiếp giữa các service nhanh hơn.
-    * **Tính tương thích Đa ngôn ngữ:** Lựa chọn này cho phép Role A (Java) và Role B (Node.js) giao tiếp dễ dàng mà không cần thư viện client phức tạp.
-* **Nhược điểm (Chúng ta chấp nhận):**
-    * **Hiệu năng:** Chúng ta chấp nhận overhead (độ trễ, kích thước payload) của HTTP/JSON sẽ cao hơn so với gRPC.
+    * **Tính tương thích tuyệt đối:** Lựa chọn REST/JSON giải phóng chúng ta khỏi sự phụ thuộc vào ngôn ngữ. `TripService` (viết bằng Java) có thể gọi `DriverService` (viết bằng Node.js) một cách dễ dàng như bất kỳ API nào khác.
+    * **Hệ sinh thái:** Có thể sử dụng ngay lập tức các công cụ chung (Postman, OpenAPI) để kiểm thử từng service độc lập, bất kể service đó được viết bằng ngôn ngữ gì.
+    * **Tốc độ phát triển (Velocity):** Cả hai thành viên có thể làm việc song song ngay lập tức mà không cần lo lắng về việc đồng bộ file `.proto` hay các thư viện client.
 
-Khi hệ thống phát triển và yêu cầu về performance ở các service nội bộ tăng cao, chúng ta có thể xem xét chuyển đổi các giao tiếp *nội bộ quan trọng* sang gRPC trong tương lai.
+* **Nhược điểm (Chúng ta chấp nhận):**
+    * **Hiệu năng:** Chúng ta chấp nhận overhead (độ trễ, kích thước payload) của HTTP/JSON. Đây là cái giá hợp lý phải trả để đổi lấy sự linh hoạt tuyệt vời của kiến trúc đa ngôn ngữ.
