@@ -1,4 +1,4 @@
-# Hợp đồng API (API Contracts) - UIT-Go
+# Hợp đồng API (API Contracts) - UIT-Go (Full 10 User Stories)
 
 Đây là hợp đồng giao tiếp (JSON qua RESTful API) giữa các microservices.
 * `user-service` (Java): Chạy trên port `8080`
@@ -11,8 +11,8 @@
 * **Port:** `8080`
 * **Trách nhiệm:** Quản lý đăng ký, đăng nhập, hồ sơ người dùng.
 
-### `POST /users` (Đăng ký)
-* **Mô tả:** Đăng ký tài khoản mới cho cả hành khách và tài xế.
+### `POST /users` (Đăng ký) - [ĐIỀU CHỈNH]
+* **Mô tả:** Đăng ký tài khoản (Hành khách US1). Hỗ trợ đăng ký cho Tài xế (Tài xế US1).
 * **Request Body:**
     ```json
     {
@@ -20,7 +20,13 @@
       "password": "mysecretpassword",
       "full_name": "Nguyen Van A",
       "phone": "0909123456",
-      "role": "PASSENGER" // hoặc "DRIVER"
+      "role": "PASSENGER", // hoặc "DRIVER"
+      
+      "vehicle_info": { // [MỚI] Chỉ yêu cầu khi role="DRIVER"
+        "plate_number": "51G-123.45",
+        "model": "Toyota Vios",
+        "type": "4_SEATS"
+      }
     }
     ```
 * **Success Response (201 Created):**
@@ -35,7 +41,7 @@
     ```
 
 ### `POST /sessions` (Đăng nhập)
-* **Mô tả:** Xác thực người dùng và trả về token (ví dụ: JWT).
+* **Mô tả:** Xác thực người dùng và trả về token.
 * **Request Body:**
     ```json
     {
@@ -71,8 +77,8 @@
 * **Trách nhiệm:** Quản lý trạng thái và vị trí tài xế.
 
 ### `PUT /drivers/:id/location` (Cập nhật vị trí)
-* **Mô tả:** Tài xế cập nhật vị trí theo thời gian thực.
-* **Params:** `:id` là ID của tài xế (user ID).
+* **Mô tả:** Tài xế cập nhật vị trí theo thời gian thực (Tài xế US4).
+* **Params:** `:id` là ID của tài xế.
 * **Request Body:**
     ```json
     {
@@ -88,8 +94,8 @@
     }
     ```
 
-### `GET /drivers/search` (Tìm tài xế) - **[API NỘI BỘ]**
-* **Mô tả:** Tìm tài xế gần nhất trong bán kính 5km (ví dụ). **`TripService` (Java) sẽ gọi API này.**
+### `GET /drivers/search` (Tìm tài xế)
+* **Mô tả:** Tìm tài xế `ONLINE` gần nhất (Hỗ trợ TripService).
 * **Query Params:**
     * `lat`: vĩ độ của khách
     * `lng`: kinh độ của khách
@@ -99,21 +105,40 @@
       "drivers": [
         {
           "driver_id": "driver-uuid-456",
-          "location": {
-            "latitude": 10.8701,
-            "longitude": 106.8031
-          },
-          "distance_meters": 150
-        },
-        {
-          "driver_id": "driver-uuid-789",
-          "location": {
-            "latitude": 10.8710,
-            "longitude": 106.8040
-          },
-          "distance_meters": 350
+          "distance_km": 0.15
         }
       ]
+    }
+    ```
+
+### `PUT /drivers/:id/status` (Cập nhật trạng thái) - [MỚI]
+* **Mô tả:** Tài xế bật/tắt trạng thái "Sẵn sàng" (Tài xế US2).
+* **Params:** `:id` là ID của tài xế.
+* **Request Body:**
+    ```json
+    {
+      "status": "ONLINE" // hoặc "OFFLINE"
+    }
+    ```
+* **Success Response (200 OK):**
+    ```json
+    {
+      "driver_id": "driver-uuid-456",
+      "status": "ONLINE"
+    }
+    ```
+
+### `GET /drivers/:id/location` (Lấy vị trí 1 tài xế) - [MỚI]
+* **Mô tả:** API nội bộ để `TripService` gọi (Hỗ trợ Hành khách US3).
+* **Params:** `:id` là ID của tài xế.
+* **Success Response (200 OK):**
+    ```json
+    {
+      "driver_id": "driver-uuid-456",
+      "location": {
+        "latitude": 10.8701,
+        "longitude": 106.8031
+      }
     }
     ```
 
@@ -121,23 +146,17 @@
 
 ## 3. TripService (Role A - Java)
 * **Port:** `8081`
-* **Trách nhiệm:** Xử lý logic tạo và quản lý chuyến đi.
+* **Trách nhiệm:** Dịch vụ trung tâm, xử lý logic và trạng thái chuyến đi.
 
 ### `POST /trips` (Tạo chuyến đi)
 * **Mô tả:** Hành khách yêu cầu một chuyến đi.
 * **Header:** `Authorization: Bearer <access_token>` (của hành khách)
-* **Luồng nội bộ:** Service này sẽ gọi `GET /users/me` (để lấy ID khách) và sau đó gọi `GET /drivers/search` (để tìm tài xế).
+* **Luồng nội bộ:** Service này sẽ gọi `GET /drivers/search` (của `DriverService`).
 * **Request Body:**
     ```json
     {
-      "origin": {
-        "latitude": 10.8700,
-        "longitude": 106.8030
-      },
-      "destination": {
-        "latitude": 10.8800,
-        "longitude": 106.8130
-      }
+      "origin": { "latitude": 10.8700, "longitude": 106.8030 },
+      "destination": { "latitude": 10.8800, "longitude": 106.8130 }
     }
     ```
 * **Success Response (201 Created):**
@@ -146,15 +165,67 @@
       "id": "trip-uuid-abc",
       "passenger_id": "user-uuid-123",
       "status": "FINDING_DRIVER",
-      "origin": { "latitude": 10.8700, "longitude": 106.8030 },
-      "destination": { "latitude": 10.8800, "longitude": 106.8130 },
       "created_at": "2025-10-25T10:30:00Z"
     }
     ```
 
+### `POST /trips/estimate` (Ước tính giá) - [MỚI]
+* **Mô tả:** Hành khách xem giá cước ước tính (Hành khách US2).
+* **Request Body:**
+    ```json
+    {
+      "origin": { "latitude": 10.8700, "longitude": 106.8030 },
+      "destination": { "latitude": 10.8800, "longitude": 106.8130 }
+    }
+    ```
+* **Success Response (200 OK):**
+    ```json
+    {
+      "estimated_price": 50000,
+      "distance_meters": 2500
+    }
+    ```
+
+### `POST /trips/:id/accept` (Tài xế chấp nhận) - [MỚI]
+* **Mô tả:** Tài xế chấp nhận chuyến đi (Tài xế US3).
+* **Header:** `Authorization: Bearer <token_tai_xe>`
+* **Params:** `:id` là ID chuyến đi.
+* **Success Response (200 OK):**
+    ```json
+    {
+      "id": "trip-uuid-abc",
+      "status": "DRIVER_ACCEPTED",
+      ...
+    }
+    ```
+
+### `POST /trips/:id/reject` (Tài xế từ chối) - [MỚI]
+* **Mô tả:** Tài xế từ chối chuyến đi (Tài xế US3).
+* **Header:** `Authorization: Bearer <token_tai_xe>`
+* **Params:** `:id` là ID chuyến đi.
+* **Success Response (200 OK):**
+    ```json
+    {
+      "id": "trip-uuid-abc",
+      "status": "FINDING_DRIVER" // Trở lại trạng thái tìm tài xế khác
+    }
+    ```
+
+### `POST /trips/:id/complete` (Hoàn thành chuyến) - [MỚI]
+* **Mô tả:** Tài xế hoàn thành chuyến (Tài xế US5).
+* **Header:** `Authorization: Bearer <token_tai_xe>`
+* **Params:** `:id` là ID chuyến đi.
+* **Success Response (200 OK):**
+    ```json
+    {
+      "id": "trip-uuid-abc",
+      "status": "COMPLETED"
+    }
+    ```
+
 ### `POST /trips/:id/cancel` (Hủy chuyến)
-* **Mô tả:** Hành khách hủy chuyến đi.
-* **Header:** `Authorization: Bearer <access_token>`
+* **Mô tả:** Hành khách hủy chuyến đi (Hành khách US4).
+* **Header:** `Authorization: Bearer <token_hanh_khach>`
 * **Params:** `:id` là ID của chuyến đi.
 * **Success Response (200 OK):**
     ```json
@@ -162,5 +233,40 @@
       "id": "trip-uuid-abc",
       "status": "CANCELLED",
       "message": "Trip has been cancelled by passenger."
+    }
+    ```
+
+### `POST /trips/:id/rating` (Đánh giá) - [MỚI]
+* **Mô tả:** Hành khách đánh giá chuyến đi (Hành khách US5).
+* **Header:** `Authorization: Bearer <token_hanh_khach>`
+* **Params:** `:id` là ID chuyến đi.
+* **Request Body:**
+    ```json
+    {
+      "rating": 5,
+      "comment": "Tài xế tuyệt vời!"
+    }
+    ```
+* **Success Response (201 Created):**
+    ```json
+    {
+      "trip_id": "trip-uuid-abc",
+      "rating": 5,
+      "comment": "Tài xế tuyệt vời!"
+    }
+    ```
+        
+### `GET /trips/:id/driver-location` (Theo dõi vị trí) - [MỚI]
+* **Mô tả:** API để app hành khách gọi (polling) mỗi 5s (Hành khách US3).
+* **Header:** `Authorization: Bearer <token_hanh_khach>`
+* **Luồng nội bộ:** Service này sẽ gọi `GET /drivers/:id/location` của `DriverService`.
+* **Success Response (200 OK):**
+    ```json
+    {
+      "driver_id": "driver-uuid-456",
+      "location": {
+        "latitude": 10.8701,
+        "longitude": 106.8031
+      }
     }
     ```
