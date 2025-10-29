@@ -91,5 +91,5 @@ graph TD
     classDef ecsStyle fill:#e3f2fd,stroke:#64b5f6,stroke-width:1px,color:#333;
     classDef dbStyle fill:#e8f5e9,stroke:#81c784,stroke-width:1px,color:#333;
     classDef securityStyle fill:#ffebee,stroke:#e57373,stroke-width:1px,color:#333;
-    classDef default fill:#fafafa,stroke:#666,stroke-width:1px,color:#333; /* Style for nodes without specific class */
+    classDef default fill:#fafafa,stroke:#666,stroke-width:1px,color:#333; %% Style for nodes without specific class
 ```
