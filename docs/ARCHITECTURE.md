@@ -7,13 +7,14 @@ Tài liệu này mô tả kiến trúc hệ thống backend UIT-Go cho Giai đo�
 Sơ đồ dưới đây (vẽ bằng Mermaid) minh họa cách 3 microservices được triển khai bằng **AWS ECS Fargate** trong các **private subnets**, truy cập dữ liệu từ **RDS PostgreSQL** và **ElastiCache Redis** (cũng đặt trong private subnets), và nhận traffic từ Internet thông qua **Application Load Balancer (ALB)** đặt trong **public subnets**. Toàn bộ hạ tầng được quản lý bằng **Terraform (IaC)**.
 
 ```mermaid
-graph LR %% Main direction Left-to-Right
-    %% User outside AWS
+graph LR
+    %% Main direction Left-to-Right
+    %% Define main groups
     subgraph "Internet User"
+        direction LR
         User["<U+1F464> Client (Mobile/Web)"]:::userStyle
     end
 
-    %% AWS Cloud boundary
     subgraph AWS["AWS Cloud (Region: ap-southeast-1)"]
         direction TB %% Internal direction Top-to-Bottom
 
@@ -27,8 +28,8 @@ graph LR %% Main direction Left-to-Right
                  IGW[("<U+1F310> Internet Gateway")]
                  SubnetPubA["Subnet A (1a)"]
                  SubnetPubB["Subnet B (1b)"]
-                 ALB --> SubnetPubA & SubnetPubB
-                 IGW --> SubnetPubA & SubnetPubB
+                 ALB -- "Đặt tại" --> SubnetPubA & SubnetPubB
+                 IGW -- "Kết nối" --> SubnetPubA & SubnetPubB
             end
 
             subgraph PrivateSubnets["Private Subnets"]
@@ -97,5 +98,6 @@ graph LR %% Main direction Left-to-Right
     classDef ecsStyle fill:#e3f2fd,stroke:#64b5f6,stroke-width:1px,color:#333;
     classDef dbStyle fill:#e8f5e9,stroke:#81c784,stroke-width:1px,color:#333;
     classDef securityStyle fill:#ffebee,stroke:#e57373,stroke-width:1px,color:#333;
-    classDef default fill:#fafafa,stroke:#666,stroke-width:1px,color:#333; %% Style for nodes without specific class
+    %% Style for nodes without specific class
+    classDef default fill:#fafafa,stroke:#666,stroke-width:1px,color:#333;
 ```
