@@ -39,3 +39,9 @@ output "ecr_repository_urls" {
   }
   # value sẽ là một map như: { user = "...", trip = "...", driver = "..." }
 }
+
+# Output DNS Name của Application Load Balancer
+output "alb_dns_name" {
+  description = "DNS name of the Application Load Balancer"
+  value       = aws_lb.main.dns_name
+}
