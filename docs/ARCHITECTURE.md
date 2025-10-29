@@ -8,63 +8,54 @@ Sơ đồ dưới đây (vẽ bằng Mermaid) minh họa cách 3 microservices �
 
 ```mermaid
 graph LR
-    %% Main direction Left-to-Right
-    %% Define main groups
     subgraph "Internet User"
-        direction LR
-        User["<U+1F464> Client (Mobile/Web)"]:::userStyle
+        User["Client (Mobile/Web)"]
     end
 
-    subgraph AWS["AWS Cloud (Region: ap-southeast-1)"]
-        direction TB %% Internal direction Top-to-Bottom
+    subgraph "AWS Cloud (Region: ap-southeast-1)"
+        direction TB
 
-        %% Network Layer (VPC, Subnets, Gateway, ALB)
         subgraph VPC["VPC (uit-go-vpc: 10.0.0.0/16)"]
             direction TB
 
             subgraph PublicSubnets["Public Subnets"]
-                 style PublicSubnets fill:#e6f2ff,stroke:#a6cfff
-                 ALB[("<U+26D1> ALB: uit-go-alb")]:::elbStyle
-                 IGW[("<U+1F310> Internet Gateway")]
+                 ALB["ALB: uit-go-alb"]
+                 IGW["Internet Gateway"]
                  SubnetPubA["Subnet A (1a)"]
                  SubnetPubB["Subnet B (1b)"]
-                 ALB -- "Đặt tại" --> SubnetPubA & SubnetPubB
-                 IGW -- "Kết nối" --> SubnetPubA & SubnetPubB
+                 ALB --> SubnetPubA & SubnetPubB
+                 IGW --> SubnetPubA & SubnetPubB
             end
 
             subgraph PrivateSubnets["Private Subnets"]
-                 style PrivateSubnets fill:#f0fff0,stroke:#90ee90
                  SubnetPrivA["Subnet A (1a)"]
                  SubnetPrivB["Subnet B (1b)"]
+                 %% ECS Tasks and Databases reside here
             end
         end
 
-        %% Application & Data Layer (Inside Private Subnets conceptually)
         subgraph AppLayer["Application & Data Layer (in Private Subnets)"]
              direction LR
 
              subgraph ECS["Amazon ECS (Fargate)"]
-                  style ECS fill:#e3f2fd,stroke:#64b5f6
-                  TaskUser["<U+1F4BB> User Service (Java)"]:::ecsStyle
-                  TaskTrip["<U+1F4BB> Trip Service (Java)"]:::ecsStyle
-                  TaskDriver["<U+1F4BB> Driver Service (Node.js)"]:::ecsStyle
+                  TaskUser["Task: user-service (Java)"]
+                  TaskTrip["Task: trip-service (Java)"]
+                  TaskDriver["Task: driver-service (Node.js)"]
              end
 
              subgraph DBs["Managed Databases"]
-                  style DBs fill:#e8f5e9,stroke:#81c784
-                  RDSUser[("💾 RDS Postgres: user_db")]:::dbStyle
-                  RDSTrip[("💾 RDS Postgres: trip_db")]:::dbStyle
-                  Redis[("💾 ElastiCache Redis: driver_db")]:::dbStyle
+                  RDSUser[("RDS Postgres: user_db")]
+                  RDSTrip[("RDS Postgres: trip_db")]
+                  Redis[("ElastiCache Redis: driver_db")]
              end
         end
 
-        %% Security & Management Layer (Regional services)
-         subgraph SecurityMgmt["Security & Management"]
+        subgraph SecurityMgmt["Security & Management"]
               direction LR
-              SG_ALB("🔒 SG: alb_sg"):::securityStyle
-              SG_DB("🔒 SG: db_access"):::securityStyle
-              Secrets("🔑 Secrets Manager"):::securityStyle
-              IAMRoles("🧑‍💼 IAM Roles"):::securityStyle
+              SG_ALB("SG: alb_sg")
+              SG_DB("SG: db_access")
+              Secrets("Secrets Manager")
+              IAMRoles("IAM Roles")
          end
 
     end
@@ -75,8 +66,8 @@ graph LR
     ALB -- "Route /trips*" --> TaskTrip
     ALB -- "Route /drivers*" --> TaskDriver
 
-    TaskTrip -- "Internal REST" --> TaskUser
-    TaskTrip -- "Internal REST" --> TaskDriver
+    TaskTrip -- "Internal REST (VPC)" --> TaskUser
+    TaskTrip -- "Internal REST (VPC)" --> TaskDriver
 
     TaskUser -- "JDBC" --> RDSUser
     TaskTrip -- "JDBC" --> RDSTrip
@@ -91,13 +82,8 @@ graph LR
     TaskTrip -.-> Secrets & IAMRoles
     TaskDriver -.-> IAMRoles
 
-
-    %% Styles Definition using classDef
-    classDef userStyle fill:#f3e5f5,stroke:#ab47bc,stroke-width:2px,color:#333;
-    classDef elbStyle fill:#fff0b3,stroke:#ffb300,stroke-width:2px,color:#333;
-    classDef ecsStyle fill:#e3f2fd,stroke:#64b5f6,stroke-width:1px,color:#333;
-    classDef dbStyle fill:#e8f5e9,stroke:#81c784,stroke-width:1px,color:#333;
-    classDef securityStyle fill:#ffebee,stroke:#e57373,stroke-width:1px,color:#333;
-    %% Style for nodes without specific class
-    classDef default fill:#fafafa,stroke:#666,stroke-width:1px,color:#333;
+    %% Placement notes (Implied by connections and subgraph structure)
+    %% ALB resides in Public Subnets
+    %% ECS Tasks reside in Private Subnets
+    %% Databases reside in Private Subnets
 ```
