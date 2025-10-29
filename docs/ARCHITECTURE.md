@@ -7,83 +7,89 @@ Tài liệu này mô tả kiến trúc hệ thống backend UIT-Go cho Giai đo�
 Sơ đồ dưới đây (vẽ bằng Mermaid) minh họa cách 3 microservices được triển khai bằng **AWS ECS Fargate** trong các **private subnets**, truy cập dữ liệu từ **RDS PostgreSQL** và **ElastiCache Redis** (cũng đặt trong private subnets), và nhận traffic từ Internet thông qua **Application Load Balancer (ALB)** đặt trong **public subnets**. Toàn bộ hạ tầng được quản lý bằng **Terraform (IaC)**.
 
 ```mermaid
-graph TD
-    %% Define main groups
+graph LR %% Main direction Left-to-Right
+    %% User outside AWS
     subgraph "Internet User"
-        direction LR
         User["<U+1F464> Client (Mobile/Web)"]:::userStyle
     end
 
-    subgraph "AWS Cloud (Region: ap-southeast-1)"
-        direction TB
+    %% AWS Cloud boundary
+    subgraph AWS["AWS Cloud (Region: ap-southeast-1)"]
+        direction TB %% Internal direction Top-to-Bottom
 
+        %% Network Layer (VPC, Subnets, Gateway, ALB)
         subgraph VPC["VPC (uit-go-vpc: 10.0.0.0/16)"]
-            direction LR
+            direction TB
 
-            %% Public Subnets Area
             subgraph PublicSubnets["Public Subnets"]
-                ALB[("<U+26D1> ALB: uit-go-alb")]:::elbStyle
-                IGW[("<U+1F310> Internet Gateway")]
-                SubnetPubA["Subnet Public A"]
-                SubnetPubB["Subnet Public B"]
+                 style PublicSubnets fill:#e6f2ff,stroke:#a6cfff
+                 ALB[("<U+26D1> ALB: uit-go-alb")]:::elbStyle
+                 IGW[("<U+1F310> Internet Gateway")]
+                 SubnetPubA["Subnet A (1a)"]
+                 SubnetPubB["Subnet B (1b)"]
+                 ALB --> SubnetPubA & SubnetPubB
+                 IGW --> SubnetPubA & SubnetPubB
             end
 
-            %% Private Subnets Area
             subgraph PrivateSubnets["Private Subnets"]
-
-                subgraph ECS["Amazon ECS (Fargate)"]
-                    TaskUser["<U+1F4BB> Task: user-service (Java)"]:::ecsStyle
-                    TaskTrip["<U+1F4BB> Task: trip-service (Java)"]:::ecsStyle
-                    TaskDriver["<U+1F4BB> Task: driver-service (Node.js)"]:::ecsStyle
-                end
-
-                subgraph DBs["Managed Databases"]
-                    RDSUser[("💾 RDS Postgres: user_db")]:::dbStyle
-                    RDSTrip[("💾 RDS Postgres: trip_db")]:::dbStyle
-                    Redis[("💾 ElastiCache Redis: driver_db")]:::dbStyle
-                end
-
-                SubnetPrivA["Subnet Private A"]
-                SubnetPrivB["Subnet Private B"]
+                 style PrivateSubnets fill:#f0fff0,stroke:#90ee90
+                 SubnetPrivA["Subnet A (1a)"]
+                 SubnetPrivB["Subnet B (1b)"]
             end
-
-            %% Security Components
-            SG_ALB("🔒 SG: alb_sg"):::securityStyle
-            SG_DB("🔒 SG: db_access"):::securityStyle
-            Secrets("🔑 Secrets Manager"):::securityStyle
-            IAMRoles("🧑‍💼 IAM Roles"):::securityStyle
-
-            %% Placement & Connections (Simplified for clarity)
-            ALB -- "Đặt tại Public Subnets" --> SubnetPubA & SubnetPubB
-            IGW -- "Kết nối Public Subnets" --> SubnetPubA & SubnetPubB
-            TaskUser -- "Chạy trong Private Subnets" --> SubnetPrivA & SubnetPrivB
-            RDSUser -- "Đặt tại Private Subnets" --> SubnetPrivA & SubnetPrivB
-
-
-            %% Main Connections
-            User -- "HTTP/S Port 80" --> ALB
-
-            ALB -- "Rule: /users*" --> TaskUser
-            ALB -- "Rule: /trips*" --> TaskTrip
-            ALB -- "Rule: /drivers*" --> TaskDriver
-
-            TaskTrip -- "Internal REST" --> TaskUser
-            TaskTrip -- "Internal REST" --> TaskDriver
-
-            TaskUser -- "JDBC" --> RDSUser
-            TaskTrip -- "JDBC" --> RDSTrip
-            TaskDriver -- "Redis Client" --> Redis
-
-            %% Security Connections (Illustrative)
-            ALB -.-> SG_ALB
-            TaskUser -.-> SG_DB
-            RDSUser -.-> SG_DB
-            Redis -.-> SG_DB
-            TaskUser -.-> Secrets
-            TaskUser -.-> IAMRoles
-
         end
+
+        %% Application & Data Layer (Inside Private Subnets conceptually)
+        subgraph AppLayer["Application & Data Layer (in Private Subnets)"]
+             direction LR
+
+             subgraph ECS["Amazon ECS (Fargate)"]
+                  style ECS fill:#e3f2fd,stroke:#64b5f6
+                  TaskUser["<U+1F4BB> User Service (Java)"]:::ecsStyle
+                  TaskTrip["<U+1F4BB> Trip Service (Java)"]:::ecsStyle
+                  TaskDriver["<U+1F4BB> Driver Service (Node.js)"]:::ecsStyle
+             end
+
+             subgraph DBs["Managed Databases"]
+                  style DBs fill:#e8f5e9,stroke:#81c784
+                  RDSUser[("💾 RDS Postgres: user_db")]:::dbStyle
+                  RDSTrip[("💾 RDS Postgres: trip_db")]:::dbStyle
+                  Redis[("💾 ElastiCache Redis: driver_db")]:::dbStyle
+             end
+        end
+
+        %% Security & Management Layer (Regional services)
+         subgraph SecurityMgmt["Security & Management"]
+              direction LR
+              SG_ALB("🔒 SG: alb_sg"):::securityStyle
+              SG_DB("🔒 SG: db_access"):::securityStyle
+              Secrets("🔑 Secrets Manager"):::securityStyle
+              IAMRoles("🧑‍💼 IAM Roles"):::securityStyle
+         end
+
     end
+
+    %% Connections
+    User -- "HTTP/S Port 80" --> ALB
+    ALB -- "Route /users*" --> TaskUser
+    ALB -- "Route /trips*" --> TaskTrip
+    ALB -- "Route /drivers*" --> TaskDriver
+
+    TaskTrip -- "Internal REST" --> TaskUser
+    TaskTrip -- "Internal REST" --> TaskDriver
+
+    TaskUser -- "JDBC" --> RDSUser
+    TaskTrip -- "JDBC" --> RDSTrip
+    TaskDriver -- "Redis Client" --> Redis
+
+    %% Security Interactions (Illustrative)
+    ALB -.-> SG_ALB
+    TaskUser -.-> SG_DB
+    RDSUser -.-> SG_DB
+    Redis -.-> SG_DB
+    TaskUser -.-> Secrets & IAMRoles
+    TaskTrip -.-> Secrets & IAMRoles
+    TaskDriver -.-> IAMRoles
+
 
     %% Styles Definition using classDef
     classDef userStyle fill:#f3e5f5,stroke:#ab47bc,stroke-width:2px,color:#333;
@@ -91,6 +97,5 @@ graph TD
     classDef ecsStyle fill:#e3f2fd,stroke:#64b5f6,stroke-width:1px,color:#333;
     classDef dbStyle fill:#e8f5e9,stroke:#81c784,stroke-width:1px,color:#333;
     classDef securityStyle fill:#ffebee,stroke:#e57373,stroke-width:1px,color:#333;
-    %% Style for nodes without specific class (moved comment here)
-    classDef default fill:#fafafa,stroke:#666,stroke-width:1px,color:#333;
+    classDef default fill:#fafafa,stroke:#666,stroke-width:1px,color:#333; %% Style for nodes without specific class
 ```
