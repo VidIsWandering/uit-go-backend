@@ -22,8 +22,8 @@ graph TD
             direction LR
 
             %% Public Subnets Area
-            subgraph "Public Subnets"
-                style Public Subnets fill:#e6f2ff,stroke:#a6cfff,color:#333
+            subgraph PublicSubnets["Public Subnets"]
+                style PublicSubnets fill:#e6f2ff,stroke:#a6cfff,color:#333
                 ALB[("<U+26D1> ALB: uit-go-alb")]:::elbStyle
                 IGW[("<U+1F310> Internet Gateway")]
                 SubnetPubA["Subnet Public A"]
@@ -33,18 +33,18 @@ graph TD
             end
 
             %% Private Subnets Area
-            subgraph "Private Subnets"
-                style Private Subnets fill:#f0fff0,stroke:#90ee90,color:#333
+            subgraph PrivateSubnets["Private Subnets"]
+                style PrivateSubnets fill:#f0fff0,stroke:#90ee90,color:#333
 
-                subgraph "Amazon ECS (Fargate)"
-                    style Amazon ECS (Fargate) fill:#fff8dc,stroke:#eedd82,color:#333
+                subgraph ECS["Amazon ECS (Fargate)"]
+                    style ECS fill:#fff8dc,stroke:#eedd82,color:#333
                     TaskUser["<U+1F4BB> Task: user-service (Java)"]:::ecsStyle
                     TaskTrip["<U+1F4BB> Task: trip-service (Java)"]:::ecsStyle
                     TaskDriver["<U+1F4BB> Task: driver-service (Node.js)"]:::ecsStyle
                 end
 
-                subgraph "Managed Databases"
-                    style Managed Databases fill:#ffe4e1,stroke:#f08080,color:#333
+                subgraph DBs["Managed Databases"]
+                    style DBs fill:#ffe4e1,stroke:#f08080,color:#333
                     RDSUser[("💾 RDS Postgres: user_db")]:::dbStyle
                     RDSTrip[("💾 RDS Postgres: trip_db")]:::dbStyle
                     Redis[("💾 ElastiCache Redis: driver_db")]:::dbStyle
