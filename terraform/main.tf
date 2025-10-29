@@ -674,3 +674,24 @@ resource "aws_lb_listener_rule" "service_rule" {
 }
 
 # --- (Hoàn thành định nghĩa ECS Services & ALB) ---
+
+# --- Định nghĩa Elastic Container Registry (ECR) ---
+
+# Tạo ECR Repository cho mỗi service
+resource "aws_ecr_repository" "service_ecr" {
+  for_each = local.services # Dùng lại map 'services' đã định nghĩa
+
+  name = "uit-go/${each.key}-service" # Tên repo, ví dụ: uit-go/user-service
+
+  image_tag_mutability = "MUTABLE" # Cho phép ghi đè tag (ví dụ: 'latest')
+
+  image_scanning_configuration {
+    scan_on_push = true # Tự động quét lỗ hổng bảo mật khi đẩy image
+  }
+
+  tags = {
+    Name = "uit-go-${each.key}-service-ecr"
+  }
+}
+
+# --- (Hoàn thành định nghĩa ECR) ---
