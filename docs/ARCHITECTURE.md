@@ -40,9 +40,10 @@ graph TD
         direction LR
 
         subgraph "Application Containers"
-            US[UserService (Java :8080)]
-            TS[TripService (Java :8081)]
-            DS[DriverService (Node.js :8082)]
+            %% SỬA LỖI: Dùng dấu ngoặc kép "" thay vì [] cho nhãn chứa ký tự đặc biệt
+            US["UserService (Java :8080)"]
+            TS["TripService (Java :8081)"]
+            DS["DriverService (Node.js :8082)"]
         end
 
         subgraph "Database Containers"
