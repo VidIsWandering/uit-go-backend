@@ -1,6 +1,27 @@
-# Đồ án SE360: Xây dựng Nền tảng "UIT-Go" Cloud-Native
+# UIT-Go Backend
 
-Đây là repository cho dự án backend của UIT-Go, một ứng dụng gọi xe giả tưởng. Hệ thống được xây dựng trên kiến trúc microservices.
+UIT-Go là một ứng dụng đặt xe được xây dựng với kiến trúc microservices. Repository này chứa phần backend của ứng dụng.
+
+## Cấu trúc Project
+
+```
+uit-go-backend/
+├── user-service/     # Quản lý user (Java Spring Boot)
+├── driver-service/   # Quản lý tài xế (Node.js)
+├── trip-service/     # Quản lý chuyến đi (Java Spring Boot)
+├── gateway/          # NGINX API Gateway
+├── monitoring/       # Prometheus & Grafana configs
+├── terraform/        # Infrastructure as Code
+└── docs/            # Documentation
+```
+
+## Yêu cầu System
+
+- Docker và Docker Compose
+- Java 21 (cho user-service và trip-service)
+- Node.js 18+ (cho driver-service)
+- PostgreSQL 15 (cho local development)
+- Redis (cho driver-service)
 
 ## 1. Kiến trúc Tổng quan
 
@@ -36,23 +57,140 @@ Toàn bộ API (request/response) của 3 services được định nghĩa chi t
 
 ---
 
-## 4. Hướng dẫn Chạy Local (Quan trọng)
+## Cài đặt & Chạy
 
-Để chạy toàn bộ hệ thống trên máy của bạn, bạn cần cài đặt **Docker** và **Docker Compose**.
-
-### Bước 1: Chuẩn bị file Môi trường (.env)
-
-File `.env` chứa các mật khẩu CSDL. File này đã bị chặn bởi `.gitignore` vì lý do bảo mật. Bạn cần tạo file này thủ công:
-
-1.  Copy file `.env.example` thành một file mới tên là `.env`:
-    ```bash
-    cp .env.example .env
-    ```
-2.  Mở file `.env` và điền các mật khẩu của bạn vào trường `<your_secret_password>`.
-
-### Bước 2: Khởi chạy hệ thống
-
-Mở terminal ở thư mục gốc của dự án và chạy lệnh sau:
-
+### 1. Clone repository
 ```bash
-docker-compose up --build
+git clone https://github.com/VidIsWandering/uit-go-backend.git
+cd uit-go-backend
+```
+
+### 2. Setup Environment Variables
+Tạo file `.env` trong thư mục gốc:
+```env
+# Database
+POSTGRES_USER_USER=uit_go_user
+POSTGRES_USER_PASSWORD=your_password
+POSTGRES_USER_DB=uit_go_user_db
+
+POSTGRES_TRIP_USER=uit_go_trip
+POSTGRES_TRIP_PASSWORD=your_password
+POSTGRES_TRIP_DB=uit_go_trip_db
+
+# JWT
+JWT_SECRET=your_jwt_secret
+
+# Ports (optional)
+USER_SERVICE_PORT=8080
+TRIP_SERVICE_PORT=8081
+DRIVER_SERVICE_PORT=8082
+```
+
+### 3. Chạy toàn bộ services với Docker Compose
+```bash
+docker compose up --build
+```
+
+### 4. Chạy từng service riêng lẻ
+
+#### User Service (Java)
+```bash
+cd user-service
+./mvnw spring-boot:run
+```
+
+#### Driver Service (Node.js)
+```bash
+cd driver-service
+npm install
+npm run dev
+```
+
+#### Trip Service (Java)
+```bash
+cd trip-service
+./mvnw spring-boot:run
+```
+
+## Testing
+
+### 1. Unit Tests
+```bash
+# User Service
+cd user-service
+./mvnw test
+
+# Driver Service
+cd driver-service
+npm test
+```
+
+### 2. Integration Tests (với TestContainers)
+```bash
+cd user-service
+./mvnw failsafe:integration-test
+```
+
+### 3. API Testing
+
+#### Register User
+```bash
+curl -X POST http://localhost:8088/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@uit.edu.vn",
+    "password": "password123",
+    "full_name": "Test User",
+    "phone": "0123456789",
+    "role": "PASSENGER"
+  }'
+```
+
+#### Login
+```bash
+curl -X POST http://localhost:8088/api/sessions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@uit.edu.vn",
+    "password": "password123"
+  }'
+```
+
+#### Get Profile (với JWT token)
+```bash
+curl http://localhost:8088/api/users/me \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+## Monitoring
+
+### 1. Access Points
+- Grafana: http://localhost:3000 (admin/admin)
+- Prometheus: http://localhost:9090
+
+### 2. Health Checks
+```bash
+# User Service
+curl http://localhost:8080/actuator/health
+
+# Trip Service
+curl http://localhost:8081/actuator/health
+```
+
+## Documentation
+- API Contracts: [docs/API_CONTRACTS.md](docs/API_CONTRACTS.md)
+- Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- Monitoring: [monitoring/README.md](monitoring/README.md)
+
+## Contributing
+1. Fork repository
+2. Tạo feature branch
+3. Commit changes
+4. Push to branch
+5. Create Pull Request
+
+## Security Notes
+- Đổi tất cả default passwords trong production
+- Không commit các secrets vào repository
+- Sử dụng HTTPS trong production
+- Review security guidelines trong [docs/SECURITY.md](docs/SECURITY.md)
