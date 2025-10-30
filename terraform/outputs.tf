@@ -30,3 +30,18 @@ output "redis_endpoint" {
   # ElastiCache trả về endpoint chính qua thuộc tính này
   value = aws_elasticache_cluster.redis_cluster.cache_nodes[0].address
 }
+
+# Output URL của ECR Repositories
+output "ecr_repository_urls" {
+  description = "URLs of the ECR repositories"
+  value = {
+    for k, repo in aws_ecr_repository.service_ecr : k => repo.repository_url
+  }
+  # value sẽ là một map như: { user = "...", trip = "...", driver = "..." }
+}
+
+# Output DNS Name của Application Load Balancer
+output "alb_dns_name" {
+  description = "DNS name of the Application Load Balancer"
+  value       = aws_lb.main.dns_name
+}
