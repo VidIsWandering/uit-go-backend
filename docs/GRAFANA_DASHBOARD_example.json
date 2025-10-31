@@ -1,0 +1,19 @@
+{
+    "dashboard": {
+        "id": null,
+        "title": "UIT-Go - User Service (example)",
+        "panels": [
+            {
+                "type": "graph",
+                "title": "HTTP Requests",
+                "targets": []
+            },
+            {
+                "type": "graph",
+                "title": "JVM Memory",
+                "targets": []
+            }
+        ]
+    },
+    "overwrite": false
+}
