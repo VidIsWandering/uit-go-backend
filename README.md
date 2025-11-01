@@ -188,7 +188,7 @@ curl -X POST http://localhost:8088/api/users \
   -d '{
     "email": "test@uit.edu.vn",
     "password": "password123",
-    "full_name": "Test User",
+    "fullName": "Test User",
     "phone": "0123456789",
     "role": "PASSENGER"
   }'

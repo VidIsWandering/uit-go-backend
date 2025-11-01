@@ -42,12 +42,12 @@ public class UserController {
         User u = new User();
         u.setEmail(req.getEmail());
         u.setPassword(passwordEncoder.encode(req.getPassword()));
-        u.setFullName(req.getFull_name());
+    u.setFullName(req.getFullName());
         u.setPhone(req.getPhone());
         u.setRole(req.getRole());
         try {
-            if (req.getVehicle_info() != null) {
-                u.setVehicleInfo(mapper.writeValueAsString(req.getVehicle_info()));
+            if (req.getVehicleInfo() != null) {
+                u.setVehicleInfo(mapper.writeValueAsString(req.getVehicleInfo()));
             }
         } catch (Exception e) {
             // ignore
@@ -56,11 +56,11 @@ public class UserController {
         Map<String, Object> resp = new HashMap<>();
         resp.put("id", u.getId());
         resp.put("email", u.getEmail());
-        resp.put("full_name", u.getFullName());
+    resp.put("fullName", u.getFullName());
         resp.put("role", u.getRole());
         // include created_at to match API contract (ISO-8601)
         if (u.getCreatedAt() != null) {
-            resp.put("created_at", u.getCreatedAt().toString());
+            resp.put("createdAt", u.getCreatedAt().toString());
         }
         return ResponseEntity.status(201).body(resp);
     }
@@ -97,7 +97,7 @@ public class UserController {
             Map<String, Object> resp = new HashMap<>();
             resp.put("id", u.getId());
             resp.put("email", u.getEmail());
-            resp.put("full_name", u.getFullName());
+            resp.put("fullName", u.getFullName());
             resp.put("phone", u.getPhone());
             resp.put("role", u.getRole());
             return ResponseEntity.ok(resp);

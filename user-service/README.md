@@ -97,7 +97,7 @@ curl http://localhost:8080/actuator/health
 
 # Đăng ký user mới
 curl -X POST http://localhost:8080/users -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com", "password":"secret", "full_name":"Test User"}'
+  -d '{"email":"test@example.com", "password":"secret", "fullName":"Test User"}'
 
 # Đăng nhập
 curl -X POST http://localhost:8080/sessions -H "Content-Type: application/json" \

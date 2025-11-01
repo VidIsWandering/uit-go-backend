@@ -18,11 +18,11 @@
     {
       "email": "example@uit.edu.vn",
       "password": "mysecretpassword",
-      "full_name": "Nguyen Van A",
+  "fullName": "Nguyen Van A",
       "phone": "0909123456",
       "role": "PASSENGER", // hoặc "DRIVER"
       
-      "vehicle_info": { // [MỚI] Chỉ yêu cầu khi role="DRIVER"
+  "vehicleInfo": { // [MỚI] Chỉ yêu cầu khi role="DRIVER"
         "plate_number": "51G-123.45",
         "model": "Toyota Vios",
         "type": "4_SEATS"
@@ -34,9 +34,9 @@
     {
       "id": "user-uuid-123",
       "email": "example@uit.edu.vn",
-      "full_name": "Nguyen Van A",
+  "fullName": "Nguyen Van A",
       "role": "PASSENGER",
-      "created_at": "2025-10-25T10:00:00Z"
+  "createdAt": "2025-10-25T10:00:00Z"
     }
     ```
 
@@ -64,7 +64,7 @@
     {
       "id": "user-uuid-123",
       "email": "example@uit.edu.vn",
-      "full_name": "Nguyen Van A",
+  "fullName": "Nguyen Van A",
       "phone": "0909123456",
       "role": "PASSENGER"
     }
@@ -90,7 +90,7 @@
     ```json
     {
       "status": "updated",
-      "driver_id": "driver-uuid-456"
+  "driverId": "driver-uuid-456"
     }
     ```
 
@@ -104,8 +104,8 @@
     {
       "drivers": [
         {
-          "driver_id": "driver-uuid-456",
-          "distance_km": 0.15
+          "driverId": "driver-uuid-456",
+          "distanceKm": 0.15
         }
       ]
     }
@@ -123,7 +123,7 @@
 * **Success Response (200 OK):**
     ```json
     {
-      "driver_id": "driver-uuid-456",
+  "driverId": "driver-uuid-456",
       "status": "ONLINE"
     }
     ```
@@ -163,9 +163,9 @@
     ```json
     {
       "id": "trip-uuid-abc",
-      "passenger_id": "user-uuid-123",
+  "passengerId": "user-uuid-123",
       "status": "FINDING_DRIVER",
-      "created_at": "2025-10-25T10:30:00Z"
+  "createdAt": "2025-10-25T10:30:00Z"
     }
     ```
 
@@ -181,8 +181,8 @@
 * **Success Response (200 OK):**
     ```json
     {
-      "estimated_price": 50000,
-      "distance_meters": 2500
+  "estimatedPrice": 50000,
+  "distanceMeters": 2500
     }
     ```
 
@@ -250,7 +250,7 @@
 * **Success Response (201 Created):**
     ```json
     {
-      "trip_id": "trip-uuid-abc",
+  "tripId": "trip-uuid-abc",
       "rating": 5,
       "comment": "Tài xế tuyệt vời!"
     }
