@@ -10,6 +10,14 @@ output "trip_db_endpoint" {
   value       = aws_db_instance.trip_db.address
 }
 
+output "user_db_name" {
+  value = aws_db_instance.user_db.db_name
+}
+
+output "trip_db_name" {
+  value = aws_db_instance.trip_db.db_name
+}
+
 # Output ARN của secret chứa mật khẩu User DB
 output "user_db_password_secret_arn" {
   description = "ARN of the Secrets Manager secret for User DB password"
