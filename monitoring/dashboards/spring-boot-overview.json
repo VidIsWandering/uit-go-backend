@@ -1,0 +1,194 @@
+{
+    "dashboard": {
+        "title": "UIT-Go Services Overview",
+        "tags": [
+            "spring-boot",
+            "microservices"
+        ],
+        "timezone": "browser",
+        "panels": [
+            {
+                "id": 1,
+                "title": "HTTP Request Rate (req/sec)",
+                "type": "graph",
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 0,
+                    "y": 0
+                },
+                "targets": [
+                    {
+                        "expr": "sum(rate(http_server_requests_seconds_count[5m])) by (job)",
+                        "legendFormat": "{{job}}",
+                        "refId": "A"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "reqps",
+                        "label": "Requests/sec"
+                    },
+                    {
+                        "format": "short"
+                    }
+                ]
+            },
+            {
+                "id": 2,
+                "title": "HTTP Response Time (95th percentile)",
+                "type": "graph",
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 12,
+                    "y": 0
+                },
+                "targets": [
+                    {
+                        "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (job, le))",
+                        "legendFormat": "{{job}} p95",
+                        "refId": "A"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "s",
+                        "label": "Response Time"
+                    },
+                    {
+                        "format": "short"
+                    }
+                ]
+            },
+            {
+                "id": 3,
+                "title": "JVM Heap Memory Usage",
+                "type": "graph",
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 0,
+                    "y": 8
+                },
+                "targets": [
+                    {
+                        "expr": "jvm_memory_used_bytes{area=\"heap\"} / jvm_memory_max_bytes{area=\"heap\"} * 100",
+                        "legendFormat": "{{job}} heap usage %",
+                        "refId": "A"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "percent",
+                        "label": "Memory %",
+                        "max": 100
+                    },
+                    {
+                        "format": "short"
+                    }
+                ]
+            },
+            {
+                "id": 4,
+                "title": "HTTP Error Rate (5xx)",
+                "type": "graph",
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 12,
+                    "y": 8
+                },
+                "targets": [
+                    {
+                        "expr": "sum(rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])) by (job)",
+                        "legendFormat": "{{job}} errors",
+                        "refId": "A"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "reqps",
+                        "label": "Errors/sec"
+                    },
+                    {
+                        "format": "short"
+                    }
+                ]
+            },
+            {
+                "id": 5,
+                "title": "Database Connection Pool",
+                "type": "graph",
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 0,
+                    "y": 16
+                },
+                "targets": [
+                    {
+                        "expr": "hikaricp_connections_active",
+                        "legendFormat": "{{job}} active connections",
+                        "refId": "A"
+                    },
+                    {
+                        "expr": "hikaricp_connections_idle",
+                        "legendFormat": "{{job}} idle connections",
+                        "refId": "B"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "short",
+                        "label": "Connections"
+                    },
+                    {
+                        "format": "short"
+                    }
+                ]
+            },
+            {
+                "id": 6,
+                "title": "JVM Threads",
+                "type": "graph",
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 12,
+                    "y": 16
+                },
+                "targets": [
+                    {
+                        "expr": "jvm_threads_live_threads",
+                        "legendFormat": "{{job}} live threads",
+                        "refId": "A"
+                    },
+                    {
+                        "expr": "jvm_threads_daemon_threads",
+                        "legendFormat": "{{job}} daemon threads",
+                        "refId": "B"
+                    }
+                ],
+                "yaxes": [
+                    {
+                        "format": "short",
+                        "label": "Thread Count"
+                    },
+                    {
+                        "format": "short"
+                    }
+                ]
+            }
+        ],
+        "refresh": "10s",
+        "schemaVersion": 27,
+        "style": "dark",
+        "time": {
+            "from": "now-15m",
+            "to": "now"
+        },
+        "timepicker": {}
+    },
+    "overwrite": true
+}
