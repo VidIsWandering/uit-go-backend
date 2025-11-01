@@ -5,15 +5,15 @@ services:
   postgres-user:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_USER=${POSTGRES_USER_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_USER_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_USER_DB}
+      - POSTGRES_USER=${USER_DB_USER}
+      - POSTGRES_PASSWORD=${USER_DB_PASSWORD}
+      - POSTGRES_DB=${USER_DB_NAME}
     ports:
       - "5431:5432" # Map port 5431 ở máy bạn vào 5432 của container
     volumes:
       - postgres_user_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER_USER} -d ${POSTGRES_USER_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${USER_DB_USER} -d ${USER_DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,13 +22,18 @@ services:
   postgres-trip:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_USER=${POSTGRES_TRIP_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_TRIP_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_TRIP_DB}
+      - POSTGRES_USER=${TRIP_DB_USER}
+      - POSTGRES_PASSWORD=${TRIP_DB_PASSWORD}
+      - POSTGRES_DB=${TRIP_DB_NAME}
     ports:
       - "5432:5432" # Map port 5432 ở máy bạn vào 5432 của container
     volumes:
       - postgres_trip_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TRIP_DB_USER} -d ${TRIP_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # --- CSDL CHO DRIVER-SERVICE (ROLE B) ---
   redis-driver:
@@ -40,20 +45,15 @@ services:
 
   # --- SERVICE 1: USER-SERVICE (JAVA) ---
   user-service:
-    build: ./user-service # Tìm Dockerfile trong thư mục ./user-service
+    build: ./user-service
     ports:
-      - "8080:8080" # Port đã thống nhất trong API Contract
+      - "8080:8080"
     environment:
-      # Spring profile
       - SPRING_PROFILES_ACTIVE=prod
-      # Database connection
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-user:5432/${POSTGRES_USER_DB}
-      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER_USER}
-      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_USER_PASSWORD}
-      # Security
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-user:5432/${USER_DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${USER_DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${USER_DB_PASSWORD}
       - JWT_SECRET=${JWT_SECRET}
-      - SECURITY_USER_NAME=${SECURITY_USER_NAME:-admin}
-      - SECURITY_USER_PASSWORD=${SECURITY_USER_PASSWORD:-change-me-in-prod}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
@@ -66,29 +66,31 @@ services:
 
   # --- SERVICE 2: TRIP-SERVICE (JAVA) ---
   trip-service:
-    build: ./trip-service # Tìm Dockerfile trong thư mục ./trip-service
+    build: ./trip-service
     ports:
-      - "8081:8081" # Port đã thống nhất trong API Contract
+      - "8081:8081"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-trip:5432/${POSTGRES_TRIP_DB}
-      - SPRING_DATASOURCE_USERNAME=${POSTGRES_TRIP_USER}
-      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_TRIP_PASSWORD}
-      # URL của các service khác mà nó cần gọi
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-trip:5432/${TRIP_DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${TRIP_DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${TRIP_DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
       - USER_SERVICE_URL=http://user-service:8080
       - DRIVER_SERVICE_URL=http://driver-service:8082
     depends_on:
-      - postgres-trip
-      - user-service # Khởi động sau khi các service này chạy
-      - driver-service
+      postgres-trip:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+      driver-service:
+        condition: service_started
 
   # --- SERVICE 3: DRIVER-SERVICE (NODE.JS) ---
   driver-service:
-    build: ./driver-service # Tìm Dockerfile trong thư mục ./driver-service
+    build: ./driver-service
     ports:
-      - "8082:8082" # Port đã thống nhất trong API Contract
+      - "8082:8082"
     environment:
-      # Cung cấp biến môi trường cho Node.js
-      - REDIS_URL=redis://redis-driver:6379
+      - REDIS_URL=redis://${REDIS_HOST}:${REDIS_PORT}
     depends_on:
       - redis-driver # Khởi động sau khi redis-driver chạy
 

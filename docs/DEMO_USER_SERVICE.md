@@ -59,7 +59,7 @@ curl http://localhost:8080/actuator/health
         "url": "http://localhost:8088/api/users",
         "body": {
           "mode": "raw",
-          "raw": "{\n    \"email\": \"passenger@uit.edu.vn\",\n    \"password\": \"password123\",\n    \"full_name\": \"Demo Passenger\",\n    \"phone\": \"0123456789\",\n    \"role\": \"PASSENGER\"\n}"
+          "raw": "{\n    \"email\": \"passenger@uit.edu.vn\",\n    \"password\": \"password123\",\n    \"fullName\": \"Demo Passenger\",\n    \"phone\": \"0123456789\",\n    \"role\": \"PASSENGER\"\n}"
         }
       }
     },
@@ -76,7 +76,7 @@ curl http://localhost:8080/actuator/health
         "url": "http://localhost:8088/api/users",
         "body": {
           "mode": "raw",
-          "raw": "{\n    \"email\": \"driver@uit.edu.vn\",\n    \"password\": \"password123\",\n    \"full_name\": \"Demo Driver\",\n    \"phone\": \"0987654321\",\n    \"role\": \"DRIVER\",\n    \"vehicle_info\": {\n        \"plate_number\": \"51G-123.45\",\n        \"model\": \"Toyota Vios\",\n        \"type\": \"4_SEATS\"\n    }\n}"
+          "raw": "{\n    \"email\": \"driver@uit.edu.vn\",\n    \"password\": \"password123\",\n    \"fullName\": \"Demo Driver\",\n    \"phone\": \"0987654321\",\n    \"role\": \"DRIVER\",\n    \"vehicleInfo\": {\n        \"plate_number\": \"51G-123.45\",\n        \"model\": \"Toyota Vios\",\n        \"type\": \"4_SEATS\"\n    }\n}"
         }
       }
     },
@@ -190,7 +190,7 @@ curl -X POST http://localhost:8088/api/users \
   -d '{
     "email": "passenger@uit.edu.vn",
     "password": "password123",
-    "full_name": "Test User",
+    "fullName": "Test User",
     "phone": "0123456789",
     "role": "PASSENGER"
   }'

@@ -33,7 +33,7 @@ public class UserServiceApplicationTests {
         RegisterRequest r = new RegisterRequest();
         r.setEmail("test@example.com");
         r.setPassword("pass1234");
-        r.setFull_name("Nguyen Van Test");
+    r.setFullName("Nguyen Van Test");
         r.setPhone("0909000000");
         r.setRole("PASSENGER");
 
