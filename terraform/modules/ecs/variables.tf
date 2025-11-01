@@ -49,3 +49,15 @@ variable "trip_db_password_secret_arn" {
   description = "Trip DB password secret ARN"
   type        = string
 }
+
+variable "user_db_name" {
+  description = "User DB name"
+  type        = string
+  default     = "uit_user_db"
+}
+
+variable "trip_db_name" {
+  description = "Trip DB name"
+  type        = string
+  default     = "uit_trip_db"
+}

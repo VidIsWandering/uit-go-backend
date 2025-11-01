@@ -121,7 +121,7 @@ resource "aws_ecs_task_definition" "user_service_task" {
       environment = [ # Biến môi trường thường
         { name = "SPRING_DATASOURCE_USERNAME", value = "pgadmin" },
         # Endpoint lấy từ output của RDS instance
-        { name = "SPRING_DATASOURCE_URL", value = "jdbc:postgresql://${var.user_db_endpoint}/${"uit_user_db"}" } 
+        { name = "SPRING_DATASOURCE_URL", value = "jdbc:postgresql://${var.user_db_endpoint}/${var.user_db_name}" } 
       ]
       secrets = [ # Biến môi trường lấy từ Secrets Manager
         { name = "SPRING_DATASOURCE_PASSWORD", valueFrom = var.user_db_password_secret_arn }
@@ -171,10 +171,10 @@ resource "aws_ecs_task_definition" "trip_service_task" {
       portMappings = [ { containerPort = 8081, hostPort = 8081 } ]
       environment = [
         { name = "SPRING_DATASOURCE_USERNAME", value = "pgadmin" },
-        { name = "SPRING_DATASOURCE_URL", value = "jdbc:postgresql://${var.trip_db_endpoint}/${"uit_trip_db"}" },
+        { name = "SPRING_DATASOURCE_URL", value = "jdbc:postgresql://${var.trip_db_endpoint}/${var.trip_db_name}" },
         # URL của các service khác (sẽ dùng Service Discovery hoặc Load Balancer sau)
-        { name = "USER_SERVICE_URL", value = "http://user-service.local:8080" }, # Tạm thời
-        { name = "DRIVER_SERVICE_URL", value = "http://driver-service.local:8082" } # Tạm thời
+        { name = "USER_SERVICE_URL", value = "http://user.uit-go.local:8080" }, # Tạm thời
+        { name = "DRIVER_SERVICE_URL", value = "http://driver.uit-go.local:8082" } # Tạm thời
       ]
       secrets = [
         { name = "SPRING_DATASOURCE_PASSWORD", valueFrom = var.trip_db_password_secret_arn }
@@ -376,8 +376,43 @@ resource "aws_ecs_service" "main" {
     container_port   = each.value.port
   }
 
+  service_registries {
+    # Liên kết ECS Service này với Cloud Map Service Discovery tương ứng
+    registry_arn = aws_service_discovery_service.main[each.key].arn
+  }
+
   # Đảm bảo Service được tạo sau Listener
   depends_on = [aws_lb_listener.http]
+}
+
+# --- Định nghĩa Service Discovery (Cloud Map) ---
+
+resource "aws_service_discovery_private_dns_namespace" "main" {
+  name        = "uit-go.local" # Tên DNS nội bộ
+  description = "Private DNS namespace for UIT-Go microservices"
+  vpc         = var.vpc_id # Gắn vào VPC của chúng ta
+}
+
+resource "aws_service_discovery_service" "main" {
+  for_each = local.services # Dùng lại for_each
+
+  name = each.key # Sẽ tạo service tên "user", "trip", "driver"
+
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.main.id
+
+    dns_records {
+      ttl  = 10
+      type = "A" # Trả về IP (A record)
+    }
+
+    routing_policy = "MULTIVALUE" # Cho phép nhiều Task (IP) cùng đăng ký
+  }
+
+  health_check_custom_config {
+    # ECS Fargate sẽ tự quản lý health check, chúng ta không cần
+    failure_threshold = 1
+  }
 }
 
 # Tạo Listener Rule cho ALB để định tuyến request đến từng Target Group

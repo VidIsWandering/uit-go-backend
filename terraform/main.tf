@@ -43,6 +43,8 @@ module "ecs" {
   db_access_sg_id             = module.database.db_access_sg_id
   user_db_endpoint            = module.database.user_db_endpoint
   trip_db_endpoint            = module.database.trip_db_endpoint
+  user_db_name                = module.database.user_db_name
+  trip_db_name                = module.database.trip_db_name
   redis_endpoint              = module.database.redis_endpoint
   user_db_password_secret_arn = module.database.user_db_password_secret_arn
   trip_db_password_secret_arn = module.database.trip_db_password_secret_arn
