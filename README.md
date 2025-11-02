@@ -46,15 +46,15 @@ _(Xem chi tiết sơ đồ kiến trúc tại: `docs/ARCHITECTURE.md`)_
 
 Các quyết định thiết kế và đánh đổi (trade-offs) quan trọng của dự án được ghi lại tại thư mục `/docs/adr/`. Đây là bằng chứng cho quá trình tư duy thiết kế của nhóm. Vui lòng đọc các file sau:
 
-1.  **[ADR 001: Lựa chọn RESTful API](docs/adr/001-chon-restful-api.md):** Giao tiếp giữa các service.
-2.  **[ADR 002: Lựa chọn Redis Geospatial](docs/adr/002-chon-redis-geospatial.md):** Lưu trữ và truy vấn vị trí.
-3.  **[ADR 003: Lựa chọn Kiến trúc Đa ngôn ngữ](docs/adr/003-chon-kien-truc-da-ngon-ngu.md):** Sử dụng Java và Node.js song song.
-4.  **[ADR 004: Lựa chọn Polling cho Theo dõi Vị trí](docs/adr/004-chon-polling-cho-theo-doi-vi-tri.md):** Giải pháp "real-time" cho Passenger US3.
-5.  **[ADR 005: Lựa chọn Terraform (IaC)](docs/adr/005-chon-terraform-de-quan-ly-ha-tang.md):** Quản lý hạ tầng bằng code .
-6.  **[ADR 006: Sử dụng Secrets Manager cho Mật khẩu RDS](docs/adr/006-su-dung-secrets-manager-cho-mat-khau-rds.md):** Bảo mật mật khẩu CSDL.
-7.  **[ADR 007: Đặt CSDL trong Private Subnets](docs/adr/007-dat-csdl-trong-private-subnets.md):** Tăng cường bảo mật mạng cho CSDL.
-8.  **[ADR 008: Lựa chọn ECS để Triển khai Container](docs/adr/008-chon-ecs-de-trien-khai-container.md):** Chiến lược triển khai lên AWS.
-9.  **[ADR 009: Lựa chọn Fargate Launch Type cho ECS](docs/adr/009-chon-fargate-launch-type-cho-ecs.md):** Sử dụng chế độ serverless cho ECS.
+1.  **[ADR 001: Lựa chọn RESTful API](docs/adr/001-chon-restful-api.md)**
+2.  **[ADR 002: Lựa chọn Redis Geospatial](docs/adr/002-chon-redis-geospatial.md)**
+3.  **[ADR 003: Lựa chọn Kiến trúc Đa ngôn ngữ](docs/adr/003-chon-kien-truc-da-ngon-ngu.md)**
+4.  **[ADR 004: Lựa chọn Polling cho Theo dõi Vị trí](docs/adr/004-chon-polling-cho-theo-doi-vi-tri.md)**
+5.  **[ADR 005: Lựa chọn Terraform (IaC)](docs/adr/005-chon-terraform-de-quan-ly-ha-tang.md)**
+6.  **[ADR 006: Sử dụng Secrets Manager cho Mật khẩu RDS](docs/adr/006-su-dung-secrets-manager-cho-mat-khau-rds.md)**
+7.  **[ADR 007: Đặt CSDL trong Private Subnets](docs/adr/007-dat-csdl-trong-private-subnets.md)**
+8.  **[ADR 008: Lựa chọn ECS để Triển khai Container](docs/adr/008-chon-ecs-de-trien-khai-container.md)**
+9.  **[ADR 009: Lựa chọn Fargate Launch Type cho ECS](docs/adr/009-chon-fargate-launch-type-cho-ecs.md)**
 10. **[ADR 010: Tái cấu trúc (Refactor) Terraform sang Modules](docs/adr/010-refactor-terraform-sang-modules.md)**
 11. **[ADR 011: Lựa chọn AWS Cloud Map (Service Discovery)](docs/adr/011-chon-cloud-map-cho-service-discovery.md)**
 12. **[ADR 012: Lựa chọn AWS ECR (Container Registry)](docs/adr/012-chon-ecr-lam-container-registry.md)**

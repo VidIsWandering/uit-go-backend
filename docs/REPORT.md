@@ -15,15 +15,11 @@ Kiến trúc Giai đoạn 1 được thiết kế để đáp ứng toàn bộ 1
 
 Toàn bộ hạ tầng được định nghĩa bằng Terraform (Infrastructure as Code - IaC) và triển khai trên AWS ECS Fargate, với CSDL (RDS, ElastiCache) nằm trong private subnets để đảm bảo bảo mật.
 
-### Sơ đồ Kiến trúc Triển khai (Giai đoạn 1)
-Sơ đồ dưới đây (vẽ bằng Draw.io) minh họa kiến trúc tổng quan của hệ thống trên AWS, bao gồm luồng traffic từ Internet qua ALB, vào ECS Fargate Tasks (nằm trong private subnets), và cách các service giao tiếp nội bộ (qua AWS Cloud Map) và kết nối đến các CSDL (RDS, ElastiCache).
-
 (Xem chi tiết tại: [ARCHITECTURE.md](ARCHITECTURE.md))
 
 ## 2. Phân tích Module chuyên sâu (Module A)
 Nhóm đã lựa chọn Module A: Thiết kế Kiến trúc cho Scalability & Performance cho Giai đoạn 2.
 
-### Mục tiêu của Module A
 Tập trung vào việc thiết kế và kiểm chứng một kiến trúc có khả năng đạt tới "hyper-scale" (khả năng mở rộng quy mô cực lớn), phù hợp với bản chất của ứng dụng gọi xe, nơi luồng nghiệp vụ tìm kiếm tài xế và cập nhật vị trí đòi hỏi hiệu năng cao và khả năng chịu tải đột biến.
 
 *Kế hoạch thực hiện Giai đoạn 2: (Kế hoạch chi tiết cho Module A được trình bày trong một tài liệu riêng được gửi kèm trong folder nộp báo cáo giai đoạn 1)*
