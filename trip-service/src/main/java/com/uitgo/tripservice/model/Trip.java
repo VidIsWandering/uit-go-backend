@@ -51,9 +51,27 @@ public class Trip {
     @Column(name = "price")
     private Double price;
 
+    @Column(name = "rating")
+    private Integer rating;
+
+    @Column(name = "comment")
+    private String comment;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private OffsetDateTime createdAt;
+
+    @Column(name = "accepted_at")
+    private OffsetDateTime acceptedAt;
+
+    @Column(name = "started_at")
+    private OffsetDateTime startedAt;
+
+    @Column(name = "completed_at")
+    private OffsetDateTime completedAt;
+
+    @Column(name = "cancelled_at")
+    private OffsetDateTime cancelledAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
@@ -92,7 +110,25 @@ public class Trip {
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }
 
+    public Integer getRating() { return rating; }
+    public void setRating(Integer rating) { this.rating = rating; }
+
+    public String getComment() { return comment; }
+    public void setComment(String comment) { this.comment = comment; }
+
     public OffsetDateTime getCreatedAt() { return createdAt; }
+    public OffsetDateTime getAcceptedAt() { return acceptedAt; }
+    public void setAcceptedAt(OffsetDateTime acceptedAt) { this.acceptedAt = acceptedAt; }
+
+    public OffsetDateTime getStartedAt() { return startedAt; }
+    public void setStartedAt(OffsetDateTime startedAt) { this.startedAt = startedAt; }
+
+    public OffsetDateTime getCompletedAt() { return completedAt; }
+    public void setCompletedAt(OffsetDateTime completedAt) { this.completedAt = completedAt; }
+
+    public OffsetDateTime getCancelledAt() { return cancelledAt; }
+    public void setCancelledAt(OffsetDateTime cancelledAt) { this.cancelledAt = cancelledAt; }
+
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
 
     @PrePersist
