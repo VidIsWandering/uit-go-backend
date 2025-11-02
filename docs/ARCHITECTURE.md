@@ -58,5 +58,69 @@ graph TD
         
         US -- "JDBC" --> DB_US_Local
         TS -- "JDBC" --> DB_TS_Local
-        DS -- "ioredis" --> DB_DS_Local
-    end
+                DS -- "ioredis" --> DB_DS_Local
+        end
+```
+
+### 4.1. API Gateway (Local)
+
+Để hợp nhất các endpoint và áp dụng xác thực tập trung khi phát triển local, kiến trúc bổ sung một lớp Gateway dùng NGINX:
+
+- Container: `gateway/nginx` (port host: `8088`)
+- Public routes (không yêu cầu JWT):
+    - `POST /api/users` (đăng ký)
+    - `POST /api/sessions` (đăng nhập, trả về `access_token`)
+    - `POST /api/trips/estimate` (ước tính chi phí quãng đường)
+- Protected routes (yêu cầu JWT ở header `Authorization: Bearer ...`):
+    - `GET|POST /api/trips/**`
+    - `GET /api/users/me`
+    - `GET /api/drivers/**`
+- Cơ chế xác thực: NGINX dùng `auth_request` gọi nội bộ đến `auth-service` (`GET /validate`) để xác minh JWT; nếu hợp lệ thì mới forward request đến service đích.
+
+Lưu ý: `auth-service` chỉ phục vụ validate token (stateless) và dùng chung `JWT_SECRET` với các service tạo token.
+
+### 4.2. Monitoring & Observability (Local)
+
+Hệ thống local đã tích hợp sẵn quan trắc (observability) để theo dõi sức khỏe và hiệu năng:
+
+- Prometheus (port `9090`): thu thập metrics từ Spring Boot qua endpoint `/actuator/prometheus` của `user-service` và `trip-service`.
+- Grafana (port host `3001`): đã auto-provisioned sẵn datasource tới Prometheus và dashboard tổng quan "UIT-Go Services Overview" (HTTP traffic, p95 latency, JVM heap, error rate, DB pool, threads).
+- Health endpoints: `/actuator/health` đã mở công khai để health-check; metrics endpoint `/actuator/prometheus` được whitelist để Prometheus có thể scrape.
+
+Sơ đồ tối giản cho observability local (ý niệm):
+
+```mermaid
+graph LR
+    Prometheus((Prometheus :9090)) -->|scrape| US[UserService /actuator/prometheus]
+    Prometheus -->|scrape| TS[TripService /actuator/prometheus]
+    Grafana[Grafana :3001] --> Prometheus
+```
+
+### 4.3. Tổng hợp cổng dịch vụ (Local)
+
+- Gateway (NGINX): http://localhost:8088
+- Prometheus: http://localhost:9090
+- Grafana: http://localhost:3001 (mặc định `admin`/`admin`)
+
+---
+
+## 5. Ánh xạ khi triển khai Cloud/Kubernetes (Định hướng)
+
+Khi đưa lên môi trường cloud/production, các thành phần local được ánh xạ như sau:
+
+- API Gateway:
+    - AWS ECS/Fargate: sử dụng **Application Load Balancer (ALB)** thay thế nginx container (routing theo path, health check, SSL termination).
+    - Kubernetes (EKS): sử dụng **Ingress Controller** (Nginx/ALB Ingress Controller) thay thế nginx container.
+- Monitoring:
+    - AWS Managed: **Amazon Managed Prometheus (AMP)** và **Amazon Managed Grafana (AMG)**, hoặc **CloudWatch** cho metrics/logs cơ bản.
+    - Kubernetes (EKS): cài đặt qua Helm chart `kube-prometheus-stack` (Prometheus + Grafana + Alertmanager).
+- Secrets:
+    - Sử dụng **AWS Secrets Manager** (đã mô tả trong ADR-006) thay `.env` cục bộ.
+
+Tài liệu tham khảo quyết định kiến trúc:
+
+- ADR-005: Chọn Terraform để quản lý hạ tầng
+- ADR-006: Sử dụng Secrets Manager cho mật khẩu RDS
+- ADR-007: Đặt CSDL trong private subnets
+- ADR-008: Chọn ECS để triển khai container
+- ADR-009: Chọn Fargate launch type cho ECS

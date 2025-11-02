@@ -21,7 +21,7 @@ public class SecurityConfig {
             .csrf().disable()
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeRequests(auth -> auth
-                .antMatchers("/users", "/sessions", "/actuator/health").permitAll()
+                .antMatchers("/users", "/sessions", "/actuator/health", "/actuator/prometheus").permitAll()
                 .anyRequest().authenticated()
             );
 

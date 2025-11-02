@@ -1,13 +1,37 @@
 global:
   scrape_interval: 15s
+  evaluation_interval: 15s
 
 scrape_configs:
+  # Java services with Spring Boot Actuator metrics
   - job_name: "user-service"
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ["host.docker.internal:8080"]
+      - targets: ["user-service:8080"]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: "user-service"
 
-  - job_name: "nginx"
-    metrics_path: "/metrics"
+  - job_name: "trip-service"
+    metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ["host.docker.internal:8088"]
+      - targets: ["trip-service:8081"]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: "trip-service"
+
+  # Node.js service (if prometheus metrics are exposed)
+  # Uncomment when driver-service has prometheus endpoint
+  # - job_name: "driver-service"
+  #   metrics_path: "/metrics"
+  #   static_configs:
+  #     - targets: ["driver-service:8082"]
+
+  # Nginx gateway (requires nginx-prometheus-exporter)
+  # Uncomment when nginx exporter is added
+  # - job_name: "nginx"
+  #   metrics_path: "/metrics"
+  #   static_configs:
+  #     - targets: ["nginx-exporter:9113"]

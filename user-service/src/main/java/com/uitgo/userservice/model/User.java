@@ -13,6 +13,8 @@ import javax.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -52,15 +54,24 @@ public class User {
     public void setEmail(String email) { this.email = email; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+    
+    @JsonProperty("fullName")
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
+    
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+    
+    @JsonProperty("vehicleInfo")
     public String getVehicleInfo() { return vehicleInfo; }
     public void setVehicleInfo(String vehicleInfo) { this.vehicleInfo = vehicleInfo; }
+    
+    @JsonProperty("createdAt")
     public OffsetDateTime getCreatedAt() { return createdAt; }
+    
+    @JsonProperty("updatedAt")
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
 
     @PrePersist
