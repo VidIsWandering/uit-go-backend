@@ -83,7 +83,10 @@ cp .env.example .env
 ```
 
 Điền các giá trị cần thiết vào file .env:
+
+
 Database
+
 POSTGRES_USER_USER=uit_go_user
 POSTGRES_USER_PASSWORD=your_password
 POSTGRES_USER_DB=uit_go_user_db
@@ -92,10 +95,14 @@ POSTGRES_TRIP_USER=uit_go_trip
 POSTGRES_TRIP_PASSWORD=your_password
 POSTGRES_TRIP_DB=uit_go_trip_db
 
+
 JWT
+
 JWT_SECRET=your_jwt_secret
 
+
 Ports (optional)
+
 USER_SERVICE_PORT=8080
 TRIP_SERVICE_PORT=8081
 DRIVER_SERVICE_PORT=8082
