@@ -2,7 +2,7 @@
 
 UIT-Go là một ứng dụng đặt xe được xây dựng với kiến trúc microservices. Repository này chứa phần backend của ứng dụng.
 
-## Cấu trúc Project
+Cấu trúc Project
 
 ```
 uit-go-backend/
@@ -15,7 +15,7 @@ uit-go-backend/
 └── docs/            # Documentation
 ```
 
-## Yêu cầu System
+Yêu cầu System
 
 - Docker và Docker Compose
 - Java 21 (cho user-service và trip-service)
@@ -55,6 +55,9 @@ Các quyết định thiết kế và đánh đổi (trade-offs) quan trọng c�
 7.  **[ADR 007: Đặt CSDL trong Private Subnets](docs/adr/007-dat-csdl-trong-private-subnets.md):** Tăng cường bảo mật mạng cho CSDL.
 8.  **[ADR 008: Lựa chọn ECS để Triển khai Container](docs/adr/008-chon-ecs-de-trien-khai-container.md):** Chiến lược triển khai lên AWS.
 9.  **[ADR 009: Lựa chọn Fargate Launch Type cho ECS](docs/adr/009-chon-fargate-launch-type-cho-ecs.md):** Sử dụng chế độ serverless cho ECS.
+10. **[ADR 010: Tái cấu trúc (Refactor) Terraform sang Modules](docs/adr/010-refactor-terraform-sang-modules.md)**
+11. **[ADR 011: Lựa chọn AWS Cloud Map (Service Discovery)](docs/adr/011-chon-cloud-map-cho-service-discovery.md)**
+12. **[ADR 012: Lựa chọn AWS ECR (Container Registry)](docs/adr/012-chon-ecr-lam-container-registry.md)**
 
 ## 3. Hợp đồng API (API Contracts) 📜
 
