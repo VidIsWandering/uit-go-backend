@@ -40,7 +40,7 @@ Hệ thống bao gồm 3 microservices cơ bản, mỗi service có CSDL riêng 
   - **Trách nhiệm:** Quản lý trạng thái **(Online/Offline)** và vị trí của tài xế theo thời gian thực. Cung cấp API để tìm kiếm các tài xế phù hợp ở gần.
   - **CSDL:** Redis (AWS ElastiCache) với Geospatial.
 
-_(Xem chi tiết sơ đồ kiến trúc tại: [](docs/ARCHITECTURE.md))_
+_(Xem chi tiết sơ đồ kiến trúc tại: [Kiến trúc chi tiết](docs/ARCHITECTURE.md))_
 
 ## 2. Quyết định Kiến trúc (ADRs) 🧭
 
