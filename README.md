@@ -68,58 +68,22 @@ Toàn bộ API (request/response) của 3 services, bao gồm đủ 10 User Stor
 
 ## 4. Hướng dẫn Chạy Local (Docker Compose) 🐳
 
-Để chạy toàn bộ hệ thống trên máy của bạn cho mục đích phát triển và kiểm thử.
-
-**Yêu cầu:**
-
-- Đã cài đặt **Docker** và **Docker Compose** (v2).
-
-### Bước 1: Chuẩn bị file Môi trường (.env)
-
-File `.env` chứa mật khẩu CSDL giả lập cho môi trường local.
-
-1.  Copy file `.env.example` thành một file mới tên là `.env`:
-    ```bash
-    cp .env.example .env
-    ```
-2.  Mở file `.env` và điền các mật khẩu **local** của bạn vào trường `<your_secret_password>`.
-
-### Bước 2: Khởi chạy hệ thống
-
-Mở terminal ở thư mục gốc của dự án và chạy lệnh sau (sử dụng cú pháp Docker Compose v2):
-
-```bash
-docker compose up --build
-```
-
-Docker Compose sẽ:
-
-1.  Khởi chạy 3 CSDL (2 Postgres, 1 Redis) dưới dạng container.
-2.  Build 3 service (2 Java, 1 Node.js) từ `Dockerfile` tương ứng.
-3.  Khởi chạy 3 service và kết nối chúng với các CSDL local.
-
-### Bước 3: Kiểm tra Local
-
-Sau khi lệnh chạy xong, bạn có thể kiểm tra bằng Postman hoặc trình duyệt:
-
-- `http://localhost:8080` (UserService)
-- `http://localhost:8081` (TripService)
-- `http://localhost:8082` (DriverService)
-
----
-
-## Cài đặt & Chạy
-
-### 1. Clone repository
+### Bước 1: Clone repository
 ```bash
 git clone https://github.com/VidIsWandering/uit-go-backend.git
 cd uit-go-backend
 ```
 
-### 2. Setup Environment Variables
-Tạo file `.env` trong thư mục gốc:
-```env
-# Database
+### Bước 2: Chuẩn bị file môi trường (.env)
+File .env lưu cấu hình cơ sở dữ liệu và biến môi trường local.
+
+Tạo file .env:
+```bash
+cp .env.example .env
+```
+
+Điền các giá trị cần thiết vào file .env:
+Database
 POSTGRES_USER_USER=uit_go_user
 POSTGRES_USER_PASSWORD=your_password
 POSTGRES_USER_DB=uit_go_user_db
@@ -128,123 +92,78 @@ POSTGRES_TRIP_USER=uit_go_trip
 POSTGRES_TRIP_PASSWORD=your_password
 POSTGRES_TRIP_DB=uit_go_trip_db
 
-# JWT
+JWT
 JWT_SECRET=your_jwt_secret
 
-# Ports (optional)
+Ports (optional)
 USER_SERVICE_PORT=8080
 TRIP_SERVICE_PORT=8081
 DRIVER_SERVICE_PORT=8082
-```
 
-### 3. Chạy toàn bộ services với Docker Compose
+### Bước 3: Khởi chạy hệ thống bằng Docker Compose
+Tại thư mục gốc, chạy lệnh:
 ```bash
 docker compose up --build
 ```
 
-### 4. Chạy từng service riêng lẻ
+Docker Compose sẽ:
 
-#### User Service (Java)
+Khởi chạy 3 cơ sở dữ liệu (2 PostgreSQL, 1 Redis).
+
+Build và khởi động 3 service (2 Java, 1 Node.js).
+
+Tự động kết nối các service qua internal network.
+
+Bạn sẽ thấy logs xuất ra từ từng container khi khởi động thành công.
+
+### Bước 4: Kiểm tra dịch vụ
+Khi khởi động xong, bạn có thể truy cập:
+
+http://localhost:8080 → UserService
+
+http://localhost:8081 → TripService
+
+http://localhost:8082 → DriverService
+
+Kiểm tra health:
+
+```bash
+curl http://localhost:8080/actuator/health
+curl http://localhost:8081/actuator/health
+```
+
+### Bước 5: Chạy thủ công từng service (tuỳ chọn)
+Nếu muốn debug hoặc phát triển riêng lẻ từng service:
+User Service (Java)
 ```bash
 cd user-service
 ./mvnw spring-boot:run
+Trip Service (Java)
 ```
-
-#### Driver Service (Node.js)
+```bash
+cd trip-service
+./mvnw spring-boot:run
+Driver Service (Node.js)
+```
 ```bash
 cd driver-service
 npm install
 npm run dev
 ```
 
-#### Trip Service (Java)
+### Bước 6: Monitoring Local
+Prometheus: http://localhost:9090
+
+Grafana: http://localhost:3000 (mặc định admin/admin)
+
+Kiểm tra health status nhanh:
+
 ```bash
-cd trip-service
-./mvnw spring-boot:run
-```
-
-## Testing
-
-### 1. Unit Tests
-```bash
-# User Service
-cd user-service
-./mvnw test
-
-# Driver Service
-cd driver-service
-npm test
-```
-
-### 2. Integration Tests (với TestContainers)
-```bash
-cd user-service
-./mvnw failsafe:integration-test
-```
-
-### 3. API Testing
-
-#### Register User
-```bash
-curl -X POST http://localhost:8088/api/users \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@uit.edu.vn",
-    "password": "password123",
-    "fullName": "Test User",
-    "phone": "0123456789",
-    "role": "PASSENGER"
-  }'
-```
-
-#### Login
-```bash
-curl -X POST http://localhost:8088/api/sessions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@uit.edu.vn",
-    "password": "password123"
-  }'
-```
-
-#### Get Profile (với JWT token)
-```bash
-curl http://localhost:8088/api/users/me \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
-```
-
-## Monitoring
-
-### 1. Access Points
-- Grafana: http://localhost:3000 (admin/admin)
-- Prometheus: http://localhost:9090
-
-### 2. Health Checks
-```bash
-# User Service
+Copy code
 curl http://localhost:8080/actuator/health
-
-# Trip Service
 curl http://localhost:8081/actuator/health
 ```
 
-## Documentation
-- API Contracts: [docs/API_CONTRACTS.md](docs/API_CONTRACTS.md)
-- Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- Monitoring: [monitoring/README.md](monitoring/README.md)
-
-## Contributing
-1. Fork repository
-2. Tạo feature branch
-3. Commit changes
-4. Push to branch
-5. Create Pull Request
-
-## Security Notes
-- Đổi tất cả default passwords trong production
-- Không commit các secrets vào repository
-- Sử dụng HTTPS trong production
-- Review security guidelines trong [docs/SECURITY.md](docs/SECURITY.md)
 ## 5. Hướng dẫn Chạy Hạ tầng (IaC - Terraform) 🏗️
 
 Phần này hướng dẫn cách tạo hạ tầng **thực tế** (VPC, RDS, ElastiCache, ECS Cluster...) trên AWS bằng Terraform.
