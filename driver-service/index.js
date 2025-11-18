@@ -3,7 +3,7 @@ const express = require('express');
 
 // --- Khởi tạo ---
 const app = express();
-const port = 8082;
+const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8082;
 app.use(express.json()); // Middleware để đọc JSON body
 
 // --- Import Routes ---
@@ -18,6 +18,11 @@ app.get('/', (req, res) => {
   res.status(200).json({ 
     message: 'Hello from Driver Service (Node.js)!'
   });
+});
+
+// Health endpoint chuẩn để orchestrators/checks sử dụng
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
 });
 
 // --- Khởi chạy Server ---
