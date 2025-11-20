@@ -8,6 +8,11 @@ output "trip_db_endpoint" {
   value = module.database.trip_db_endpoint
 }
 
+output "trip_db_replica_endpoint" {
+  description = "Endpoint for Trip DB read replica (use for read-only queries)"
+  value       = module.database.trip_db_replica_endpoint
+}
+
 output "user_db_password_secret_arn" {
   value = module.database.user_db_password_secret_arn
 }
