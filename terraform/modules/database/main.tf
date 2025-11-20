@@ -313,6 +313,10 @@ resource "aws_elasticache_cluster" "redis_cluster" {
   security_group_ids = [aws_security_group.redis_sg.id]                     # Sử dụng SG riêng cho Redis
   port               = 6379                                                 # Port mặc định của Redis
 
+  # --- Backup Configuration ---
+  snapshot_retention_limit = 5             # Giữ 5 ngày backups (prevent data loss)
+  snapshot_window          = "03:00-05:00" # Backup từ 3-5 AM UTC (10-12 PM Vietnam time)
+
   tags = {
     Name = "uit-go-redis-cluster"
   }
