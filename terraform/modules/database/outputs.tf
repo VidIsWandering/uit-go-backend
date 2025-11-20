@@ -10,6 +10,12 @@ output "trip_db_endpoint" {
   value       = aws_db_instance.trip_db.address
 }
 
+# Output địa chỉ endpoint của Trip DB Read Replica
+output "trip_db_replica_endpoint" {
+  description = "Endpoint for the Trip DB read replica (for read-only queries)"
+  value       = aws_db_instance.trip_db_replica.address
+}
+
 output "user_db_name" {
   value = aws_db_instance.user_db.db_name
 }

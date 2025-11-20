@@ -263,6 +263,31 @@ resource "aws_db_instance" "trip_db" {
   }
 }
 
+# --- RDS Read Replica for Trip DB ---
+# Read replica để phân tải read queries (trip history, analytics)
+
+resource "aws_db_instance" "trip_db_replica" {
+  identifier          = "uit-go-trip-db-replica"
+  replicate_source_db = aws_db_instance.trip_db.identifier
+
+  # Same instance class as primary (có thể nhỏ hơn nếu cần)
+  instance_class = "db.t3.micro"
+
+  # MUST be in different AZ for high availability
+  availability_zone = "ap-southeast-1b" # Khác với primary (assumed ap-southeast-1a)
+
+  # Inherit settings from primary
+  publicly_accessible = false
+  skip_final_snapshot = true
+
+  # Apply same security group (cho phép truy cập từ trip-service)
+  vpc_security_group_ids = [aws_security_group.trip_db_sg.id]
+
+  tags = {
+    Name = "uit-go-trip-db-replica"
+  }
+}
+
 # --- Định nghĩa Subnet Group và Cluster cho ElastiCache (Redis) ---
 
 # Tạo một Subnet Group cho ElastiCache, sử dụng 2 private subnets
