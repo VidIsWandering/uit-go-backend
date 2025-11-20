@@ -24,3 +24,8 @@ output "region" {
   description = "AWS region"
   value       = data.aws_region.current.name
 }
+
+output "alb_sg_id" {
+  description = "Security Group ID for Application Load Balancer"
+  value       = aws_security_group.alb_sg.id
+}

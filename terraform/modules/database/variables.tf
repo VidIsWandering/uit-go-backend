@@ -14,3 +14,8 @@ variable "private_subnet_ids" {
   description = "List of IDs for private subnets"
   type        = list(string)
 }
+
+variable "alb_sg_id" {
+  description = "Security group ID of the ALB (for service ingress rules)"
+  type        = string
+}

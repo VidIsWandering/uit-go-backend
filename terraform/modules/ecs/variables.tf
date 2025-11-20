@@ -5,6 +5,11 @@ variable "region" {
   type        = string
 }
 
+variable "alb_sg_id" {
+  description = "Security Group ID for Application Load Balancer (from network module)"
+  type        = string
+}
+
 variable "vpc_id" {
   description = "The ID of the main VPC"
   type        = string
@@ -20,8 +25,19 @@ variable "private_subnet_ids" {
   type        = list(string)
 }
 
-variable "db_access_sg_id" {
-  description = "Security Group ID for DB access (used by ECS Tasks)"
+# Security group IDs from database module (segregated)
+variable "user_service_sg_id" {
+  description = "Security Group ID for user-service ECS tasks"
+  type        = string
+}
+
+variable "trip_service_sg_id" {
+  description = "Security Group ID for trip-service ECS tasks"
+  type        = string
+}
+
+variable "driver_service_sg_id" {
+  description = "Security Group ID for driver-service ECS tasks"
   type        = string
 }
 

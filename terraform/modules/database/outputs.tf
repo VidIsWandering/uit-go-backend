@@ -37,7 +37,33 @@ output "redis_endpoint" {
   value = aws_elasticache_cluster.redis_cluster.cache_nodes[0].address
 }
 
-# Output ID của security group db_access
-output "db_access_sg_id" {
-  value = aws_security_group.db_access.id 
+# Output Security Group IDs (segregated)
+output "user_service_sg_id" {
+  description = "Security group ID for user-service ECS tasks"
+  value       = aws_security_group.user_service_sg.id
+}
+
+output "trip_service_sg_id" {
+  description = "Security group ID for trip-service ECS tasks"
+  value       = aws_security_group.trip_service_sg.id
+}
+
+output "driver_service_sg_id" {
+  description = "Security group ID for driver-service ECS tasks"
+  value       = aws_security_group.driver_service_sg.id
+}
+
+output "user_db_sg_id" {
+  description = "Security group ID for user database"
+  value       = aws_security_group.user_db_sg.id
+}
+
+output "trip_db_sg_id" {
+  description = "Security group ID for trip database"
+  value       = aws_security_group.trip_db_sg.id
+}
+
+output "redis_sg_id" {
+  description = "Security group ID for Redis cluster"
+  value       = aws_security_group.redis_sg.id
 }

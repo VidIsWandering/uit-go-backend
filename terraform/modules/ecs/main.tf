@@ -37,7 +37,7 @@ resource "aws_iam_role" "ecs_task_execution_role" {
 
 # Đính kèm chính sách quản lý của AWS cho Task Execution Role
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
-  role       = aws_iam_role.ecs_task_execution_role.name
+  role = aws_iam_role.ecs_task_execution_role.name
   # Chính sách này cung cấp quyền kéo ECR image, ghi CloudWatch logs,...
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
@@ -104,7 +104,7 @@ resource "aws_ecs_task_definition" "user_service_task" {
   memory                   = "512"          # 512 MB RAM (chọn giá trị nhỏ cho Free Tier/test)
 
   execution_role_arn = aws_iam_role.ecs_task_execution_role.arn # Vai trò để ECS Agent chạy
-  task_role_arn      = aws_iam_role.ecs_task_role.arn      # Vai trò cho code bên trong container (để đọc Secret)
+  task_role_arn      = aws_iam_role.ecs_task_role.arn           # Vai trò cho code bên trong container (để đọc Secret)
 
   # Định nghĩa Container
   container_definitions = jsonencode([
@@ -121,18 +121,18 @@ resource "aws_ecs_task_definition" "user_service_task" {
       environment = [ # Biến môi trường thường
         { name = "SPRING_DATASOURCE_USERNAME", value = "pgadmin" },
         # Endpoint lấy từ output của RDS instance
-        { name = "SPRING_DATASOURCE_URL", value = "jdbc:postgresql://${var.user_db_endpoint}/${var.user_db_name}" } 
+        { name = "SPRING_DATASOURCE_URL", value = "jdbc:postgresql://${var.user_db_endpoint}/${var.user_db_name}" }
       ]
       secrets = [ # Biến môi trường lấy từ Secrets Manager
         { name = "SPRING_DATASOURCE_PASSWORD", valueFrom = var.user_db_password_secret_arn }
       ]
       logConfiguration = { # Cấu hình gửi log đến CloudWatch
-         logDriver = "awslogs"
-         options = {
-           "awslogs-group" = "/ecs/user-service", # Tên Log Group
-           "awslogs-region" = var.region,
-           "awslogs-stream-prefix" = "ecs"
-         }
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = "/ecs/user-service", # Tên Log Group
+          "awslogs-region"        = var.region,
+          "awslogs-stream-prefix" = "ecs"
+        }
       }
     }
   ])
@@ -165,27 +165,27 @@ resource "aws_ecs_task_definition" "trip_service_task" {
 
   container_definitions = jsonencode([
     {
-      name      = "trip-service"
-      image     = "nginx:latest" # <-- IMAGE PLACEHOLDER
-      essential = true
-      portMappings = [ { containerPort = 8081, hostPort = 8081 } ]
+      name         = "trip-service"
+      image        = "nginx:latest" # <-- IMAGE PLACEHOLDER
+      essential    = true
+      portMappings = [{ containerPort = 8081, hostPort = 8081 }]
       environment = [
         { name = "SPRING_DATASOURCE_USERNAME", value = "pgadmin" },
         { name = "SPRING_DATASOURCE_URL", value = "jdbc:postgresql://${var.trip_db_endpoint}/${var.trip_db_name}" },
         # URL của các service khác (sẽ dùng Service Discovery hoặc Load Balancer sau)
-        { name = "USER_SERVICE_URL", value = "http://user.uit-go.local:8080" }, # Tạm thời
+        { name = "USER_SERVICE_URL", value = "http://user.uit-go.local:8080" },    # Tạm thời
         { name = "DRIVER_SERVICE_URL", value = "http://driver.uit-go.local:8082" } # Tạm thời
       ]
       secrets = [
         { name = "SPRING_DATASOURCE_PASSWORD", valueFrom = var.trip_db_password_secret_arn }
       ]
       logConfiguration = {
-         logDriver = "awslogs"
-         options = {
-           "awslogs-group" = "/ecs/trip-service",
-           "awslogs-region" = var.region,
-           "awslogs-stream-prefix" = "ecs"
-         }
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = "/ecs/trip-service",
+          "awslogs-region"        = var.region,
+          "awslogs-stream-prefix" = "ecs"
+        }
       }
     }
   ])
@@ -215,22 +215,22 @@ resource "aws_ecs_task_definition" "driver_service_task" {
 
   container_definitions = jsonencode([
     {
-      name      = "driver-service"
-      image     = "nginx:latest" # <-- IMAGE PLACEHOLDER
-      essential = true
-      portMappings = [ { containerPort = 8082, hostPort = 8082 } ]
+      name         = "driver-service"
+      image        = "nginx:latest" # <-- IMAGE PLACEHOLDER
+      essential    = true
+      portMappings = [{ containerPort = 8082, hostPort = 8082 }]
       environment = [
         # Endpoint lấy từ output của ElastiCache cluster
         { name = "REDIS_URL", value = "redis://${var.redis_endpoint}:${"6379"}" }
       ]
       # secrets = [] # Tạm thời chưa cần secret
       logConfiguration = {
-         logDriver = "awslogs"
-         options = {
-           "awslogs-group" = "/ecs/driver-service",
-           "awslogs-region" = var.region,
-           "awslogs-stream-prefix" = "ecs"
-         }
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = "/ecs/driver-service",
+          "awslogs-region"        = var.region,
+          "awslogs-stream-prefix" = "ecs"
+        }
       }
     }
   ])
@@ -248,39 +248,14 @@ resource "aws_cloudwatch_log_group" "driver_service_lg" {
 
 # --- Định nghĩa Application Load Balancer (ALB) ---
 
-# Tạo Security Group cho ALB: Cho phép traffic HTTP (port 80) từ Internet
-resource "aws_security_group" "alb_sg" {
-  name        = "uit-go-alb-sg"
-  description = "Allow HTTP inbound traffic"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Cho phép từ mọi nơi
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "uit-go-alb-sg"
-  }
-}
-
 # Tạo Application Load Balancer
 resource "aws_lb" "main" {
   name               = "uit-go-alb"
   internal           = false # ALB này hướng ra Internet
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb_sg.id]
+  security_groups    = [var.alb_sg_id] # Sử dụng SG từ network module
   # Đặt ALB vào các public subnets để có thể truy cập từ Internet
-  subnets            = var.public_subnet_ids 
+  subnets = var.public_subnet_ids
 
   enable_deletion_protection = false # Tắt bảo vệ xóa (cho đồ án)
 
@@ -315,16 +290,19 @@ locals {
       port            = 8080
       task_definition = aws_ecs_task_definition.user_service_task.arn
       path_pattern    = "/users*" # Các request đến /users... sẽ vào service này
+      security_group  = var.user_service_sg_id
     },
     trip = {
       port            = 8081
       task_definition = aws_ecs_task_definition.trip_service_task.arn
       path_pattern    = "/trips*" # Các request đến /trips... sẽ vào service này
+      security_group  = var.trip_service_sg_id
     },
     driver = {
       port            = 8082
       task_definition = aws_ecs_task_definition.driver_service_task.arn
       path_pattern    = "/drivers*" # Các request đến /drivers... sẽ vào service này
+      security_group  = var.driver_service_sg_id
     }
   }
 }
@@ -365,9 +343,9 @@ resource "aws_ecs_service" "main" {
 
   network_configuration {
     # Đặt container vào private subnets
-    subnets         = var.private_subnet_ids 
-    security_groups = [var.db_access_sg_id] # Tạm dùng SG của DB (cho phép ra ngoài gọi API khác)
-    assign_public_ip = false # Không cần IP public cho container Fargate
+    subnets          = var.private_subnet_ids
+    security_groups  = [each.value.security_group] # Sử dụng SG riêng cho từng service
+    assign_public_ip = false                       # Không cần IP public cho container Fargate
   }
 
   load_balancer {

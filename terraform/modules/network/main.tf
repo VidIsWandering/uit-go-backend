@@ -66,3 +66,30 @@ resource "aws_subnet" "private_b" {
     Name = "uit-go-private-b"
   }
 }
+
+# --- Security Group cho Application Load Balancer ---
+# (Moved from ECS module to resolve circular dependency)
+
+resource "aws_security_group" "alb_sg" {
+  name        = "uit-go-alb-sg"
+  description = "Allow HTTP inbound traffic to ALB"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Cho phép từ mọi nơi trên Internet
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "uit-go-alb-sg"
+  }
+}
