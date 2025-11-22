@@ -44,20 +44,35 @@ _(Xem chi tiết sơ đồ kiến trúc tại: [Kiến trúc chi tiết](docs/AR
 
 ## 2. Quyết định Kiến trúc (ADRs) 🧭
 
-Các quyết định thiết kế và đánh đổi (trade-offs) quan trọng của dự án được ghi lại tại thư mục `/docs/adr/`. Đây là bằng chứng cho quá trình tư duy thiết kế của nhóm. Vui lòng đọc các file sau:
+Các quyết định thiết kế và đánh đổi (trade-offs) quan trọng của dự án được ghi lại tại thư mục `/docs/adr/`. Đây là bằng chứng cho quá trình tư duy thiết kế của nhóm.
 
-1.  **[ADR 001: Lựa chọn RESTful API](docs/adr/001-chon-restful-api.md)**
-2.  **[ADR 002: Lựa chọn Redis Geospatial](docs/adr/002-chon-redis-geospatial.md)**
-3.  **[ADR 003: Lựa chọn Kiến trúc Đa ngôn ngữ](docs/adr/003-chon-kien-truc-da-ngon-ngu.md)**
-4.  **[ADR 004: Lựa chọn Polling cho Theo dõi Vị trí](docs/adr/004-chon-polling-cho-theo-doi-vi-tri.md)**
-5.  **[ADR 005: Lựa chọn Terraform (IaC)](docs/adr/005-chon-terraform-de-quan-ly-ha-tang.md)**
-6.  **[ADR 006: Sử dụng Secrets Manager cho Mật khẩu RDS](docs/adr/006-su-dung-secrets-manager-cho-mat-khau-rds.md)**
-7.  **[ADR 007: Đặt CSDL trong Private Subnets](docs/adr/007-dat-csdl-trong-private-subnets.md)**
-8.  **[ADR 008: Lựa chọn ECS để Triển khai Container](docs/adr/008-chon-ecs-de-trien-khai-container.md)**
-9.  **[ADR 009: Lựa chọn Fargate Launch Type cho ECS](docs/adr/009-chon-fargate-launch-type-cho-ecs.md)**
-10. **[ADR 010: Tái cấu trúc (Refactor) Terraform sang Modules](docs/adr/010-refactor-terraform-sang-modules.md)**
-11. **[ADR 011: Lựa chọn AWS Cloud Map (Service Discovery)](docs/adr/011-chon-cloud-map-cho-service-discovery.md)**
-12. **[ADR 012: Lựa chọn AWS ECR (Container Registry)](docs/adr/012-chon-ecr-lam-container-registry.md)**
+### Phase 1: Basic Architecture (ADRs 001-012)
+
+**Location**: `docs/adr/00x-basic/`
+
+1.  **[ADR 001: Lựa chọn RESTful API](docs/adr/00x-basic/001-chon-restful-api.md)**
+2.  **[ADR 002: Lựa chọn Redis Geospatial](docs/adr/00x-basic/002-chon-redis-geospatial.md)**
+3.  **[ADR 003: Lựa chọn Kiến trúc Đa ngôn ngữ](docs/adr/00x-basic/003-chon-kien-truc-da-ngon-ngu.md)**
+4.  **[ADR 004: Lựa chọn Polling cho Theo dõi Vị trí](docs/adr/00x-basic/004-chon-polling-cho-theo-doi-vi-tri.md)**
+5.  **[ADR 005: Lựa chọn Terraform (IaC)](docs/adr/00x-basic/005-chon-terraform-de-quan-ly-ha-tang.md)**
+6.  **[ADR 006: Sử dụng Secrets Manager cho Mật khẩu RDS](docs/adr/00x-basic/006-su-dung-secrets-manager-cho-mat-khau-rds.md)**
+7.  **[ADR 007: Đặt CSDL trong Private Subnets](docs/adr/00x-basic/007-dat-csdl-trong-private-subnets.md)**
+8.  **[ADR 008: Lựa chọn ECS để Triển khai Container](docs/adr/00x-basic/008-chon-ecs-de-trien-khai-container.md)**
+9.  **[ADR 009: Lựa chọn Fargate Launch Type cho ECS](docs/adr/00x-basic/009-chon-fargate-launch-type-cho-ecs.md)**
+10. **[ADR 010: Tái cấu trúc (Refactor) Terraform sang Modules](docs/adr/00x-basic/010-refactor-terraform-sang-modules.md)**
+11. **[ADR 011: Lựa chọn AWS Cloud Map (Service Discovery)](docs/adr/00x-basic/011-chon-cloud-map-cho-service-discovery.md)**
+12. **[ADR 012: Lựa chọn AWS ECR (Container Registry)](docs/adr/00x-basic/012-chon-ecr-lam-container-registry.md)**
+
+### Module A: Scalability & Performance (ADRs 017-020)
+
+**Location**: `docs/adr/01x-module-a/`
+
+17. **[ADR 017: Security Group Segregation](docs/adr/01x-module-a/017-security-group-segregation.md)**
+18. **[ADR 018: Auto Scaling Strategy](docs/adr/01x-module-a/018-auto-scaling-strategy.md)**
+19. **[ADR 019: RDS Read Replica vs Caching](docs/adr/01x-module-a/019-rds-read-replica-vs-caching.md)**
+20. **[ADR 020: Async Communication (SQS Design)](docs/adr/01x-module-a/020-async-communication-sqs-design.md)**
+
+**📋 Module A Planning**: Xem chi tiết kế hoạch và task assignments tại [`docs/module-a/`](docs/module-a/)
 
 ## 3. Hợp đồng API (API Contracts) 📜
 
@@ -69,21 +84,23 @@ Toàn bộ API (request/response) của 3 services, bao gồm đủ 10 User Stor
 ## 4. Hướng dẫn Chạy Local (Docker Compose) 🐳
 
 ### Bước 1: Clone repository
+
 ```bash
 git clone https://github.com/VidIsWandering/uit-go-backend.git
 cd uit-go-backend
 ```
 
 ### Bước 2: Chuẩn bị file môi trường (.env)
+
 File .env lưu cấu hình cơ sở dữ liệu và biến môi trường local.
 
 Tạo file .env:
+
 ```bash
 cp .env.example .env
 ```
 
 Điền các giá trị cần thiết vào file .env:
-
 
 Database
 
@@ -95,11 +112,9 @@ POSTGRES_TRIP_USER=uit_go_trip
 POSTGRES_TRIP_PASSWORD=your_password
 POSTGRES_TRIP_DB=uit_go_trip_db
 
-
 JWT
 
 JWT_SECRET=your_jwt_secret
-
 
 Ports (optional)
 
@@ -108,7 +123,9 @@ TRIP_SERVICE_PORT=8081
 DRIVER_SERVICE_PORT=8082
 
 ### Bước 3: Khởi chạy hệ thống bằng Docker Compose
+
 Tại thư mục gốc, chạy lệnh:
+
 ```bash
 docker compose up --build
 ```
@@ -124,6 +141,7 @@ Tự động kết nối các service qua internal network.
 Bạn sẽ thấy logs xuất ra từ từng container khi khởi động thành công.
 
 ### Bước 4: Kiểm tra dịch vụ
+
 Khi khởi động xong, bạn có thể truy cập:
 
 http://localhost:8080 → UserService
@@ -140,18 +158,22 @@ curl http://localhost:8081/actuator/health
 ```
 
 ### Bước 5: Chạy thủ công từng service (tuỳ chọn)
+
 Nếu muốn debug hoặc phát triển riêng lẻ từng service:
 User Service (Java)
+
 ```bash
 cd user-service
 ./mvnw spring-boot:run
 Trip Service (Java)
 ```
+
 ```bash
 cd trip-service
 ./mvnw spring-boot:run
 Driver Service (Node.js)
 ```
+
 ```bash
 cd driver-service
 npm install
@@ -159,6 +181,7 @@ npm run dev
 ```
 
 ### Bước 6: Monitoring Local
+
 Prometheus: http://localhost:9090
 
 Grafana: http://localhost:3000 (mặc định admin/admin)
@@ -234,38 +257,44 @@ Nhập yes khi được hỏi để xác nhận.
 Phần này mô tả quy trình build Docker images cho các service và triển khai chúng lên hạ tầng AWS đã được tạo bằng Terraform (ở Mục 5).
 
 **Yêu cầu:**
-* Đã hoàn thành các bước trong Mục 5 (Hạ tầng IaC đã được `apply`).
-* Đã cài đặt **AWS CLI** và cấu hình credentials (hoặc đảm bảo biến môi trường AWS keys vẫn còn hiệu lực).
-* Đã cài đặt **Docker**.
-* Code của cả 3 services (`user-service`, `trip-service`, `driver-service`) đã hoàn thiện và sẵn sàng để build.
+
+- Đã hoàn thành các bước trong Mục 5 (Hạ tầng IaC đã được `apply`).
+- Đã cài đặt **AWS CLI** và cấu hình credentials (hoặc đảm bảo biến môi trường AWS keys vẫn còn hiệu lực).
+- Đã cài đặt **Docker**.
+- Code của cả 3 services (`user-service`, `trip-service`, `driver-service`) đã hoàn thiện và sẵn sàng để build.
 
 ### Bước 1: Build, Tag và Push Docker Images lên ECR
 
 Lặp lại các bước sau cho **từng service** (`user-service`, `trip-service`, `driver-service`):
 
 1.  **Xác thực Docker với ECR:** Lấy lệnh đăng nhập từ AWS CLI và thực thi nó. Thay `<aws_account_id>` và `<region>` bằng thông tin tài khoản của bạn.
+
     ```bash
     aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
     ```
-    *(Ví dụ region: `ap-southeast-1`)*
+
+    _(Ví dụ region: `ap-southeast-1`)_
 
 2.  **Lấy URL của ECR Repository:** Chạy `terraform output` trong thư mục `terraform` để lấy URL repo của service tương ứng (ví dụ: `ecr_repository_urls.user`). Hoặc bạn có thể xem trực tiếp trên AWS ECR Console.
+
     ```bash
-    cd ../terraform 
-    terraform output ecr_repository_urls 
-    cd .. 
+    cd ../terraform
+    terraform output ecr_repository_urls
+    cd ..
     # Copy lại URL cho service bạn đang build, ví dụ: <account_id>.dkr.ecr.<region>[.amazonaws.com/uit-go/user-service](https://.amazonaws.com/uit-go/user-service)
     ```
 
 3.  **Build Docker Image:** Di chuyển vào thư mục của service và chạy lệnh build. Thay `<repo_url>` bằng URL bạn vừa lấy.
+
     ```bash
     # Ví dụ cho user-service:
     cd user-service
-    docker build -t <repo_url>:latest . 
+    docker build -t <repo_url>:latest .
     # Ví dụ: docker build -t [123456789012.dkr.ecr.ap-southeast-1.amazonaws.com/uit-go/user-service:latest](https://123456789012.dkr.ecr.ap-southeast-1.amazonaws.com/uit-go/user-service:latest) .
-    cd .. 
+    cd ..
     ```
-    *(Đối với service Java, lệnh build này sẽ chạy multi-stage build trong Dockerfile).*
+
+    _(Đối với service Java, lệnh build này sẽ chạy multi-stage build trong Dockerfile)._
 
 4.  **Push Docker Image:** Đẩy image vừa build lên ECR.
     ```bash
@@ -274,7 +303,7 @@ Lặp lại các bước sau cho **từng service** (`user-service`, `trip-servi
     # Ví dụ: docker push [123456789012.dkr.ecr.ap-southeast-1.amazonaws.com/uit-go/user-service:latest](https://123456789012.dkr.ecr.ap-southeast-1.amazonaws.com/uit-go/user-service:latest)
     ```
 
-*(Lặp lại bước 1-4 cho `trip-service` và `driver-service`)*
+_(Lặp lại bước 1-4 cho `trip-service` và `driver-service`)_
 
 ### Bước 2: Cập nhật Task Definitions trong Terraform
 
@@ -283,17 +312,17 @@ Sau khi cả 3 image đã được đẩy lên ECR:
 1.  **Mở file `terraform/main.tf`**.
 2.  Tìm đến 3 khối `resource "aws_ecs_task_definition"` (`user_service_task`, `trip_service_task`, `driver_service_task`).
 3.  Trong mỗi khối, **sửa lại thuộc tính `image`** từ `"nginx:latest"` thành **URL ECR repository** tương ứng mà bạn đã push image lên (bao gồm cả tag `:latest`).
-    *Ví dụ cho `user_service_task`:*
+    _Ví dụ cho `user_service_task`:_
     ```terraform
       container_definitions = jsonencode([
         {
-          name      = "user-service" 
+          name      = "user-service"
           # --- SỬA DÒNG NÀY ---
-          image     = "<account_id>.dkr.ecr.<region>[.amazonaws.com/uit-go/user-service:latest](https://.amazonaws.com/uit-go/user-service:latest)" 
-          essential = true          
+          image     = "<account_id>.dkr.ecr.<region>[.amazonaws.com/uit-go/user-service:latest](https://.amazonaws.com/uit-go/user-service:latest)"
+          essential = true
           # ... (phần còn lại giữ nguyên)
     ```
-    *(Sửa tương tự cho `trip_service_task` và `driver_service_task`).*
+    _(Sửa tương tự cho `trip_service_task` và `driver_service_task`)._
 
 ### Bước 3: Áp dụng thay đổi và Deploy
 
@@ -302,7 +331,7 @@ Sau khi cả 3 image đã được đẩy lên ECR:
 3.  **Chạy `terraform apply`** để tạo phiên bản mới cho Task Definitions và tự động cập nhật ECS Services để sử dụng image mới.
     ```bash
     terraform plan
-    terraform apply 
+    terraform apply
     ```
     Nhập `yes` để xác nhận. ECS Fargate sẽ tự động thực hiện rolling update để triển khai phiên bản mới.
 
