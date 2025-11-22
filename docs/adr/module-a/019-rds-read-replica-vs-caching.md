@@ -2,28 +2,32 @@
 
 ## Trạng thái
 
-Được chấp nhận (Accepted) - Module A, Week 10
+Được chấp nhận (Accepted) - Module A: Scalability & Performance
 
 ## Bối cảnh
 
 Trip history queries là read-heavy workload với tỷ lệ write:read = 1:100. Mỗi trip được tạo 1 lần (INSERT), nhưng được query nhiều lần (user xem lịch sử, analytics, reporting).
 
-**Vấn đề hiện tại (Baseline):**
+**Vấn đề hiện tại (Baseline Analysis):**
+
 - Primary RDS instance (trip_db) xử lý cả reads và writes
-- Query load: ~90% reads, 10% writes
-- Latency trip history: 800ms p95 (slow SELECT với JOIN)
-- Database connections: 45/87 saturated khi load testing
-- CPU Utilization: 75% sustained (bottleneck)
+- Query load: ~90% reads, 10% writes (typical read-heavy workload)
+- Latency trip history: ~800ms p95 (estimated - slow SELECT với JOIN)
+- Database connections: Risk of saturation under load
+- CPU Utilization: Expected bottleneck @ 75% sustained
+
+**Note**: Metrics based on typical microservices patterns, to be validated via load testing
 
 **Query patterns:**
+
 ```sql
 -- Write (10% traffic): CREATE trip
 INSERT INTO trips (user_id, driver_id, status, ...) VALUES (...);
 
 -- Read (90% traffic): Trip history, pagination, filtering
-SELECT t.*, u.name, d.name 
-FROM trips t 
-JOIN users u ON t.user_id = u.id 
+SELECT t.*, u.name, d.name
+FROM trips t
+JOIN users u ON t.user_id = u.id
 JOIN drivers d ON t.driver_id = d.id
 WHERE t.user_id = ? AND t.created_at > ?
 ORDER BY t.created_at DESC
@@ -35,7 +39,9 @@ LIMIT 20 OFFSET 0;
 ## So sánh Phương án
 
 ### Option 1: Caching Only (Spring Cache + Redis)
+
 **Implementation:**
+
 ```java
 @Cacheable(value = "tripHistory", key = "#userId")
 public List<Trip> getTripHistory(Long userId) {
@@ -44,36 +50,44 @@ public List<Trip> getTripHistory(Long userId) {
 ```
 
 **Pros:**
+
 - Latency cực thấp: 10ms (cache hit)
 - Cost thấp: Redis đã có sẵn cho driver-service (~$20/month)
 - Dễ implement: Spring Cache annotation
 
 **Cons:**
+
 - Cache invalidation phức tạp (khi trip status thay đổi)
 - Cold start: Cache miss → 800ms latency
 - Limited by Redis RAM (cache.t3.micro = 512 MB)
 - Eventual consistency: TTL 10 phút → user thấy data cũ
 
 ### Option 2: Read Replica Only (RDS Read Replica)
+
 **Implementation:**
+
 ```properties
 spring.datasource.url=jdbc:postgresql://${TRIP_DB_ENDPOINT}/...  # Primary
 spring.datasource.read-replica.url=jdbc:postgresql://${TRIP_DB_REPLICA_ENDPOINT}/...  # Replica
 ```
 
 **Pros:**
+
 - Strong consistency: Replication lag < 1s (gần như real-time)
 - Unlimited reads: Không giới hạn bởi RAM như cache
 - Dùng cho analytics, reporting (không chỉ trip history)
 - High availability: Replica ở AZ khác
 
 **Cons:**
+
 - Latency cao hơn cache: 200ms (DB query)
 - Cost cao: +$30/month (db.t3.micro replica)
 - Complexity: Application phải route reads/writes đúng endpoint
 
 ### Option 3: Both - Defense in Depth (CHOSEN) ✅
+
 **Implementation:**
+
 ```
 ┌─────────────┐
 │   Request   │
@@ -98,21 +112,25 @@ spring.datasource.read-replica.url=jdbc:postgresql://${TRIP_DB_REPLICA_ENDPOINT}
 Áp dụng **CẢ HAI** phương pháp (Layered Caching Strategy):
 
 ### Layer 1: Spring Cache (L1 Cache)
+
 - **TTL**: 10 phút
 - **Eviction**: On trip status change (COMPLETED, CANCELLED)
 - **Hit Rate**: ~82% (dự kiến sau tuning)
 - **Latency**: 10ms
 
 ### Layer 2: Read Replica (L2 Cache / Persistent Store)
+
 - **Usage**: Cache miss, real-time reporting, analytics
 - **Replication Lag**: < 1s
 - **Latency**: 200ms
 
 ### Layer 3: Primary DB (Write Only)
+
 - **Usage**: INSERT, UPDATE, DELETE trips
 - **Load Reduction**: 95% (chỉ handle writes + 5% cache misses)
 
 ### Read Replica Configuration
+
 ```hcl
 resource "aws_db_instance" "trip_db_replica" {
   identifier          = "uit-go-trip-db-replica"
@@ -126,44 +144,54 @@ resource "aws_db_instance" "trip_db_replica" {
 ## Lý do (Ưu tiên)
 
 ### 1. Defense in Depth - 2 Tiers of Protection (Ưu tiên cao nhất)
+
 **Scenario 1: Cache hit (90%)**
+
 - Request → Spring Cache → Return (10ms)
 - Primary DB: 0% load
 - Replica DB: 0% load
 
 **Scenario 2: Cache miss (10%)**
+
 - Request → Spring Cache miss → Read Replica → Cache & Return (200ms)
 - Primary DB: 0% load (write traffic only)
 - Replica DB: 10% read load
 
 **Scenario 3: Cache + Replica failure (worst case)**
+
 - Request → Spring Cache miss → Replica down → Failover to Primary (800ms)
 - Graceful degradation (không crash)
 
 ### 2. Performance - Best of Both Worlds
-| Request Type         | Latency | Served By       |
-|----------------------|---------|-----------------|
-| Cache hit (90%)      | 10ms    | Spring Cache    |
-| Cache miss (9%)      | 200ms   | Read Replica    |
-| Replica down (1%)    | 800ms   | Primary DB      |
-| **Average Latency**  | **37ms**| **Mixed**       |
+
+| Request Type        | Latency  | Served By    |
+| ------------------- | -------- | ------------ |
+| Cache hit (90%)     | 10ms     | Spring Cache |
+| Cache miss (9%)     | 200ms    | Read Replica |
+| Replica down (1%)   | 800ms    | Primary DB   |
+| **Average Latency** | **37ms** | **Mixed**    |
 
 **vs Caching Only:**
+
 - Cache miss → 800ms (query primary under load)
 - Average: ~90ms
 
 **vs Replica Only:**
+
 - All reads → 200ms
 - Average: 200ms
 
 ### 3. Flexibility - Multi-use Replica
+
 **Use Cases:**
+
 1. Trip history (user-facing, cached)
 2. Admin dashboard (real-time, no cache)
 3. Analytics queries (long-running, không ảnh hưởng primary)
 4. Reporting (batch, overnight)
 
 ### 4. High Availability - Cross-AZ Resilience
+
 - Primary: ap-southeast-1a
 - Replica: ap-southeast-1b
 - Nếu AZ-a fail → Replica có thể promote lên primary (failover)
@@ -171,41 +199,51 @@ resource "aws_db_instance" "trip_db_replica" {
 ## Đánh đổi (Chấp nhận)
 
 ### 1. Cost - $50/month vs $20 (Caching Only) - Tăng 150% (Acceptable)
+
 **Breakdown:**
+
 - Redis (existing): $20/month (cache.t3.micro)
 - Read Replica: +$30/month (db.t3.micro)
 - **Total**: $50/month
 
 **Justification:**
+
 - Performance gain: 37ms avg latency (vs 90ms với cache only)
 - Availability: Cross-AZ HA
 - Flexibility: Analytics, reporting capabilities
 - **ROI**: $30/month = $1/day cho improved UX + HA
 
 ### 2. Complexity - 2 Systems to Manage (Acceptable)
+
 **Cache Management:**
+
 - Invalidation logic: `@CacheEvict` khi trip status change
 - TTL tuning: 10 phút là optimal? Hay 5 phút?
 - Monitoring: Cache hit rate, eviction count
 
 **Replica Management:**
+
 - Replication lag monitoring
 - Failover procedures
 - Connection routing (primary vs replica endpoints)
 
 **Mitigation:**
+
 - Terraform IaC: Replica provisioning automated
 - CloudWatch Alarms: `ReplicationLag > 5s` → alert
 - Spring Boot profiles: Easy switch giữa primary và replica
 
 ### 3. Eventual Consistency - Cache TTL 10 phút (Acceptable)
+
 **Scenario:**
+
 1. User completes trip → Status UPDATE to `COMPLETED`
 2. Cache eviction → Cache cleared
 3. User queries trip history → Cache miss → Query replica (lag < 1s) → Cache result
 4. **User experience**: Thấy trip COMPLETED sau < 2s (acceptable)
 
 **Alternative scenario (nếu không evict cache):**
+
 1. User completes trip → Status UPDATE
 2. User queries → Cache hit (stale data, status still `IN_PROGRESS`)
 3. **User experience**: Thấy trip COMPLETED sau 10 phút (❌ unacceptable)
@@ -213,48 +251,55 @@ resource "aws_db_instance" "trip_db_replica" {
 **Decision**: Cache eviction on write để giảm lag xuống < 2s
 
 ### 4. Replication Lag - Typical < 1s, max 5s (Acceptable)
+
 **Monitoring:**
+
 ```sql
 -- Query trên replica để check lag
 SELECT now() - pg_last_xact_replay_timestamp() AS replication_lag;
 ```
 
 **SLA:**
+
 - **Normal**: < 1s lag (99% time)
 - **Peak**: < 5s lag (1% time, khi primary có write burst)
 - **Alert**: > 10s lag (investigate primary load)
 
-## Kết quả (Dự kiến - sau Implementation)
+## Kết quả (Design Targets - To Be Validated)
 
-### Primary DB Load Reduction
-| Metric                    | Before | After  | Reduction |
-|---------------------------|--------|--------|-----------|
-| Read Queries              | 900/s  | 45/s   | **95%**   |
-| Write Queries             | 100/s  | 100/s  | 0%        |
-| CPU Utilization           | 75%    | 25%    | **67%**   |
-| Database Connections Used | 45     | 15     | **67%**   |
+### Primary DB Load Reduction (Expected)
+
+| Metric                    | Before | After | Reduction |
+| ------------------------- | ------ | ----- | --------- |
+| Read Queries              | 900/s  | 45/s  | **95%**   |
+| Write Queries             | 100/s  | 100/s | 0%        |
+| CPU Utilization           | 75%    | 25%   | **67%**   |
+| Database Connections Used | 45     | 15    | **67%**   |
 
 ### Cache Performance
-| Metric           | Value    |
-|------------------|----------|
-| Cache Hit Rate   | 82%      |
-| Cache Miss Rate  | 18%      |
-| Avg Latency      | 37ms     |
-| P95 Latency      | 120ms    |
+
+| Metric          | Value |
+| --------------- | ----- |
+| Cache Hit Rate  | 82%   |
+| Cache Miss Rate | 18%   |
+| Avg Latency     | 37ms  |
+| P95 Latency     | 120ms |
 
 ### Cost Breakdown
-| Component        | Cost/Month | Justification                  |
-|------------------|------------|--------------------------------|
-| Primary DB       | $30        | Existing (db.t3.micro)         |
-| Read Replica     | $30        | New (db.t3.micro, same size)   |
-| Redis            | $20        | Existing (cache.t3.micro)      |
-| **Total**        | **$80**    | vs $30 baseline (2.7x)         |
+
+| Component    | Cost/Month | Justification                |
+| ------------ | ---------- | ---------------------------- |
+| Primary DB   | $30        | Existing (db.t3.micro)       |
+| Read Replica | $30        | New (db.t3.micro, same size) |
+| Redis        | $20        | Existing (cache.t3.micro)    |
+| **Total**    | **$80**    | vs $30 baseline (2.7x)       |
 
 **Trade-off Accepted**: 2.7x cost cho 10x performance improvement + HA
 
 ## Application Configuration (for Role A)
 
 ### Spring Boot Properties
+
 ```properties
 # Primary DB (writes)
 spring.datasource.primary.url=jdbc:postgresql://${TRIP_DB_ENDPOINT}/uit_trip_db
@@ -272,22 +317,23 @@ spring.cache.redis.time-to-live=600000  # 10 minutes
 ```
 
 ### Repository Layer
+
 ```java
 @Repository
 public class TripRepository {
-    
+
     @Transactional  // Write to primary
     public Trip createTrip(Trip trip) {
         return entityManager.persist(trip);
     }
-    
+
     @Transactional(readOnly = true)  // Read from replica
     @Cacheable(value = "tripHistory", key = "#userId")
     public List<Trip> getTripHistory(Long userId) {
         // Spring automatically routes to replica datasource
         return entityManager.createQuery("...", Trip.class).getResultList();
     }
-    
+
     @CacheEvict(value = "tripHistory", key = "#trip.userId")
     public void updateTripStatus(Trip trip, Status newStatus) {
         trip.setStatus(newStatus);
@@ -303,11 +349,72 @@ public class TripRepository {
 - [PostgreSQL Replication Lag Monitoring](https://www.postgresql.org/docs/current/monitoring-stats.html)
 - Martin Fowler: [Cache-Aside Pattern](https://martinfowler.com/bliki/TwoHardThings.html)
 
-## Lịch sử
+## Validation Strategy
 
-- **2024-11-20**: Được chấp nhận và implement trong Module A
-- **Người quyết định**: Nguyễn Quốc Bảo (Role B - Platform), Phạm Minh Khoa (Role A - Backend)
-- **Implementation**: 
-  - Role B: Terraform read replica provisioning
-  - Role A: Spring Boot caching + replica routing
-- **Review Cycle**: Tune cache TTL và hit rate sau 1 tuần production
+**Terraform Validation:**
+
+```bash
+cd terraform/modules/database
+terraform plan | grep "trip_db_replica"
+# Verify: Read replica configuration valid
+```
+
+**Local Testing Approach (Module A Strategy):**
+
+### Docker Compose Simulation:
+
+```yaml
+services:
+  trip-db-primary:
+    image: postgres:15
+    # Write endpoint
+
+  trip-db-replica:
+    image: postgres:15
+    # Simulate read replica (manual replication for testing)
+
+  redis-cache:
+    image: redis:7-alpine
+```
+
+### Testing Scenarios:
+
+1. **Cache Performance Test:**
+
+   - First request: Cache miss → Query replica → Measure latency
+   - Second request: Cache hit → Measure latency improvement
+   - Expected: 10ms (cache) vs 200ms (DB query)
+
+2. **Read Replica Test:**
+
+   - Direct query to primary vs replica
+   - Measure load distribution
+   - Verify: Replica can handle read-only queries
+
+3. **Defense-in-Depth Test:**
+   - Simulate cache failure (stop Redis)
+   - Verify: System falls back to read replica gracefully
+   - Simulate replica failure
+   - Verify: System falls back to primary (degraded but functional)
+
+### Success Criteria:
+
+- Spring Cache integration working (cache hit/miss observable)
+- Application can route reads to separate endpoint (read replica simulation)
+- Failover logic validated (cache → replica → primary)
+- Load testing shows latency improvement with caching
+
+**Implementation Notes:**
+
+- Decision made by: Platform Engineer (Role B) + Backend Developer (Role A)
+- Validated via:
+  - Terraform plan (infrastructure design)
+  - Local docker-compose testing (application behavior)
+  - k6 load testing (performance metrics)
+- AWS deployment: Not required for Module A
+
+**Code Integration:**
+
+- Role A implements Spring Cache + replica routing (Task A.1)
+- Role B provides Terraform configuration (Task B.3)
+- Validation: Local testing demonstrates concept works

@@ -48,29 +48,29 @@ Các quyết định thiết kế và đánh đổi (trade-offs) quan trọng c�
 
 ### Phase 1: Basic Architecture (ADRs 001-012)
 
-**Location**: `docs/adr/00x-basic/`
+**Location**: `docs/adr/basic/`
 
-1.  **[ADR 001: Lựa chọn RESTful API](docs/adr/00x-basic/001-chon-restful-api.md)**
-2.  **[ADR 002: Lựa chọn Redis Geospatial](docs/adr/00x-basic/002-chon-redis-geospatial.md)**
-3.  **[ADR 003: Lựa chọn Kiến trúc Đa ngôn ngữ](docs/adr/00x-basic/003-chon-kien-truc-da-ngon-ngu.md)**
-4.  **[ADR 004: Lựa chọn Polling cho Theo dõi Vị trí](docs/adr/00x-basic/004-chon-polling-cho-theo-doi-vi-tri.md)**
-5.  **[ADR 005: Lựa chọn Terraform (IaC)](docs/adr/00x-basic/005-chon-terraform-de-quan-ly-ha-tang.md)**
-6.  **[ADR 006: Sử dụng Secrets Manager cho Mật khẩu RDS](docs/adr/00x-basic/006-su-dung-secrets-manager-cho-mat-khau-rds.md)**
-7.  **[ADR 007: Đặt CSDL trong Private Subnets](docs/adr/00x-basic/007-dat-csdl-trong-private-subnets.md)**
-8.  **[ADR 008: Lựa chọn ECS để Triển khai Container](docs/adr/00x-basic/008-chon-ecs-de-trien-khai-container.md)**
-9.  **[ADR 009: Lựa chọn Fargate Launch Type cho ECS](docs/adr/00x-basic/009-chon-fargate-launch-type-cho-ecs.md)**
-10. **[ADR 010: Tái cấu trúc (Refactor) Terraform sang Modules](docs/adr/00x-basic/010-refactor-terraform-sang-modules.md)**
-11. **[ADR 011: Lựa chọn AWS Cloud Map (Service Discovery)](docs/adr/00x-basic/011-chon-cloud-map-cho-service-discovery.md)**
-12. **[ADR 012: Lựa chọn AWS ECR (Container Registry)](docs/adr/00x-basic/012-chon-ecr-lam-container-registry.md)**
+1.  **[ADR 001: Lựa chọn RESTful API](docs/adr/basic/001-chon-restful-api.md)**
+2.  **[ADR 002: Lựa chọn Redis Geospatial](docs/adr/basic/002-chon-redis-geospatial.md)**
+3.  **[ADR 003: Lựa chọn Kiến trúc Đa ngôn ngữ](docs/adr/basic/003-chon-kien-truc-da-ngon-ngu.md)**
+4.  **[ADR 004: Lựa chọn Polling cho Theo dõi Vị trí](docs/adr/basic/004-chon-polling-cho-theo-doi-vi-tri.md)**
+5.  **[ADR 005: Lựa chọn Terraform (IaC)](docs/adr/basic/005-chon-terraform-de-quan-ly-ha-tang.md)**
+6.  **[ADR 006: Sử dụng Secrets Manager cho Mật khẩu RDS](docs/adr/basic/006-su-dung-secrets-manager-cho-mat-khau-rds.md)**
+7.  **[ADR 007: Đặt CSDL trong Private Subnets](docs/adr/basic/007-dat-csdl-trong-private-subnets.md)**
+8.  **[ADR 008: Lựa chọn ECS để Triển khai Container](docs/adr/basic/008-chon-ecs-de-trien-khai-container.md)**
+9.  **[ADR 009: Lựa chọn Fargate Launch Type cho ECS](docs/adr/basic/009-chon-fargate-launch-type-cho-ecs.md)**
+10. **[ADR 010: Tái cấu trúc (Refactor) Terraform sang Modules](docs/adr/basic/010-refactor-terraform-sang-modules.md)**
+11. **[ADR 011: Lựa chọn AWS Cloud Map (Service Discovery)](docs/adr/basic/011-chon-cloud-map-cho-service-discovery.md)**
+12. **[ADR 012: Lựa chọn AWS ECR (Container Registry)](docs/adr/basic/012-chon-ecr-lam-container-registry.md)**
 
 ### Module A: Scalability & Performance (ADRs 017-020)
 
-**Location**: `docs/adr/01x-module-a/`
+**Location**: `docs/adr/module-a/`
 
-17. **[ADR 017: Security Group Segregation](docs/adr/01x-module-a/017-security-group-segregation.md)**
-18. **[ADR 018: Auto Scaling Strategy](docs/adr/01x-module-a/018-auto-scaling-strategy.md)**
-19. **[ADR 019: RDS Read Replica vs Caching](docs/adr/01x-module-a/019-rds-read-replica-vs-caching.md)**
-20. **[ADR 020: Async Communication (SQS Design)](docs/adr/01x-module-a/020-async-communication-sqs-design.md)**
+17. **[ADR 017: Security Group Segregation](docs/adr/module-a/017-security-group-segregation.md)**
+18. **[ADR 018: Auto Scaling Strategy](docs/adr/module-a/018-auto-scaling-strategy.md)**
+19. **[ADR 019: RDS Read Replica vs Caching](docs/adr/module-a/019-rds-read-replica-vs-caching.md)**
+20. **[ADR 020: Async Communication (SQS Design)](docs/adr/module-a/020-async-communication-sqs-design.md)**
 
 **📋 Module A Planning**: Xem chi tiết kế hoạch và task assignments tại [`docs/module-a/`](docs/module-a/)
 
