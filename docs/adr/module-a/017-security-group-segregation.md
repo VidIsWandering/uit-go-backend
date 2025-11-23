@@ -2,7 +2,7 @@
 
 ## Trạng thái
 
-Được chấp nhận (Accepted) - Module A: Scalability & Performance
+Được chấp nhận (Accepted)
 
 ## Bối cảnh
 
@@ -11,16 +11,16 @@ Trong Giai đoạn 1 (baseline implementation), hệ thống sử dụng 1 Secur
 **Vấn đề hiện tại:**
 
 - UserService có thể truy cập Redis (không cần thiết cho nghiệp vụ)
-- DriverService có thể truy cập PostgreSQL user_db và trip_db (vi phạm least privilege)
+- DriverService có thể truy cập PostgreSQL user_db và trip_db (vi phạm nguyên tắc đặc quyền tối thiểu)
 - TripService có thể truy cập Redis (chỉ cần PostgreSQL)
-- Nếu 1 service bị compromise, attacker có thể truy cập tất cả databases
-- Security rules dùng CIDR blocks (`10.0.0.0/16`) thay vì source Security Groups (quá permissive)
+- Nếu 1 service bị tấn công thành công, kẻ tấn công có thể truy cập tất cả databases
+- Security rules dùng CIDR blocks (`10.0.0.0/16`) thay vì source Security Groups (quá rộng phạm vi)
 
 **Phân tích rủi ro:**
 
 - **Attack Surface**: Quá rộng - 1 lỗ hổng ở bất kỳ service nào → toàn bộ data layer bị lộ
-- **Compliance**: Không đáp ứng yêu cầu audit về Principle of Least Privilege
-- **Blast Radius**: Nếu DriverService bị hack, attacker có thể đọc/ghi user credentials và trip data
+- **Tuân thủ**: Không đáp ứng yêu cầu kiểm toán về Nguyên tắc Đặc quyền Tối thiểu
+- **Phạm vi Tổn thương**: Nếu DriverService bị tấn công, kẻ tấn công có thể đọc/ghi thông tin xác thực người dùng và dữ liệu chuyến đi
 
 ## Quyết định
 
@@ -67,25 +67,25 @@ ingress {
 ### 1. Security - Principle of Least Privilege (Ưu tiên cao nhất)
 
 - Mỗi service chỉ có quyền truy cập **chính xác những gì cần thiết**
-- UserService không thể access Redis hoặc trip_db
-- DriverService không thể access PostgreSQL
+- UserService không thể truy cập Redis hoặc trip_db
+- DriverService không thể truy cập PostgreSQL
 - Giảm attack surface từ 100% (toàn bộ VPC) xuống ~10% (chỉ service cụ thể)
 
 ### 2. Compliance & Audit
 
 - Đáp ứng yêu cầu PCI-DSS, SOC 2 về network segmentation
-- Dễ dàng chứng minh với auditor: "UserService chỉ có thể access user_db"
+- Dễ dàng chứng minh với kiểm toán viên: "UserService chỉ có thể truy cập user_db"
 - Security logs rõ ràng hơn (biết chính xác traffic nguồn)
 
 ### 3. Blast Radius Containment
 
-- Khi DriverService bị compromise, attacker **chỉ có thể** access Redis
+- Khi DriverService bị tấn công thành công, kẻ tấn công **chỉ có thể** truy cập Redis
 - Không thể lateral movement sang user_db hoặc trip_db
 - Giới hạn thiệt hại trong 1 service boundary
 
 ### 4. Defense in Depth
 
-- Kết hợp với IAM roles, secrets management, encryption at rest
+- Kết hợp với IAM roles, quản lý mật khẩu, mã hóa dữ liệu lưu trữ
 - Security Groups là 1 layer trong chiến lược bảo mật nhiều tầng
 
 ## Đánh đổi (Chấp nhận)
@@ -94,19 +94,19 @@ ingress {
 
 - **Before**: 2 SGs (db_access, alb_sg)
 - **After**: 8 SGs (user_db, trip_db, redis, user_service, trip_service, driver_service, alb, nat)
-- **Impact**: Harder to manage, debug network issues
-- **Mitigation**: Terraform IaC giúp quản lý tự động, đặt tên rõ ràng
+- **Tác động**: Khó quản lý hơn, khó gỡ lỗi vấn đề mạng
+- **Giảm thiểu**: Terraform IaC giúp quản lý tự động, đặt tên rõ ràng
 
 ### 2. Terraform Code - Tăng ~150 dòng code (Acceptable)
 
 - Thêm 6 security group resources
 - Thêm 4 security group rule resources (explicit rules)
-- **Trade-off**: Code dài hơn nhưng dễ đọc, dễ audit
+- **Đánh đổi**: Code dài hơn nhưng dễ đọc, dễ kiểm toán
 
 ### 3. Debugging - Khó hơn khi có network connectivity issues (Acceptable)
 
-- Phải check nhiều SGs thay vì 1 SG
-- **Mitigation**:
+- Phải kiểm tra nhiều SGs thay vì 1 SG
+- **Giảm thiểu**:
   - VPC Flow Logs để debug
   - CloudWatch Insights query: "Rejected traffic from SG X to SG Y"
   - Terraform outputs hiển thị tất cả SG IDs
@@ -129,14 +129,14 @@ ingress {
 
 Penetration testing scenario:
 
-1. **Scenario**: Compromise driver-service (RCE exploit)
-2. **Expected**: Attacker chỉ có thể access Redis (driver locations)
-3. **Verified**: Không thể connect tới user_db hoặc trip_db (connection refused)
+1. **Kịch bản**: Tấn công thành công driver-service (khai thác lỗi RCE)
+2. **Kết quả mong đợi**: Kẻ tấn công chỉ có thể truy cập Redis (vị trí tài xế)
+3. **Xác nhận**: Không thể kết nối tới user_db hoặc trip_db (kết nối bị từ chối)
 
 ### Metrics
 
 - **Attack Surface Reduction**: 90% (từ toàn VPC xuống 1 service)
-- **Compliance Score**: 100% (đáp ứng least privilege)
+- **Điểm Tuân thủ**: 100% (đáp ứng nguyên tắc đặc quyền tối thiểu)
 - **Terraform Resources**: +6 SGs, +4 rules
 
 ## Tài liệu tham khảo
@@ -157,12 +157,6 @@ terraform plan      # Preview 8 SGs creation
 
 **Security Testing (Design Verification):**
 
-- Review Security Group rules: Each service can only access its designated database
-- Verify source-based ingress (security_groups) instead of CIDR blocks
-- Check egress rules: Services can reach external APIs but not cross-database access
-
-**Implementation Notes:**
-
-- Decision made by: Platform Engineer (Role B)
-- Validated via: Terraform plan (no actual deployment required for Module A)
-- Local testing: Docker Compose network isolation can simulate segregation
+- Rà soát quy tắc Security Group: Mỗi service chỉ truy cập được database được chỉ định
+- Xác minh ingress dựa trên nguồn (security_groups) thay vì CIDR blocks
+- Kiểm tra quy tắc egress: Services có thể gọi API bên ngoài nhưng không truy cập chéo database

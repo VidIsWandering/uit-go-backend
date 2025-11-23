@@ -2,16 +2,16 @@
 
 ## Trạng thái
 
-Được chấp nhận (Accepted) - Module A: Scalability & Performance
+Được chấp nhận (Accepted)
 
 ## Bối cảnh
 
-Trip history queries là read-heavy workload với tỷ lệ write:read = 1:100. Mỗi trip được tạo 1 lần (INSERT), nhưng được query nhiều lần (user xem lịch sử, analytics, reporting).
+Trip history queries là tác vụ đọc nặng với tỷ lệ write:read = 1:100. Mỗi trip được tạo 1 lần (INSERT), nhưng được query nhiều lần (user xem lịch sử, analytics, reporting).
 
 **Vấn đề hiện tại (Baseline Analysis):**
 
 - Primary RDS instance (trip_db) xử lý cả reads và writes
-- Query load: ~90% reads, 10% writes (typical read-heavy workload)
+- Query load: ~90% reads, 10% writes (tính chất điển hình của tác vụ đọc nặng)
 - Latency trip history: ~800ms p95 (estimated - slow SELECT với JOIN)
 - Database connections: Risk of saturation under load
 - CPU Utilization: Expected bottleneck @ 75% sustained
@@ -57,10 +57,10 @@ public List<Trip> getTripHistory(Long userId) {
 
 **Cons:**
 
-- Cache invalidation phức tạp (khi trip status thay đổi)
-- Cold start: Cache miss → 800ms latency
+- Vô hiệu hóa cache phức tạp (khi trip status thay đổi)
+- Khởi động lạnh: Cache miss → 800ms latency
 - Limited by Redis RAM (cache.t3.micro = 512 MB)
-- Eventual consistency: TTL 10 phút → user thấy data cũ
+- Nhất quán cuối cùng: TTL 10 phút → user thấy data cũ
 
 ### Option 2: Read Replica Only (RDS Read Replica)
 
@@ -73,10 +73,10 @@ spring.datasource.read-replica.url=jdbc:postgresql://${TRIP_DB_REPLICA_ENDPOINT}
 
 **Pros:**
 
-- Strong consistency: Replication lag < 1s (gần như real-time)
+- Nhất quán mạnh: Độ trễ sao chép < 1s (gần như real-time)
 - Unlimited reads: Không giới hạn bởi RAM như cache
 - Dùng cho analytics, reporting (không chỉ trip history)
-- High availability: Replica ở AZ khác
+- Độ khả dụng cao: Replica ở AZ khác
 
 **Cons:**
 
@@ -160,9 +160,9 @@ resource "aws_db_instance" "trip_db_replica" {
 **Scenario 3: Cache + Replica failure (worst case)**
 
 - Request → Spring Cache miss → Replica down → Failover to Primary (800ms)
-- Graceful degradation (không crash)
+- Giảm chất lượng nhẹ nhàng (không crash)
 
-### 2. Performance - Best of Both Worlds
+### 2. Performance - Kết hợp Ưu điểm Cả hai
 
 | Request Type        | Latency  | Served By    |
 | ------------------- | -------- | ------------ |
@@ -190,7 +190,7 @@ resource "aws_db_instance" "trip_db_replica" {
 3. Analytics queries (long-running, không ảnh hưởng primary)
 4. Reporting (batch, overnight)
 
-### 4. High Availability - Cross-AZ Resilience
+### 4. High Availability - Khả năng Phục hồi Xuyên AZ
 
 - Primary: ap-southeast-1a
 - Replica: ap-southeast-1b
@@ -211,27 +211,27 @@ resource "aws_db_instance" "trip_db_replica" {
 - Performance gain: 37ms avg latency (vs 90ms với cache only)
 - Availability: Cross-AZ HA
 - Flexibility: Analytics, reporting capabilities
-- **ROI**: $30/month = $1/day cho improved UX + HA
+- **ROI**: $30/tháng = $1/ngày cho trải nghiệm người dùng tốt hơn + độ khả dụng cao
 
 ### 2. Complexity - 2 Systems to Manage (Acceptable)
 
-**Cache Management:**
+**Quản lý Cache:**
 
 - Invalidation logic: `@CacheEvict` khi trip status change
 - TTL tuning: 10 phút là optimal? Hay 5 phút?
 - Monitoring: Cache hit rate, eviction count
 
-**Replica Management:**
+**Quản lý Replica:**
 
-- Replication lag monitoring
-- Failover procedures
-- Connection routing (primary vs replica endpoints)
+- Giám sát độ trễ sao chép
+- Quy trình failover
+- Định tuyến kết nối (primary vs replica endpoints)
 
 **Mitigation:**
 
 - Terraform IaC: Replica provisioning automated
 - CloudWatch Alarms: `ReplicationLag > 5s` → alert
-- Spring Boot profiles: Easy switch giữa primary và replica
+- Spring Boot profiles: Chuyển đổi dễ dàng giữa primary và replica
 
 ### 3. Eventual Consistency - Cache TTL 10 phút (Acceptable)
 
@@ -248,7 +248,7 @@ resource "aws_db_instance" "trip_db_replica" {
 2. User queries → Cache hit (stale data, status still `IN_PROGRESS`)
 3. **User experience**: Thấy trip COMPLETED sau 10 phút (❌ unacceptable)
 
-**Decision**: Cache eviction on write để giảm lag xuống < 2s
+**Decision**: Vô hiệu hóa cache khi ghi để giảm lag xuống < 2s
 
 ### 4. Replication Lag - Typical < 1s, max 5s (Acceptable)
 
@@ -262,7 +262,7 @@ SELECT now() - pg_last_xact_replay_timestamp() AS replication_lag;
 **SLA:**
 
 - **Normal**: < 1s lag (99% time)
-- **Peak**: < 5s lag (1% time, khi primary có write burst)
+- **Peak**: < 5s lag (1% thời gian, khi primary có tăng đột biến ghi)
 - **Alert**: > 10s lag (investigate primary load)
 
 ## Kết quả (Design Targets - To Be Validated)
@@ -294,9 +294,9 @@ SELECT now() - pg_last_xact_replay_timestamp() AS replication_lag;
 | Redis        | $20        | Existing (cache.t3.micro)    |
 | **Total**    | **$80**    | vs $30 baseline (2.7x)       |
 
-**Trade-off Accepted**: 2.7x cost cho 10x performance improvement + HA
+**Đánh đổi chấp nhận**: 2.7x cost cho 10x performance improvement + HA
 
-## Application Configuration (for Role A)
+## Cấu hình Ứng dụng (Application-Level Configuration)
 
 ### Spring Boot Properties
 
@@ -359,7 +359,7 @@ terraform plan | grep "trip_db_replica"
 # Verify: Read replica configuration valid
 ```
 
-**Local Testing Approach (Module A Strategy):**
+**Chiến lược Kiểm thử Cục bộ:**
 
 ### Docker Compose Simulation:
 
@@ -403,18 +403,3 @@ services:
 - Application can route reads to separate endpoint (read replica simulation)
 - Failover logic validated (cache → replica → primary)
 - Load testing shows latency improvement with caching
-
-**Implementation Notes:**
-
-- Decision made by: Platform Engineer (Role B) + Backend Developer (Role A)
-- Validated via:
-  - Terraform plan (infrastructure design)
-  - Local docker-compose testing (application behavior)
-  - k6 load testing (performance metrics)
-- AWS deployment: Not required for Module A
-
-**Code Integration:**
-
-- Role A implements Spring Cache + replica routing (Task A.1)
-- Role B provides Terraform configuration (Task B.3)
-- Validation: Local testing demonstrates concept works

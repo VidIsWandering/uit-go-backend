@@ -2,9 +2,9 @@
 
 ## Trạng thái
 
-Analyzed (Design Only - Not Implemented) - Module A: Scalability & Performance
+Đã Phân tích (Chỉ Thiết kế - Chưa Triển khai)
 
-**Rationale**: Module A requires analysis of async architecture as part of "Phân tích và Bảo vệ Lựa chọn Kiến trúc". This ADR documents the trade-off analysis between synchronous (REST) and asynchronous (SQS) communication patterns. Decision: REST is sufficient for Module A goals; SQS analysis demonstrates architectural thinking but implementation deferred.
+**Lý do**: ADR này ghi lại phân tích so sánh giữa kiến trúc đồng bộ (REST) và bất đồng bộ (SQS). Quyết định: Giữ REST cho yêu cầu real-time, SQS không triển khai do trade-off latency.
 
 ## Bối cảnh
 
@@ -24,14 +24,14 @@ User Request → TripService → HTTP GET /drivers/nearby → DriverService
 
 **Vấn đề của Synchronous Communication:**
 
-### 1. Blocking I/O - Waste Threads
+### 1. Blocking I/O - Lãng phí Luồng
 
 - TripService thread bị block trong 200ms chờ DriverService response
 - Với 10 concurrent requests → 10 threads blocked
 - HikariCP thread pool (max=5) → saturation → requests queued
 - **Bottleneck**: TripService chỉ chịu được ~200 RPS
 
-### 2. Timeout Cascade - Cascading Failures
+### 2. Timeout Cascade - Lỗi Lan truyền
 
 ```
 DriverService slow/down (timeout 5s)
@@ -40,14 +40,14 @@ TripService request timeout
     ↓
 User sees 503 Service Unavailable
     ↓
-Retry storm → TripService overload
+Cơn bão thử lại → TripService overload
 ```
 
-### 3. Tight Coupling - Service Dependency
+### 3. Tight Coupling - Phụ thuộc Dịch vụ
 
 - TripService **phải biết** DriverService endpoint
 - DriverService down → TripService degraded
-- Deployment của DriverService → rollback TripService nếu có breaking change
+- Deployment của DriverService → rollback TripService nếu có thay đổi không tương thích
 
 ### 4. Limited Scalability
 
@@ -56,15 +56,13 @@ Retry storm → TripService overload
 - 1 TripService task = 100 RPS max
 - Auto-scale to 10 tasks = 1000 RPS max
 - DriverService bottleneck = 500 RPS (Redis latency)
-- **System bottleneck**: 500 RPS (limited by weakest service)
+- **Nút thắt Hệ thống**: 500 RPS (giới hạn bởi dịch vụ yếu nhất)
 
-## Quyết định (Thiết kế - Không Implement)
+## Quyết định (Thiết kế - Không Triển khai)
 
-Module A yêu cầu **phân tích** kiến trúc bất đồng bộ với SQS, KHÔNG yêu cầu implement. Quyết định: **Thiết kế chi tiết, đánh giá trade-offs, nhưng giữ REST cho Module A**.
+Phân tích kiến trúc bất đồng bộ với SQS, nhưng quyết định giữ REST cho core flows. **Lý do**: Trade-off analysis cho thấy SQS cải thiện throughput nhưng tăng latency không chấp nhận được cho real-time operations.
 
-**Final Decision for Module A**: Continue with REST + Circuit Breaker pattern. SQS design demonstrates understanding of async patterns and trade-offs, fulfilling Module A requirement #1 ("Phân tích và Bảo vệ Lựa chọn Kiến trúc").
-
-### Proposed Architecture: Event-Driven với Amazon SQS
+### Kiến trúc Đề xuất: Hướng Sự kiện với Amazon SQS
 
 ```
 ┌─────────────┐                    ┌──────────────────┐
@@ -109,7 +107,7 @@ Module A yêu cầu **phân tích** kiến trúc bất đồng bộ với SQS, K
 resource "aws_sqs_queue" "driver_requests" {
   name                       = "uit-go-driver-requests"
   delay_seconds              = 0
-  visibility_timeout_seconds = 30  # Processing time limit
+  visibility_timeout_seconds = 30  # Giới hạn thời gian xử lý
   message_retention_seconds  = 1209600  # 14 days
 
   redrive_policy = jsonencode({
@@ -130,7 +128,7 @@ resource "aws_sqs_queue" "driver_responses" {
   })
 }
 
-# Dead Letter Queues (DLQ) - Failed messages
+# Dead Letter Queues (DLQ) - Tin nhắn thất bại
 resource "aws_sqs_queue" "driver_requests_dlq" {
   name = "uit-go-driver-requests-dlq"
   message_retention_seconds = 1209600
@@ -164,7 +162,7 @@ resource "aws_sqs_queue" "driver_responses_dlq" {
 
 ```json
 {
-  "messageId": "uuid-1234", // Same as request (correlation)
+  "messageId": "uuid-1234",  // Giống request (tương quan)
   "tripId": 789,
   "drivers": [
     { "id": 456, "name": "Nguyen Van A", "distance": 1.2, "rating": 4.8 },
@@ -263,7 +261,7 @@ consumer.start();
 
 ## Lý do (Ưu tiên)
 
-### 1. Throughput - Scale to Millions of Messages/Day (Ưu tiên cao nhất)
+### 1. Throughput - Scale lên Hàng triệu Tin nhắn/Ngày (Ưu tiên cao nhất)
 
 **SQS Limits:**
 
@@ -276,11 +274,11 @@ consumer.start();
 | Throughput (RPS) | 200 | 5000+ | **+2400%** |
 | Max messages/day | 17M | Unlimited | **∞** |
 
-### 2. Decoupling - Service Independence
+### 2. Decoupling - Độc lập Dịch vụ
 
 **Current (REST):**
 
-- TripService → DriverService dependency (tight coupling)
+- TripService → DriverService dependency (gắn kết chặt)
 - DriverService down → TripService degraded
 
 **Proposed (SQS):**
@@ -291,17 +289,17 @@ consumer.start();
 
 **Benefits:**
 
-- Independent deployment (không cần coordinate rollout)
-- Independent scaling (TripService scale to 10 tasks, DriverService scale to 5 tasks)
+- Triển khai độc lập (không cần phối hợp rollout)
+- Mở rộng độc lập (TripService scale to 10 tasks, DriverService scale to 5 tasks)
 
-### 3. Resilience - Auto-retry & Dead Letter Queues
+### 3. Resilience - Tự động Thử lại & Hàng đợi Thư chết
 
 **Failure Scenario:**
 
 ```
 DriverService crashes khi xử lý message
     ↓
-Message không bị xóa (visibility timeout)
+Message không bị xóa (thời gian hiển thị)
     ↓
 Message reappears sau 30s
     ↓
@@ -314,9 +312,9 @@ CloudWatch Alarm → investigate DLQ
 
 **vs REST:**
 
-- Request timeout → 503 error → user retry → retry storm
+- Request timeout → 503 error → user retry → cơn bão thử lại
 
-### 4. Cost Efficiency - Pay Per Message
+### 4. Cost Efficiency - Trả tiền theo Tin nhắn
 
 **SQS Pricing:**
 
@@ -331,7 +329,7 @@ CloudWatch Alarm → investigate DLQ
 
 ## Đánh đổi (Chấp nhận)
 
-### 1. Latency - Tăng từ 500ms → 3-5s (CRITICAL Trade-off) ❌
+### 1. Latency - Tăng từ 500ms → 3-5s (ĐÁNH ĐỔI QUAN TRỌNG) ❌
 
 **Breakdown:**
 
@@ -340,7 +338,7 @@ REST (Current):
 User request → TripService (50ms)
             → HTTP call DriverService (200ms)
             → Response (50ms)
-Total: 300ms (real-time)
+Total: 300ms (thời gian thực)
 
 SQS (Proposed):
 User request → TripService publish SQS (50ms)
@@ -352,7 +350,7 @@ User request → TripService publish SQS (50ms)
             → TripService poll (1-20s)
             → Update trip (50ms)
             → Notify user WebSocket (50ms)
-Total: 3-5s (eventual consistency)
+Total: 3-5s (nhất quán cuối cùng)
 ```
 
 **User Experience Impact:**
@@ -366,13 +364,13 @@ Total: 3-5s (eventual consistency)
 - For food delivery: **ACCEPTABLE** (users OK với "Đang tìm tài xế...")
 - For background jobs: **EXCELLENT** (không cần real-time)
 
-### 2. Complexity - Event Management, Idempotency, Ordering (Acceptable)
+### 2. Complexity - Quản lý Sự kiện, Tính Idempotency, Thứ tự (Chấp nhận được)
 
 **Event Management:**
 
-- Phải track message correlation (messageId)
-- Phải handle duplicate messages (SQS at-least-once delivery)
-- Phải implement idempotency keys
+- Phải track tương quan tin nhắn (messageId)
+- Phải handle tin nhắn trùng lặp (SQS at-least-once delivery)
+- Phải implement khóa idempotency
 
 **Idempotency Example:**
 
@@ -398,10 +396,10 @@ public void handleDriversFound(DriversFoundEvent event) {
 
 **Ordering:**
 
-- SQS Standard: No ordering guarantee (messages arrive out of order)
-- SQS FIFO: Ordering guaranteed, but lower throughput (3000 msg/sec)
+- SQS Standard: Không bảo đảm thứ tự (messages arrive out of order)
+- SQS FIFO: Bảo đảm thứ tự, nhưng throughput thấp hơn (3000 msg/sec)
 
-### 3. Eventual Consistency - User Experience Challenge (Critical for Module A) ❌
+### 3. Eventual Consistency - Thách thức Trải nghiệm Người dùng ❌
 
 **Scenario:**
 
@@ -419,23 +417,23 @@ T=3.5s: User receives WebSocket notification "Driver found!"
 - **Benefit**: Decoupling, scalability
 - **Cost**: +3s latency → worse UX for real-time use case
 
-**Alternative for Module A:**
+**Lựa chọn Thay thế:**
 
 - Giữ REST cho real-time operations (create trip, driver matching)
 - Dùng SQS cho batch operations (notifications, analytics, reporting)
 
-### 4. Monitoring & Debugging - Harder to Trace (Acceptable)
+### 4. Monitoring & Debugging - Khó Theo dõi hơn (Chấp nhận được)
 
-**Distributed Tracing:**
+**Theo dõi Phân tán:**
 
 - REST: 1 HTTP request → easy to trace (X-Request-ID header)
 - SQS: 3 hops (publish → queue → consume → publish → consume) → hard to trace
 
-**Mitigation:**
+**Giảm thiểu:**
 
 - AWS X-Ray: Distributed tracing for SQS
 - CloudWatch Logs Insights: Query by messageId
-- Correlation ID: Propagate messageId across all hops
+- ID Tương quan: Truyền messageId qua tất cả hops
 
 ## Kết quả (Dự kiến - Nếu Implement)
 
@@ -463,89 +461,59 @@ T=3.5s: User receives WebSocket notification "Driver found!"
 - **Total**: $148/month
 - **Savings**: $212/month (59%)
 
-## Quyết định Cuối Cùng (for Module A)
+## Phân tích Trade-offs: REST vs SQS
 
-**KHÔNG implement SQS trong Module A.** Lý do:
+### Lý do Không Triển khai SQS
 
-### 1. Latency Requirement - Real-time is Critical
+### 1. Yêu cầu Latency - Real-time là Tối quan trọng
 
-- Ride-hailing app yêu cầu instant driver matching (< 1s)
-- +3s latency không acceptable cho user experience
-- Module A focus: Performance & Scalability, KHÔNG phải eventual consistency
+- Ứng dụng ride-hailing yêu cầu driver matching tức thời (< 1s)
+- +3s latency không chấp nhận được cho trải nghiệm người dùng
+- Focus: Performance & Scalability với real-time constraints
 
-### 2. Time Constraint - Module A là 4-week sprint
+### 2. REST + Circuit Breaker Đáp ứng Yêu cầu
 
-- Implement SQS + event-driven architecture: 2-3 tuần
-- Load testing, tuning: 1 tuần
-- **Risk**: Không đủ thời gian validate
-
-### 3. REST + Circuit Breaker là Đủ Tốt
-
-**Current optimizations:**
+**Các tối ưu hiện tại:**
 
 - Auto-scaling: 200 RPS → 450 RPS ✅
-- Circuit Breaker (Resilience4j): Prevent cascading failures ✅
+- Circuit Breaker (Resilience4j): Ngăn chặn cascading failures ✅
 - Read Replica + Caching: Latency 800ms → 120ms ✅
 
-**Conclusion**: REST đã meet requirements cho Module A (450 RPS, 99% uptime)
+**Kết luận**: REST đạt được mục tiêu (450 RPS, 99% uptime)
 
-### 4. Future Roadmap - SQS cho Giai đoạn 3 (Production)
+### 3. Future Roadmap - SQS cho Production
 
-**Use SQS for:**
+**Dùng SQS cho:**
 
-- **Batch operations**: Sending notifications to 10,000 users
-- **Analytics**: Aggregating trip data overnight
-- **Reporting**: Generating monthly driver performance reports
+- **Batch operations**: Gửi thông báo tới 10,000 người dùng
+- **Analytics**: Tổng hợp dữ liệu chuyến đi ban đêm
+- **Reporting**: Tạo báo cáo hiệu suất tài xế hàng tháng
 
-**Keep REST for:**
+**Giữ REST cho:**
 
-- **Real-time operations**: Create trip, driver matching, trip status updates
-- **User-facing APIs**: Anything requiring < 500ms response
+- **Real-time operations**: Tạo chuyến đi, khớp tài xế, cập nhật trạng thái
+- **User-facing APIs**: Mọi API yêu cầu response < 500ms
 
-## Validation Strategy
+## Chiến lược Xác thực
 
-**This ADR validates Module A Requirement #1:**
+**Phân tích Hoàn thành:**
 
-> "Phân tích và Bảo vệ Lựa chọn Kiến trúc: Phân tích các luồng nghiệp vụ quan trọng (tìm kiếm tài xế, cập nhật vị trí), từ đó đề xuất và bảo vệ các quyết định thiết kế nền tảng."
+- So sánh kiến trúc đồng bộ (REST) vs bất đồng bộ (SQS)
+- Xác định trade-offs: Throughput vs Latency, Decoupling vs Complexity
+- Lượng hóa tác động: +2400% throughput nhưng +3s latency
 
-**How This ADR Fulfills Requirement:**
+**Quyết định Được Bảo vệ:**
 
-1. **Analysis Completed**:
+- **Đã chọn**: REST + Circuit Breaker
+- **Đã loại bỏ**: SQS (mặc dù throughput cao hơn)
+- **Lý do**: Yêu cầu UX (< 500ms) quan trọng hơn throughput
 
-   - Compared synchronous (REST) vs asynchronous (SQS) architectures
-   - Identified trade-offs: Throughput vs Latency, Decoupling vs Complexity
-   - Quantified impact: +2400% throughput but +3s latency
-
-2. **Design Decision Defended**:
-
-   - **Chose**: REST + Circuit Breaker
-   - **Rejected**: SQS (despite higher throughput)
-   - **Rationale**: UX requirement (< 500ms) > throughput gains
-
-3. **Architectural Thinking Demonstrated**:
-   - Understanding of event-driven patterns
-   - Ability to evaluate alternatives systematically
-   - Clear communication of trade-offs
-
-**Terraform Code Status:**
+**Terraform Code Status:****
 
 - SQS queue definitions included in ADR (design reference)
 - Not added to actual Terraform modules (not implemented)
 - Can be referenced for future consideration
 
-**For Instructor Q&A:**
-
-**Q**: "Tại sao không implement SQS nếu throughput cao hơn?"  
-**A**: "Chúng em phân tích SQS tăng throughput +2400%, nhưng trade-off là latency +3s. Với ride-hailing app, user experience yêu cầu response < 500ms cho tìm xe. Chúng em quyết định ưu tiên UX hơn raw throughput, và REST + auto-scaling đã đáp ứng yêu cầu Module A."
-
-**Q**: "Module A yêu cầu hyper-scale, REST có đủ không?"  
-**A**: "REST với auto-scaling (1→10 tasks) và read replica đạt được design target ~450 RPS. SQS analysis chứng minh chúng em hiểu async patterns, nhưng không implement vì trade-off latency không acceptable. Đây là bằng chứng tư duy kiến trúc có chủ đích."
-
-**Implementation Notes:**
-
-- Decision made by: Platform Engineer (Role B)
-- Validated via: Trade-off analysis and UX requirement prioritization
-- Status: Design documented, implementation not required for Module A
 
 ## References & Learning
 
@@ -555,10 +523,3 @@ This analysis references:
 - [AWS Architecture: Event-Driven Microservices](https://aws.amazon.com/event-driven-architecture/)
 - Martin Fowler: [Event-Driven Architecture](https://martinfowler.com/articles/201701-event-driven.html)
 - Sam Newman: Building Microservices (Chapter 4: Integration)
-
-**Decision Context:**
-
-- Proposed by: Platform Engineer (Role B)
-- Analysis completed as part of Module A requirement
-- Decision: Design documented, REST chosen for implementation
-- Rationale: Latency requirement (< 500ms) incompatible with SQS (+3s)
