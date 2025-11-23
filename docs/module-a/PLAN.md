@@ -1,205 +1,57 @@
-# Module A: Scalability & Performance - Kế hoạch Tổng quan
+# Kế hoạch Thực hiện Module A: Scalability & Performance
 
-## 📋 Thông tin Cơ bản
+Tài liệu này phác thảo lộ trình chuyển đổi hệ thống UIT-Go sang kiến trúc Hyper-scale.
 
-- **Module**: Module A - Thiết kế Kiến trúc cho Scalability & Performance
-- **Timeline**: Tuần 9-12 (4 tuần)
-- **Team**: 2 thành viên (Role A: Backend, Role B: Platform)
-- **Mục tiêu**: Phân tích, thiết kế và hiện thực hóa kiến trúc hyper-scale với kiểm chứng load testing
+## Giai đoạn 1: Thiết kế Kiến trúc (Architecture Design)
 
----
+Mục tiêu: Chuyển đổi từ kiến trúc Monolithic/Synchronous sang Event-Driven/Asynchronous để tối đa hóa Throughput.
 
-## 🎯 3 Nhiệm vụ Chính (theo SE360)
+1.  **Phân tích & Ra quyết định (ADRs)**:
 
-### 1. Phân tích và Bảo vệ Lựa chọn Kiến trúc (20% điểm)
+    - **ADR-001: Async Communication (SQS)**: Chuyển luồng đặt chuyến (Booking Flow) sang xử lý bất đồng bộ.
+    - **ADR-002: Database Read Scalability**: Sử dụng Read Replicas để phân tải cho Database.
+    - **ADR-003: Caching Strategy**: Áp dụng Redis Cache cho dữ liệu truy cập thường xuyên.
+    - **ADR-004: Auto-scaling**: Thiết lập cơ chế tự động mở rộng cho Compute và Database.
 
-**Deliverables**:
+2.  **Thiết kế Chi tiết**:
+    - Sơ đồ luồng dữ liệu mới cho `TripService` -> `SQS` -> `DriverService`.
+    - Cập nhật Terraform để provision SQS, ElastiCache, RDS Read Replicas.
 
-- 8 ADRs: Code optimizations (4) + Infrastructure (4)
-- Trade-off analysis: Latency vs Throughput, Cost vs Performance
-- Async architecture design (SQS)
+## Giai đoạn 2: Hiện thực hóa (Implementation)
 
-### 2. Kiểm chứng bằng Load Testing
+Mục tiêu: Điều chỉnh mã nguồn và hạ tầng theo thiết kế mới.
 
-**Deliverables**:
+1.  **Infrastructure (Terraform)**:
+    - Thêm module SQS.
+    - Thêm module ElastiCache (Redis).
+    - Cấu hình RDS Read Replica.
+2.  **Application Code**:
+    - **TripService**: Refactor API `POST /trips` để đẩy message vào SQS thay vì gọi trực tiếp DriverService.
+    - **DriverService**: Implement SQS Consumer (Worker) để nhận yêu cầu tìm tài xế và xử lý.
+    - Implement Caching Layer (Redis) cho User Profile và Driver Location.
 
-- 4 k6 load testing scenarios
-- Before/After optimization comparison
-- Grafana charts với metrics: RPS, latency p95/p99, CPU/Memory
+## Giai đoạn 3: Kiểm chứng Thiết kế (Verification)
 
-### 3. Hiện thực hóa Tối ưu (20% điểm)
+Mục tiêu: Chứng minh kiến trúc Event-Driven hoạt động đúng đắn và ổn định (Ready for Production).
+_Môi trường thực hiện: Local (Docker Compose) - Mô phỏng môi trường Cloud._
 
-**Deliverables**:
+1.  **Load Testing (Lần 1)**:
+    - Thực hiện ngay sau khi hoàn thành Giai đoạn 2 (Implementation).
+    - Mục tiêu: Đảm bảo hệ thống không bị lỗi (Functional Correctness) dưới tải cao và cơ chế Async hoạt động như mong đợi (không mất message).
+    - Kịch bản: Spike Test (Mô phỏng lượng đặt xe tăng đột biến).
 
-- Spring Cache + Redis
-- Terraform Auto Scaling policies
-- RDS Read Replica
-- Circuit Breaker pattern
+## Giai đoạn 4: Tối ưu hóa & Kiểm chứng Hiệu năng (Tuning & Benchmarking)
 
----
+Mục tiêu: Tinh chỉnh các tham số để đạt hiệu năng cao nhất và so sánh kết quả.
 
-## 🔬 Testing Strategy (Instructor Confirmed)
+1.  **Tuning**:
 
-**Primary Environment**: Local Docker Compose
+    - **Connection Pooling**: Tối ưu HikariCP (Java) / Pool Size (Node.js).
+    - **Batch Processing**: Xử lý message theo lô (Batch) từ SQS để giảm IO.
+    - **Index Tuning**: Review và tối ưu Index database.
+    - **Redis Caching**: Tinh chỉnh TTL và Eviction Policy.
 
-- Load testing với k6 trên local
-- Grafana dashboards cho before/after charts
-- Cost: $0
-
-**AWS Terraform**: Design validation only
-
-- `terraform plan` để validate infrastructure code
-- Code production-ready nhưng không deploy
-- Rationale: Tập trung vào thiết kế, không cần chi phí AWS
-
----
-
-## 👥 Phân công Công việc
-
-### Role A - Nguyễn Việt Khoa (Backend)
-
-**Focus**: Code optimization + Load testing
-
-**Deliverables**:
-
-- Spring Cache implementation (TripService)
-- Resilience4j Circuit Breaker (DriverService calls)
-- HikariCP connection pool tuning
-- RestTemplate HTTP client pooling
-- 4 k6 load testing scripts
-- Before/After test results với Grafana screenshots
-- 4 ADRs: 013-016
-
-### Role B - Nguyễn Quốc Bảo (Platform)
-
-**Focus**: Infrastructure design + Architecture
-
-**Deliverables**:
-
-- Security Group segregation (8 SGs)
-- ECS Auto Scaling policies (CPU/Memory targets)
-- RDS Read Replica design
-- Redis backup configuration
-- Async architecture diagram (SQS)
-- 4 ADRs: 017-020
-- ARCHITECTURE.md Module A section
-- REPORT.md coordination
-
----
-
-## 📅 Timeline (Critical Path)
-
-### Week 9: Infrastructure Foundation
-
-- **Role B**: Complete Tasks B.1-B.4 (Terraform code)
-- **Role A**: Start Task A.1-A.2 (Spring Cache, Circuit Breaker)
-- **Sync**: Validate Terraform code với `terraform plan`
-
-### Week 10: Code Optimization
-
-- **Role A**: Complete Tasks A.3-A.4 (Connection pool, HTTP client)
-- **Role B**: Start Tasks B.5-B.6 (Async design, ADRs)
-- **Sync**: Review caching implementation
-
-### Week 11: Load Testing Phase
-
-- **Role A**: Tasks A.5-A.6 (k6 scripts, BEFORE tests)
-- **Role B**: Complete Tasks B.6-B.7 (ADRs, ARCHITECTURE.md)
-- **Sync**: Review bottleneck analysis
-
-### Week 12: Validation & Documentation
-
-- **Role A**: Task A.7 (AFTER tests), A.8-A.9 (ADRs, Demo prep)
-- **Role B**: Tasks B.9-B.10 (CloudWatch design, REPORT.md)
-- **Sync**: Finalize all deliverables
-
----
-
-## 📦 Deliverables Checklist
-
-### Code & Configuration
-
-- [ ] Spring Cache (A.1)
-- [ ] Circuit Breaker (A.2)
-- [ ] Connection pool (A.3)
-- [ ] HTTP client pool (A.4)
-- [ ] Auto-scaling Terraform (B.2)
-- [ ] Security Groups (B.1)
-- [ ] Read Replica (B.3)
-
-### Load Testing
-
-- [ ] 4 k6 scenarios (A.5)
-- [ ] Before results + charts (A.6)
-- [ ] After results + charts (A.7)
-
-### Documentation
-
-- [ ] 8 ADRs total (A.8, B.6)
-- [ ] ARCHITECTURE.md update (B.7)
-- [ ] REPORT.md Module A section (B.10)
-- [ ] Async architecture diagram (B.5)
-
-### Presentation
-
-- [ ] Demo slides
-- [ ] Load testing live demo
-- [ ] Architecture evolution explanation
-
----
-
-## 🎯 Expected Outcomes
-
-### Performance Metrics (Target)
-
-- **Throughput**: 100 RPS → 500+ RPS (5x improvement)
-- **Latency p95**: < 200ms cho trip search
-- **Cache Hit Rate**: > 80% cho trip history
-- **Auto-scaling**: 1→5 tasks trong 2 phút @ CPU 70%
-
-### Cost Analysis
-
-- Local testing: $0
-- Auto-scaling: -30% cost @ low traffic
-- Read replica: +50% RDS cost, -70% primary load
-
----
-
-## ⚠️ Risk Mitigation
-
-| Risk                         | Mitigation                                          |
-| ---------------------------- | --------------------------------------------------- |
-| Auto-scaling không hoạt động | Validate Terraform code, monitor CloudWatch metrics |
-| Load testing crash services  | Incremental load increase, test on local first      |
-| Cache invalidation bugs      | Integration tests cho cache logic                   |
-| Merge conflicts              | Frequent commits, PR reviews                        |
-
----
-
-## 📁 Folder Structure
-
-```
-docs/module-a/
-├── PLAN.md                          # This file
-├── ROLE_A_TASKS.md                  # Backend task checklist
-├── ROLE_B_TASKS.md                  # Platform task checklist
-├── load-testing/
-│   ├── scenarios/                   # k6 scripts
-│   └── results/                     # Before/After screenshots
-└── diagrams/                        # Architecture diagrams
-
-docs/adr/
-├── 00x-basic/                       # ADRs 001-012 (Phase 1)
-└── 01x-module-a/                    # ADRs 017-020 (Module A)
-
-terraform/modules/
-├── database/                        # Updated by Role B
-└── ecs/                             # Updated by Role B
-
-{user|trip}-service/                 # Updated by Role A
-```
-
----
-
-**Status**: 🟢 In Progress (Week 11)  
-**Last Updated**: 2025-11-22
+2.  **Load Testing (Lần 2)**:
+    - Thực hiện sau khi đã Tuning.
+    - Mục tiêu: Đo lường sự cải thiện về Throughput (RPS) và Latency so với Lần 1.
+    - So sánh kết quả để đưa vào báo cáo (Report).
