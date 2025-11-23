@@ -24,23 +24,23 @@ User Request → TripService → HTTP GET /drivers/nearby → DriverService
 
 **Vấn đề của Synchronous Communication:**
 
-### 1. Blocking I/O - Lãng phí Luồng
+### 1. Blocking I/O (Chặn I/O) - Lãng phí Luồng (Thread)
 
-- TripService thread bị block trong 200ms chờ DriverService response
-- Với 10 concurrent requests → 10 threads blocked
-- HikariCP thread pool (max=5) → saturation → requests queued
-- **Bottleneck**: TripService chỉ chịu được ~200 RPS
+- TripService thread bị chặn (block) trong 200ms chờ DriverService response
+- Với 10 concurrent requests → 10 threads bị chặn
+- HikariCP thread pool (max=5) → bão hòa (saturation) → requests xếp hàng
+- **Nút thắt (Bottleneck)**: TripService chỉ chịu được ~200 RPS
 
-### 2. Timeout Cascade - Lỗi Lan truyền
+### 2. Timeout Cascade - Lỗi Lan truyền Theo Dây chuyền
 
 ```
-DriverService slow/down (timeout 5s)
+DriverService chậm/down (timeout 5s)
     ↓
 TripService request timeout
     ↓
-User sees 503 Service Unavailable
+User nhận lỗi 503 Service Unavailable
     ↓
-Cơn bão thử lại → TripService overload
+Retry storm (cơn bão retry) → TripService bị quá tải (overload)
 ```
 
 ### 3. Tight Coupling - Phụ thuộc Dịch vụ
@@ -49,13 +49,13 @@ Cơn bão thử lại → TripService overload
 - DriverService down → TripService degraded
 - Deployment của DriverService → rollback TripService nếu có thay đổi không tương thích
 
-### 4. Limited Scalability
+### 4. Khả năng Mở rộng Hạn chế (Limited Scalability)
 
-**Load Testing Results:**
+**Kết quả Load Testing:**
 
-- 1 TripService task = 100 RPS max
-- Auto-scale to 10 tasks = 1000 RPS max
-- DriverService bottleneck = 500 RPS (Redis latency)
+- 1 TripService task = 100 RPS tối đa
+- Auto-scale lên 10 tasks = 1000 RPS tối đa
+- DriverService nút thắt (bottleneck) = 500 RPS (do độ trễ Redis)
 - **Nút thắt Hệ thống**: 500 RPS (giới hạn bởi dịch vụ yếu nhất)
 
 ## Quyết định (Thiết kế - Không Triển khai)
@@ -162,7 +162,7 @@ resource "aws_sqs_queue" "driver_responses_dlq" {
 
 ```json
 {
-  "messageId": "uuid-1234",  // Giống request (tương quan)
+  "messageId": "uuid-1234", // Giống request (tương quan)
   "tripId": 789,
   "drivers": [
     { "id": 456, "name": "Nguyen Van A", "distance": 1.2, "rating": 4.8 },
@@ -508,12 +508,11 @@ T=3.5s: User receives WebSocket notification "Driver found!"
 - **Đã loại bỏ**: SQS (mặc dù throughput cao hơn)
 - **Lý do**: Yêu cầu UX (< 500ms) quan trọng hơn throughput
 
-**Terraform Code Status:****
+**Terraform Code Status:\*\***
 
 - SQS queue definitions included in ADR (design reference)
 - Not added to actual Terraform modules (not implemented)
 - Can be referenced for future consideration
-
 
 ## References & Learning
 

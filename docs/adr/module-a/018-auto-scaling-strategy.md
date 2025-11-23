@@ -10,20 +10,20 @@ Trong Giai đoạn 1, hệ thống có `desired_count = 1` hardcoded cho mỗi E
 
 **Vấn đề hiện tại:**
 
-- Traffic tăng đột biến (ví dụ: peak giờ tan tầm 5-6 PM) → service crash hoặc latency spike
-- CPU/Memory spike khi xử lý batch requests (ví dụ: nhập liệu 1000 tài xế cùng lúc)
-- Không thể tận dụng ECS Fargate auto-scaling capabilities
+- Traffic tăng đột biến (ví dụ: giờ cao điểm 5-6 PM) → service crash hoặc độ trễ tăng đột ngột (latency spike)
+- CPU/Memory tăng đột ngột (spike) khi xử lý batch requests (ví dụ: nhập liệu 1000 tài xế cùng lúc)
+- Không thể tận dụng khả năng auto-scaling của ECS Fargate
 - Lãng phí tài nguyên khi traffic thấp (vẫn chạy 1 task dù không có request)
 
-**Baseline Performance Estimates (Design Analysis):**
+**Ước tính Hiệu năng Cơ sở (Baseline Performance Estimates):**
 
-- **Throughput**: ~100 RPS max (estimated bottleneck tại trip-service)
-- **Latency p95**: ~500ms (create trip), ~800ms (trip history) - industry benchmark
-- **CPU Utilization**: 85% sustained @ 100 RPS → nguy cơ crash
-- **Memory Utilization**: 70% sustained
-- **Failure Rate**: 5% dự kiến @ > 100 người dùng đồng thời (timeout, 503 errors)
+- **Throughput (Thông lượng)**: ~100 RPS tối đa (ước tính nút thắt tại trip-service)
+- **Latency p95 (Độ trễ phần trăm thứ 95)**: ~500ms (tạo chuyến đi), ~800ms (lịch sử) - so với industry benchmark
+- **CPU Utilization (Sử dụng CPU)**: 85% liên tục tại 100 RPS → nguy cơ crash
+- **Memory Utilization (Sử dụng Bộ nhớ)**: 70% liên tục
+- **Failure Rate (Tỷ lệ Lỗi)**: 5% dự kiến khi có >100 người dùng đồng thời (timeout, 503 errors)
 
-**Note**: Actual metrics to be validated via local k6 load testing (Task A.5-A.7)
+**Lưu ý**: Các chỉ số thực tế cần được xác thực qua load testing với k6 trên môi trường local
 
 ## Quyết định
 
@@ -88,33 +88,33 @@ max_capacity = 10  # Tối đa 10 tasks (ngăn chặn scale không kiểm soát)
 - **Scale-out cooldown: 60s** (nhanh, prevent latency spike)
 - **Scale-in cooldown: 300s** (chậm, ngăn chặn dao động - tránh scale up/down liên tục)
 
-## Lý do (Ưu tiên)
+## Lý do (ƪu tiên)
 
-### 1. Availability - Ngăn chặn Giảm chất lượng Dịch vụ (Ưu tiên cao nhất)
+### 1. Tính khả dụng (Availability) - Ngăn chặn Giảm chất lượng Dịch vụ (Ưu tiên cao nhất)
 
 - Tự động scale out khi CPU > 70% → latency p95 giảm từ 500ms → 300ms
 - Ngăn chặn lỗi lan truyền (trip-service crash → ảnh hưởng user-service)
-- SLA target: 99.9% uptime (downtime < 43 phút/tháng)
+- Mục tiêu SLA: 99.9% uptime (downtime < 43 phút/tháng)
 
-### 2. Cost Efficiency - Trả tiền theo Mức sử dụng
+### 2. Hiệu quả Chi phí (Cost Efficiency) - Trả tiền theo Mức sử dụng
 
-- **Off-peak** (12 AM - 6 AM): Scale down to 1 task → save ~$0.40/hour × 6h = $2.40/day
-- **Peak** (5 PM - 7 PM): Scale up to 5-8 tasks → cost tăng 5-8x trong 2 giờ
-- **Total savings**: ~30% monthly cost vs fixed 3 tasks 24/7
+- **Off-peak** (12 AM - 6 AM): Scale down to 1 task → tiết kiệm ~$0.40/giờ × 6h = $2.40/ngày
+- **Peak** (5 PM - 7 PM): Scale up to 5-8 tasks → chi phí tăng 5-8x trong 2 giờ
+- **Tổng tiết kiệm**: ~30% chi phí hàng tháng so với chạy cố định 3 tasks 24/7
 
-### 3. Performance - Tối ưu hóa Sử dụng Tài nguyên
+### 3. Hiệu năng (Performance) - Tối ưu hóa Sử dụng Tài nguyên
 
-- CPU target 70% → CPU không idle (< 50%) nhưng cũng không overload (> 85%)
+- CPU target 70% → CPU không idle (< 50%) nhưng cũng không quá tải (> 85%)
 - Memory target 80% → tận dụng RAM, tránh OOM (hết bộ nhớ)
 
-### 4. Reliability - Self-healing
+### 4. Độ tin cậy - Tự phục hồi (Reliability - Self-healing)
 
-- Service crash (bug, memory leak) → Auto-scaling tạo task mới
-- Task terminated (deployment) → Desired count maintained
+- Service crash (do bug, memory leak) → Auto-scaling tự động tạo task mới thay thế
+- Task bị dừng (khi deployment hoặc bảo trì) → ECS tự động duy trì số lượng desired count
 
 ## Đánh đổi (Chấp nhận)
 
-### 1. Độ trễ Khởi động Lạnh - Thời gian Scale-out ~90 giây (Chấp nhận được)
+### 1. Độ trễ Khởi động Lạnh (Cold Start Latency) - Thời gian Scale-out ~90 giây
 
 **Breakdown:**
 
@@ -131,12 +131,12 @@ max_capacity = 10  # Tối đa 10 tasks (ngăn chặn scale không kiểm soát)
 
 ### 2. Cost - Unpredictable during Peak (Acceptable)
 
-**Scenario:**
+**Kịch bản:**
 
-- Sự kiện lan truyền (tuyến đường trending) → 10,000 người dùng đồng thời
-- Scale to max 10 tasks × 3 services = 30 tasks
-- Cost: $0.05/task/hour × 30 tasks × 2 hours = $3 for event
-- **Trade-off**: Tăng cost ngắn hạn để maintain availability
+- Sự kiện viral (ví dụ: tuyến đường hot trending trên mạng xã hội) → 10,000 người dùng đồng thời
+- Scale lên tối đa: 10 tasks × 3 services = 30 tasks
+- Chi phí: $0.05/task/giờ × 30 tasks × 2 giờ = $3 cho sự kiện
+- **Đánh đổi**: Tăng chi phí ngắn hạn để duy trì tính khả dụng (availability)
 
 **Mitigation:**
 
@@ -157,19 +157,19 @@ max_capacity = 10  # Tối đa 10 tasks (ngăn chặn scale không kiểm soát)
 - CloudWatch Insights để phân tích mẫu scaling
 - Điều chỉnh liên tục (adjust sau 1-2 tuần production data)
 
-### 4. Database Connection Pool - Nút thắt Tiềm ẩn (Đã giải quyết)
+### 4. Connection Pool Database - Nút thắt Tiềm ẩn (Đã giải quyết)
 
-**Problem:**
+**Vấn đề:**
 
-- 10 tasks × 5 connections/task = 50 connections
+- 10 tasks × 5 kết nối/task = 50 kết nối
 - RDS t3.micro max_connections = 87
-- Headroom: 87 - 50 = 37 connections (43% buffer)
+- Dư phòng (Headroom): 87 - 50 = 37 kết nối (43% buffer)
 
-**Mitigation:**
+**Giảm thiểu:**
 
 - HikariCP config: `max_pool_size=5, min_idle=2` (per task)
 - Giám sát metric RDS DatabaseConnections
-- Alert khi > 70 connections (80% threshold)
+- Cảnh báo khi > 70 kết nối (ngưỡng 80%)
 
 ## Kết quả (Design Targets - To Be Validated)
 
@@ -213,21 +213,21 @@ Timeline:
 
 ## So sánh Phương án
 
-### Option 1: Target Tracking (Chosen) ✅
+### Option 1: Target Tracking (Đã chọn) ✓
 
-- **Pros**: Tự động, dễ config, AWS managed
-- **Cons**: Cold start delay, tuning complexity
+- **Ưu điểm**: Tự động, dễ config, AWS quản lý
+- **Nhược điểm**: Độ trễ khởi động lạnh (cold start delay), độ phức tạp tuning
 
-### Option 2: Step Scaling (Rejected) ❌
+### Option 2: Step Scaling (Không chọn) ✗
 
-- **Pros**: Kiểm soát chi tiết (ví dụ: CPU 70% → +1 task, CPU 85% → +3 tasks)
-- **Cons**: Phức tạp hơn, dễ cấu hình sai, không tự động adjust target
+- **Ưu điểm**: Kiểm soát chi tiết (ví dụ: CPU 70% → +1 task, CPU 85% → +3 tasks)
+- **Nhược điểm**: Phức tạp hơn, dễ cấu hình sai, không tự động điều chỉnh target
 
-### Option 3: Scheduled Scaling (Hybrid - Future) 🔄
+### Option 3: Scheduled Scaling (Kết hợp - Tương lai) 🔄
 
-- **Pros**: Chi phí dự đoán được, không khởi động lạnh (scale trước peak)
-- **Cons**: Yêu cầu biết traffic pattern (dựa trên dữ liệu)
-- **Decision**: Combine với Target Tracking sau khi có production data
+- **Ưu điểm**: Chi phí dự đoán được, không khởi động lạnh (scale trước giờ cao điểm)
+- **Nhược điểm**: Yêu cầu biết mẫu traffic (dựa trên dữ liệu)
+- **Quyết định**: Kết hợp với Target Tracking sau khi có production data
 
 ## Tài liệu tham khảo
 

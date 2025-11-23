@@ -8,15 +8,15 @@
 
 Trip history queries là tác vụ đọc nặng với tỷ lệ write:read = 1:100. Mỗi trip được tạo 1 lần (INSERT), nhưng được query nhiều lần (user xem lịch sử, analytics, reporting).
 
-**Vấn đề hiện tại (Baseline Analysis):**
+**Vấn đề hiện tại (Phân tích Cơ sở - Baseline Analysis):**
 
-- Primary RDS instance (trip_db) xử lý cả reads và writes
-- Query load: ~90% reads, 10% writes (tính chất điển hình của tác vụ đọc nặng)
-- Latency trip history: ~800ms p95 (estimated - slow SELECT với JOIN)
-- Database connections: Risk of saturation under load
-- CPU Utilization: Expected bottleneck @ 75% sustained
+- Primary RDS instance (trip_db) xử lý cả đọc (reads) và ghi (writes)
+- Query load: ~90% reads, 10% writes (tính chất điển hình của tác vụ đọc nặng - read-heavy workload)
+- Độ trễ (Latency) truy vấn lịch sử chuyến đi: ~800ms p95 (ước tính - truy vấn SELECT chậm do JOIN nhiều bảng)
+- Kết nối database: Nguy cơ bão hòa (saturation) khi tải cao
+- Sử dụng CPU: Dự kiến nút thắt (bottleneck) tại 75% liên tục
 
-**Note**: Metrics based on typical microservices patterns, to be validated via load testing
+**Lưu ý**: Chỉ số dựa trên mẫu microservices điển hình, cần xác thực qua load testing thực tế
 
 **Query patterns:**
 

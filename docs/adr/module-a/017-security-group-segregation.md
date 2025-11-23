@@ -18,9 +18,9 @@ Trong Giai đoạn 1 (baseline implementation), hệ thống sử dụng 1 Secur
 
 **Phân tích rủi ro:**
 
-- **Attack Surface**: Quá rộng - 1 lỗ hổng ở bất kỳ service nào → toàn bộ data layer bị lộ
-- **Tuân thủ**: Không đáp ứng yêu cầu kiểm toán về Nguyên tắc Đặc quyền Tối thiểu
-- **Phạm vi Tổn thương**: Nếu DriverService bị tấn công, kẻ tấn công có thể đọc/ghi thông tin xác thực người dùng và dữ liệu chuyến đi
+- **Bề mặt Tấn công (Attack Surface)**: Quá rộng - 1 lỗ hổng ở bất kỳ service nào → toàn bộ data layer bị lộ
+- **Tuân thủ (Compliance)**: Không đáp ứng yêu cầu audit về Nguyên tắc Đặc quyền Tối thiểu (Least Privilege)
+- **Phạm vi Tổn thương (Blast Radius)**: Nếu DriverService bị tấn công, kẻ tấn công có thể đọc/ghi thông tin xác thực người dùng và dữ liệu chuyến đi
 
 ## Quyết định
 
@@ -71,17 +71,17 @@ ingress {
 - DriverService không thể truy cập PostgreSQL
 - Giảm attack surface từ 100% (toàn bộ VPC) xuống ~10% (chỉ service cụ thể)
 
-### 2. Compliance & Audit
+### 2. Tuân thủ và Kiểm tra (Compliance & Audit)
 
-- Đáp ứng yêu cầu PCI-DSS, SOC 2 về network segmentation
-- Dễ dàng chứng minh với kiểm toán viên: "UserService chỉ có thể truy cập user_db"
+- Đáp ứng yêu cầu PCI-DSS, SOC 2 về phân đoạn mạng (network segmentation)
+- Dễ dàng chứng minh với auditor: "UserService chỉ có thể truy cập user_db"
 - Security logs rõ ràng hơn (biết chính xác traffic nguồn)
 
-### 3. Blast Radius Containment
+### 3. Hạn chế Phạm vi Tổn thương (Blast Radius Containment)
 
 - Khi DriverService bị tấn công thành công, kẻ tấn công **chỉ có thể** truy cập Redis
-- Không thể lateral movement sang user_db hoặc trip_db
-- Giới hạn thiệt hại trong 1 service boundary
+- Không thể di chuyển ngang (lateral movement) sang user_db hoặc trip_db
+- Giới hạn thiệt hại trong phạm vi 1 service
 
 ### 4. Defense in Depth
 
@@ -90,20 +90,20 @@ ingress {
 
 ## Đánh đổi (Chấp nhận)
 
-### 1. Complexity - Tăng số lượng Security Groups (Acceptable)
+### 1. Độ phức tạp (Complexity) - Tăng số lượng Security Groups
 
-- **Before**: 2 SGs (db_access, alb_sg)
-- **After**: 8 SGs (user_db, trip_db, redis, user_service, trip_service, driver_service, alb, nat)
+- **Trước**: 2 SGs (db_access, alb_sg)
+- **Sau**: 8 SGs (user_db, trip_db, redis, user_service, trip_service, driver_service, alb, nat)
 - **Tác động**: Khó quản lý hơn, khó gỡ lỗi vấn đề mạng
 - **Giảm thiểu**: Terraform IaC giúp quản lý tự động, đặt tên rõ ràng
 
-### 2. Terraform Code - Tăng ~150 dòng code (Acceptable)
+### 2. Terraform Code - Tăng ~150 dòng code
 
 - Thêm 6 security group resources
 - Thêm 4 security group rule resources (explicit rules)
-- **Đánh đổi**: Code dài hơn nhưng dễ đọc, dễ kiểm toán
+- **Đánh đổi**: Code dài hơn nhưng dễ đọc, dễ kiểm tra
 
-### 3. Debugging - Khó hơn khi có network connectivity issues (Acceptable)
+### 3. Gỡ lỗi (Debugging) - Khó hơn khi có vấn đề kết nối mạng
 
 - Phải kiểm tra nhiều SGs thay vì 1 SG
 - **Giảm thiểu**:
@@ -111,11 +111,12 @@ ingress {
   - CloudWatch Insights query: "Rejected traffic from SG X to SG Y"
   - Terraform outputs hiển thị tất cả SG IDs
 
-### 4. Module Dependency - Circular dependency issue (Resolved)
+### 4. Phụ thuộc Terraform Module - Giải quyết Circular Dependency
 
-- **Problem**: Database module cần `alb_sg_id`, ECS module cần `service_sg_ids` → circular
-- **Solution**: Di chuyển ALB SG từ ECS module sang Network module
-- **Module flow**: Network → Database → ECS (acyclic graph)
+- **Vấn đề**: Database module cần `alb_sg_id` (từ ECS), ECS module cần `service_sg_ids` (từ Database) → phụ thuộc vòng tròn
+- **Giải pháp**: Di chuyển ALB Security Group từ ECS module sang Network module
+- **Thứ tự khởi tạo module**: Network (tạo ALB SG) → Database (nhận ALB SG ID) → ECS (nhận service SG IDs)
+- **Kết quả**: Đồ thị phụ thuộc không vòng (acyclic dependency graph)
 
 ## Kết quả
 
@@ -143,7 +144,7 @@ Penetration testing scenario:
 
 - [AWS Security Groups Best Practices](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html)
 - [NIST SP 800-53: Network Segmentation](https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final)
-- Terraform AWS Provider: `aws_security_group`, `aws_security_group_rule`
+- [Terraform AWS Provider Documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs): `aws_security_group`, `aws_security_group_rule`
 
 ## Validation Strategy
 
