@@ -17,7 +17,7 @@ app.use("/drivers", driverRoutes);
 // Start SQS Consumer
 if (process.env.SQS_QUEUE_URL) {
   sqsConsumer.start();
-  console.log('SQS Consumer started');
+  console.log("SQS Consumer started");
 }
 
 // API "Hello World" để kiểm tra service
