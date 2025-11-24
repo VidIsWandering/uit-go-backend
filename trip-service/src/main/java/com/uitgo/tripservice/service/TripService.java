@@ -14,6 +14,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
+import io.awspring.cloud.messaging.core.QueueMessagingTemplate;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.uitgo.tripservice.model.Location;
 import com.uitgo.tripservice.model.Trip;
@@ -24,10 +28,15 @@ import com.uitgo.tripservice.repository.TripRepository;
 public class TripService {
     private final TripRepository tripRepository;
     private final PricingService pricingService;
+    private final QueueMessagingTemplate queueMessagingTemplate;
 
-    public TripService(TripRepository tripRepository, PricingService pricingService) {
+    @Value("${SQS_QUEUE_URL}")
+    private String queueUrl;
+
+    public TripService(TripRepository tripRepository, PricingService pricingService, QueueMessagingTemplate queueMessagingTemplate) {
         this.tripRepository = tripRepository;
         this.pricingService = pricingService;
+        this.queueMessagingTemplate = queueMessagingTemplate;
     }
 
     @Transactional
@@ -43,7 +52,20 @@ public class TripService {
         double price = pricingService.calculatePrice(origin, destination);
         trip.setDistanceMeters(distance);
         trip.setPrice(price);
-        return tripRepository.save(trip);
+        Trip savedTrip = tripRepository.save(trip);
+
+        // Send message to SQS
+        Map<String, Object> message = new HashMap<>();
+        message.put("tripId", savedTrip.getId());
+        message.put("passengerId", savedTrip.getPassengerId());
+        message.put("origin", origin);
+        message.put("destination", destination);
+        message.put("distance", savedTrip.getDistanceMeters());
+        message.put("price", savedTrip.getPrice());
+        
+        queueMessagingTemplate.convertAndSend(queueUrl, message);
+
+        return savedTrip;
     }
 
     public Optional<Trip> getTripById(UUID tripId) {

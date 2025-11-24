@@ -21,8 +21,9 @@ Việc duy trì ADR giúp chúng tôi:
 | :----------------------------------------------------- | :---------------------------- | :---------- | :------------------------------------------------------------------------------------------------- |
 | [001](./module-a/001-architecture-async-processing.md) | **Async Communication (SQS)** | ✅ Accepted | Chuyển từ REST đồng bộ sang SQS bất đồng bộ để chịu tải cao (High Throughput).                     |
 | [002](./module-a/002-database-read-replicas.md)        | **Database Read Scalability** | ✅ Accepted | Sử dụng Read Replicas và CQRS Lite để giải quyết nút thắt cổ chai khi Đọc dữ liệu.                 |
-| [003](./module-a/003-caching-strategy.md)              | **Caching & Geo-spatial**     | ✅ Accepted | Sử dụng Redis cho Caching và xử lý vị trí thời gian thực (Geo-spatial) thay vì PostGIS.            |
+| [003](./module-a/003-caching-strategy.md)              | **Centralized Caching**       | ✅ Accepted | Mở rộng Redis làm trung tâm Caching cho User Profile và Config.                                    |
 | [004](./module-a/004-autoscaling-strategy.md)          | **Auto-scaling Strategy**     | ✅ Accepted | Chiến lược scale đa tầng (Compute & Storage) kết hợp Read Replicas để tối ưu chi phí và hiệu năng. |
+| [005](./module-a/005-concurrency-control.md)           | **Concurrency Control**       | ✅ Accepted | Sử dụng Optimistic Locking để giải quyết Race Condition trong môi trường phân tán.                 |
 
 ### 🏗️ Core Infrastructure (Giai đoạn 1 - Nền tảng)
 

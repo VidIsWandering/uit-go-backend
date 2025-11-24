@@ -1,57 +1,69 @@
 # Kế hoạch Thực hiện Module A: Scalability & Performance
 
-Tài liệu này phác thảo lộ trình chuyển đổi hệ thống UIT-Go sang kiến trúc Hyper-scale.
+Tài liệu này phác thảo lộ trình chuyển đổi hệ thống UIT-Go sang kiến trúc Hyper-scale, tập trung vào việc giải quyết các bài toán về hiệu năng và khả năng mở rộng.
 
-## Giai đoạn 1: Thiết kế Kiến trúc (Architecture Design)
+## 1. Phân tích & Thiết kế Kiến trúc (Architecture Analysis & Design)
 
-Mục tiêu: Chuyển đổi từ kiến trúc Monolithic/Synchronous sang Event-Driven/Asynchronous để tối đa hóa Throughput.
+Mục tiêu: Xác định các điểm nghẽn (bottlenecks) tiềm tàng và đề xuất giải pháp kiến trúc phù hợp.
 
-1.  **Phân tích & Ra quyết định (ADRs)**:
+### Các Quyết định Kiến trúc (ADRs)
 
-    - **ADR-001: Async Communication (SQS)**: Chuyển luồng đặt chuyến (Booking Flow) sang xử lý bất đồng bộ.
-    - **ADR-002: Database Read Scalability**: Sử dụng Read Replicas để phân tải cho Database.
-    - **ADR-003: Caching Strategy**: Áp dụng Redis Cache cho dữ liệu truy cập thường xuyên.
-    - **ADR-004: Auto-scaling**: Thiết lập cơ chế tự động mở rộng cho Compute và Database.
+Chúng ta tập trung vào 3 trụ cột chính để đạt Hyper-scale:
 
-2.  **Thiết kế Chi tiết**:
-    - Sơ đồ luồng dữ liệu mới cho `TripService` -> `SQS` -> `DriverService`.
-    - Cập nhật Terraform để provision SQS, ElastiCache, RDS Read Replicas.
+1.  **Asynchronous Processing (ADR-001)**: Giải quyết vấn đề "Temporal Coupling" và "Flash Crowd" bằng AWS SQS.
+2.  **Read Scalability (ADR-002)**: Giải quyết vấn đề "Read-Heavy" bằng Read Replicas và mô hình CQRS Lite.
+3.  **Centralized Caching (ADR-003)**: Giải quyết vấn đề "High Frequency Access" bằng Redis Cluster.
+4.  **Concurrency Control (ADR-005)**: Giải quyết vấn đề "Race Condition" khi đặt xe bằng Optimistic Locking.
 
-## Giai đoạn 2: Hiện thực hóa (Implementation)
+## 2. Hiện thực hóa (Implementation)
 
-Mục tiêu: Điều chỉnh mã nguồn và hạ tầng theo thiết kế mới.
+Mục tiêu: Chuyển đổi mã nguồn và hạ tầng để hỗ trợ kiến trúc mới.
 
-1.  **Infrastructure (Terraform)**:
-    - Thêm module SQS.
-    - Thêm module ElastiCache (Redis).
-    - Cấu hình RDS Read Replica.
-2.  **Application Code**:
-    - **TripService**: Refactor API `POST /trips` để đẩy message vào SQS thay vì gọi trực tiếp DriverService.
-    - **DriverService**: Implement SQS Consumer (Worker) để nhận yêu cầu tìm tài xế và xử lý.
-    - Implement Caching Layer (Redis) cho User Profile và Driver Location.
+### Infrastructure (Terraform)
 
-## Giai đoạn 3: Kiểm chứng Thiết kế (Verification)
+- [x] Provision SQS Queue (Standard) & DLQ.
+- [x] Provision ElastiCache (Redis) Cluster.
+- [x] Provision RDS Read Replicas (PostgreSQL).
+- [x] Cấu hình Auto Scaling cho ECS Services (ADR-004).
 
-Mục tiêu: Chứng minh kiến trúc Event-Driven hoạt động đúng đắn và ổn định (Ready for Production).
-_Môi trường thực hiện: Local (Docker Compose) - Mô phỏng môi trường Cloud._
+### Application Code
 
-1.  **Load Testing (Lần 1)**:
-    - Thực hiện ngay sau khi hoàn thành Giai đoạn 2 (Implementation).
-    - Mục tiêu: Đảm bảo hệ thống không bị lỗi (Functional Correctness) dưới tải cao và cơ chế Async hoạt động như mong đợi (không mất message).
-    - Kịch bản: Spike Test (Mô phỏng lượng đặt xe tăng đột biến).
+- [x] **TripService (Producer)**: Tách luồng đặt xe, gửi message vào SQS.
+- [x] **DriverService (Consumer)**: Implement Worker xử lý message tìm tài xế.
+- [x] **UserService**: Implement Caching Layer (@Cacheable) cho User Profile.
+- [ ] **TripService**: Implement Optimistic Locking (@Version) cho Trip entity.
 
-## Giai đoạn 4: Tối ưu hóa & Kiểm chứng Hiệu năng (Tuning & Benchmarking)
+## 3. Chiến lược Kiểm chứng (Verification Strategy)
 
-Mục tiêu: Tinh chỉnh các tham số để đạt hiệu năng cao nhất và so sánh kết quả.
+Chúng ta chia quá trình kiểm chứng thành 2 giai đoạn để đo lường hiệu quả của từng nhóm giải pháp.
 
-1.  **Tuning**:
+### Giai đoạn 1: Xác thực Kiến trúc (Architecture Verification)
 
-    - **Connection Pooling**: Tối ưu HikariCP (Java) / Pool Size (Node.js).
-    - **Batch Processing**: Xử lý message theo lô (Batch) từ SQS để giảm IO.
-    - **Index Tuning**: Review và tối ưu Index database.
-    - **Redis Caching**: Tinh chỉnh TTL và Eviction Policy.
+_Mục tiêu: Chứng minh tính đúng đắn (Correctness) và khả năng chịu lỗi (Resilience) của kiến trúc Event-Driven._
 
-2.  **Load Testing (Lần 2)**:
-    - Thực hiện sau khi đã Tuning.
-    - Mục tiêu: Đo lường sự cải thiện về Throughput (RPS) và Latency so với Lần 1.
-    - So sánh kết quả để đưa vào báo cáo (Report).
+- **Kịch bản**: Spike Test (Mô phỏng lượng đặt xe tăng đột biến trong thời gian ngắn).
+- **Trọng tâm đo lường**:
+  - **Success Rate**: Tỷ lệ đặt xe thành công (không bị 500 Error).
+  - **Queue Depth**: Khả năng hấp thụ traffic của SQS.
+  - **Data Consistency**: Đảm bảo dữ liệu User trong Cache khớp với DB (sau khi fix Cache Eviction).
+
+### Giai đoạn 2: Tối ưu hóa & Benchmarking (Optimization)
+
+_Mục tiêu: Đẩy hiệu năng (Throughput/RPS) lên mức cực đại._
+
+- **Các kỹ thuật Tuning áp dụng**:
+
+  1.  **Database Scaling**: Kích hoạt Read/Write Splitting (RoutingDataSource) để tận dụng Read Replicas.
+  2.  **Connection Pooling**: Tinh chỉnh HikariCP (max-lifetime, idle-timeout) để giảm overhead kết nối.
+  3.  **SQS Batching**: Cấu hình Consumer đọc/xử lý theo lô (Batch Size = 10) để giảm I/O.
+  4.  **Database Indexing**: Tối ưu Index cho các cột hay truy vấn (`driver_id`, `status`).
+
+- **So sánh**: Lập bảng so sánh RPS và Latency giữa Giai đoạn 1 (Baseline) và Giai đoạn 2 (Optimized) để đưa vào Báo cáo.
+
+## 4. Sản phẩm Bàn giao (Deliverables)
+
+- **Source Code**: Đã refactor theo kiến trúc Microservices + Event-Driven.
+- **Infrastructure Code**: Terraform modules hoàn chỉnh.
+- **Documentation**:
+  - Hệ thống ADRs (001-005) phản ánh thiết kế đích.
+  - Báo cáo phân tích Trade-off và Kết quả Load Test.

@@ -86,6 +86,13 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- AWS SQS -->
+		<dependency>
+			<groupId>io.awspring.cloud</groupId>
+			<artifactId>spring-cloud-starter-aws-messaging</artifactId>
+			<version>2.4.4</version>
+		</dependency>
+
 		<!-- Testing -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

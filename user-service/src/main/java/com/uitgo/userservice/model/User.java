@@ -2,6 +2,7 @@ package com.uitgo.userservice.model;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,7 +18,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Id
     private String id = UUID.randomUUID().toString();
 
