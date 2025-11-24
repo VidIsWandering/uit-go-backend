@@ -20,12 +20,16 @@ import com.uitgo.userservice.dto.RegisterRequest;
 import com.uitgo.userservice.model.User;
 import com.uitgo.userservice.repository.UserRepository;
 import com.uitgo.userservice.service.JwtService;
+import com.uitgo.userservice.service.UserService;
 
 @RestController
 public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private JwtService jwtService;
@@ -91,7 +95,7 @@ public class UserController {
             .parseClaimsJws(token)
             .getBody();
         String userId = claims.getSubject();
-            Optional<User> uo = userRepository.findById(userId);
+            Optional<User> uo = userService.getUserById(userId);
             if (uo.isEmpty()) return ResponseEntity.status(401).build();
             User u = uo.get();
             Map<String, Object> resp = new HashMap<>();

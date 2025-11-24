@@ -77,3 +77,13 @@ variable "trip_db_name" {
   type        = string
   default     = "uit_trip_db"
 }
+
+variable "booking_queue_url" {
+  description = "URL of the SQS booking queue"
+  type        = string
+}
+
+variable "booking_queue_arn" {
+  description = "ARN of the SQS booking queue"
+  type        = string
+}

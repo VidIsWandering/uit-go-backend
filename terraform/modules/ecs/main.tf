@@ -89,6 +89,28 @@ resource "aws_iam_role_policy" "ecs_task_secrets_policy" {
   })
 }
 
+# Tạo một Chính sách IAM tùy chỉnh (Inline Policy) cho phép truy cập SQS
+resource "aws_iam_role_policy" "ecs_task_sqs_policy" {
+  name = "uit-go-ecs-task-sqs-policy"
+  role = aws_iam_role.ecs_task_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "sqs:SendMessage",
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes"
+        ]
+        Effect   = "Allow"
+        Resource = var.booking_queue_arn
+      }
+    ]
+  })
+}
+
 # Lấy thông tin tài khoản AWS hiện tại (để xây dựng ARN chính xác)
 data "aws_caller_identity" "current" {}
 
@@ -174,7 +196,8 @@ resource "aws_ecs_task_definition" "trip_service_task" {
         { name = "SPRING_DATASOURCE_URL", value = "jdbc:postgresql://${var.trip_db_endpoint}/${var.trip_db_name}" },
         # URL của các service khác (sẽ dùng Service Discovery hoặc Load Balancer sau)
         { name = "USER_SERVICE_URL", value = "http://user.uit-go.local:8080" },    # Tạm thời
-        { name = "DRIVER_SERVICE_URL", value = "http://driver.uit-go.local:8082" } # Tạm thời
+        { name = "DRIVER_SERVICE_URL", value = "http://driver.uit-go.local:8082" }, # Tạm thời
+        { name = "SQS_QUEUE_URL", value = var.booking_queue_url }
       ]
       secrets = [
         { name = "SPRING_DATASOURCE_PASSWORD", valueFrom = var.trip_db_password_secret_arn }
@@ -221,7 +244,8 @@ resource "aws_ecs_task_definition" "driver_service_task" {
       portMappings = [{ containerPort = 8082, hostPort = 8082 }]
       environment = [
         # Endpoint lấy từ output của ElastiCache cluster
-        { name = "REDIS_URL", value = "redis://${var.redis_endpoint}:${"6379"}" }
+        { name = "REDIS_URL", value = "redis://${var.redis_endpoint}:${"6379"}" },
+        { name = "SQS_QUEUE_URL", value = var.booking_queue_url }
       ]
       # secrets = [] # Tạm thời chưa cần secret
       logConfiguration = {

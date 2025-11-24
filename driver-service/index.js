@@ -8,10 +8,17 @@ app.use(express.json()); // Middleware để đọc JSON body
 
 // --- Import Routes ---
 const driverRoutes = require("./routes/driver.routes");
+const sqsConsumer = require("./services/sqsConsumer");
 
 // --- Sử dụng Routes ---
 // Tất cả các route trong 'driver.routes.js' sẽ có tiền tố là '/drivers'
 app.use("/drivers", driverRoutes);
+
+// Start SQS Consumer
+if (process.env.SQS_QUEUE_URL) {
+  sqsConsumer.start();
+  console.log('SQS Consumer started');
+}
 
 // API "Hello World" để kiểm tra service
 app.get("/", (req, res) => {

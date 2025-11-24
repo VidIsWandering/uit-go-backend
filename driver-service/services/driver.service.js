@@ -121,10 +121,30 @@ const getLocation = async (driverId) => {
   }
 };
 
+/**
+ * Xử lý yêu cầu đặt chuyến từ SQS
+ */
+const handleBookingRequest = async (bookingData) => {
+  console.log(`[DriverService] Processing booking request: ${bookingData.tripId}`);
+  
+  const { origin, tripId } = bookingData;
+  
+  // Tìm tài xế gần điểm đón
+  const nearby = await findNearby(origin.longitude, origin.latitude, 5); // 5km radius
+  
+  console.log(`[DriverService] Found ${nearby.drivers.length} drivers for trip ${tripId}`);
+  
+  // Trong thực tế: Gửi thông báo cho tài xế (WebSocket/Push)
+  // Ở đây chúng ta chỉ log ra
+  
+  return nearby.drivers;
+};
+
 // Xuất các hàm logic này ra
 module.exports = {
   updateLocation,
   findNearby,
   updateStatus,
   getLocation,
+  handleBookingRequest,
 };

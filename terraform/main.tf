@@ -32,6 +32,11 @@ module "database" {
   alb_sg_id = module.network.alb_sg_id
 }
 
+# --- Module SQS (Message Queue) ---
+module "sqs" {
+  source = "./modules/sqs"
+}
+
 # --- Module Triển khai (ECS, ALB, ECR, IAM) ---
 module "ecs" {
   source = "./modules/ecs"
@@ -56,4 +61,8 @@ module "ecs" {
   redis_endpoint              = module.database.redis_endpoint
   user_db_password_secret_arn = module.database.user_db_password_secret_arn
   trip_db_password_secret_arn = module.database.trip_db_password_secret_arn
+
+  # Lấy SQS info từ module sqs
+  booking_queue_url = module.sqs.booking_queue_url
+  booking_queue_arn = module.sqs.booking_queue_arn
 }
