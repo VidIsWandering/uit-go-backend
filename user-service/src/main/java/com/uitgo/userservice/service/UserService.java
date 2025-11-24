@@ -2,6 +2,7 @@ package com.uitgo.userservice.service;
 
 import com.uitgo.userservice.model.User;
 import com.uitgo.userservice.repository.UserRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ public class UserService {
         return userRepository.findById(id);
     }
     
+    @CacheEvict(value = "users", key = "#user.id")
     public User save(User user) {
         return userRepository.save(user);
     }
