@@ -115,7 +115,7 @@ services:
       - SERVICES=sqs
       - DEBUG=1
     volumes:
-      - "./localstack-init.sh:/etc/localstack/init/ready.d/init-aws.sh"
+      - "./scripts/localstack-init.sh:/etc/localstack/init/ready.d/init-aws.sh"
       - "/var/run/docker.sock:/var/run/docker.sock"
 
   auth-service:
