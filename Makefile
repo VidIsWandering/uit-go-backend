@@ -23,11 +23,23 @@ seed: ## Seed initial data (User & Drivers)
 	chmod +x ./scripts/seed-data.sh
 	./scripts/seed-data.sh
 
-test-load: ## Run k6 load test (Spike Test)
+test-load: ## Run k6 load test (Spike Test) and push metrics to InfluxDB
 	docker run --rm -i \
 		-v $(PWD)/tests/k6:/scripts \
 		--network host \
-		grafana/k6 run /scripts/spike-test.js
+		grafana/k6 run --out influxdb=http://localhost:8086/k6 /scripts/spike-test.js
+
+test-stress: ## Run k6 STRESS test (Find Limits) and push metrics to InfluxDB
+	docker run --rm -i \
+		-v $(PWD)/tests/k6:/scripts \
+		--network host \
+		grafana/k6 run --out influxdb=http://localhost:8086/k6 /scripts/stress-test.js
+
+test-average: ## Run k6 AVERAGE LOAD test (Stability) and push metrics to InfluxDB
+	docker run --rm -i \
+		-v $(PWD)/tests/k6:/scripts \
+		--network host \
+		grafana/k6 run --out influxdb=http://localhost:8086/k6 /scripts/average-load-test.js
 
 clean: ## Remove all containers and volumes
 	docker compose down -v

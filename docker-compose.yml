@@ -157,6 +157,17 @@ services:
       - trip-service
     restart: unless-stopped
 
+  influxdb:
+    image: influxdb:1.8
+    container_name: uit-go-influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      - INFLUXDB_DB=k6
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+    restart: unless-stopped
+
   grafana:
     image: grafana/grafana:latest
     container_name: uit-go-grafana
@@ -172,6 +183,7 @@ services:
       - ./monitoring/dashboards:/etc/grafana/provisioning/dashboards:ro
     depends_on:
       - prometheus
+      - influxdb
     restart: unless-stopped
 
 # Định nghĩa các "ổ đĩa ảo" để CSDL lưu dữ liệu
@@ -181,3 +193,4 @@ volumes:
   redis_driver_data:
   prometheus_data:
   grafana_data:
+  influxdb_data:
