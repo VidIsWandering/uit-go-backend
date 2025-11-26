@@ -13,11 +13,11 @@
 
 Hệ thống chạy trên nền tảng Docker Desktop for Windows, sử dụng backend WSL2 (Windows Subsystem for Linux).
 
-- **RAM khả dụng cho Test (WSL2)**: ~16 GB (Theo kết quả lệnh `free -h` thực tế)
-- **vCPU cấp cho WSL2**: 6 Cores (Theo cấu hình .wslconfig)
-- **Swap**: 2 GB
+- **RAM khả dụng cho Test (WSL2)**: ~16 GB (Theo kết quả lệnh `free -h` thực tế).
+- **vCPU cấp cho WSL2**: Mặc định (Sử dụng toàn bộ các nhân khả dụng của Host CPU).
+- **Swap**: 4 GB (Mặc định).
 
-> **Lưu ý**: Mặc dù Host có 32GB RAM, nhưng môi trường WSL2 hiện tại đang nhận khoảng 16GB (tương đương 50% RAM hệ thống theo cơ chế mặc định của Windows hoặc cấu hình hiện tại). Các container Docker sẽ chia sẻ tài nguyên trong giới hạn 16GB này.
+> **Lưu ý**: Môi trường WSL2 đang chạy ở chế độ cấu hình mặc định (Default Configuration). RAM được cấp phát động khoảng 50% tổng RAM của máy Host (32GB). Các container Docker sẽ chia sẻ tài nguyên trong giới hạn này.
 
 ## 3. Cấu hình Docker Compose (Resource Limits)
 
