@@ -1,13 +1,11 @@
 # file: user-service/Dockerfile
 
 # Stage 1: Build
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 WORKDIR /workspace
-COPY mvnw .
-COPY .mvn .mvn
 COPY pom.xml .
 COPY src src
-RUN ./mvnw package -DskipTests
+RUN mvn package -DskipTests
 
 # Stage 2: Production
 FROM eclipse-temurin:21-jre-alpine

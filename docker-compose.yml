@@ -47,15 +47,22 @@ services:
   user-service:
     build: ./user-service
     ports:
-      - "8080:8080"
+      - "8089:8080" # Changed from 8080 to 8089 to avoid port conflict on host
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-user:5432/${USER_DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${USER_DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${USER_DB_PASSWORD}
       - JWT_SECRET=${JWT_SECRET}
+      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
+      - SPRING_REDIS_HOST=redis-driver
+      - SPRING_REDIS_PORT=6379
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q --spider http://localhost:8080/actuator/health || exit 1",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
