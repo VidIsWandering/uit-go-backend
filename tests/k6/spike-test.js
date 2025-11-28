@@ -6,7 +6,7 @@ import { SharedArray } from "k6/data";
 export const options = {
   stages: [
     { duration: "10s", target: 10 }, // Ramp up to 10 users
-    { duration: "30s", target: 50 }, // Spike to 50 users
+    { duration: "30s", target: 100 }, // Spike to 100 users (Increased from 50 to test queue absorption)
     { duration: "10s", target: 0 }, // Ramp down
   ],
   thresholds: {

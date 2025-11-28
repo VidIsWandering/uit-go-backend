@@ -6,9 +6,9 @@ import { check, sleep } from "k6";
 export const options = {
   stages: [
     { duration: "30s", target: 50 }, // Stage 1: Warm up (Normal load)
-    { duration: "1m", target: 200 }, // Stage 2: Heavy load
-    { duration: "1m", target: 500 }, // Stage 3: Stress load (Likely bottleneck on local)
-    { duration: "30s", target: 1000 }, // Stage 4: Breaking point attempt
+    { duration: "1m", target: 100 }, // Stage 2: Heavy load
+    { duration: "1m", target: 300 }, // Stage 3: Stress load (Safe limit for laptop)
+    { duration: "30s", target: 500 }, // Stage 4: Breaking point attempt (Reduced from 1000)
     { duration: "30s", target: 0 }, // Ramp down
   ],
   thresholds: {

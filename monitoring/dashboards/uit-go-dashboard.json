@@ -470,11 +470,16 @@
       "targets": [
         {
           "expr": "rate(process_cpu_seconds_total[1m]) * 100",
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{instance}} (Node)",
           "refId": "A"
+        },
+        {
+          "expr": "process_cpu_usage * 100",
+          "legendFormat": "{{instance}} (Java)",
+          "refId": "B"
         }
       ],
-      "title": "CPU Usage (Java Services)",
+      "title": "CPU Usage (Services)",
       "type": "timeseries"
     },
     {
@@ -550,12 +555,17 @@
       },
       "targets": [
         {
-          "expr": "jvm_memory_used_bytes{area=\"heap\"}",
+          "expr": "sum(jvm_memory_used_bytes{area=\"heap\"}) by (instance)",
           "legendFormat": "{{instance}} Heap",
           "refId": "A"
+        },
+        {
+          "expr": "nodejs_heap_size_used_bytes",
+          "legendFormat": "{{instance}} Heap",
+          "refId": "B"
         }
       ],
-      "title": "Memory Usage (Java Heap)",
+      "title": "Memory Usage (Heap)",
       "type": "timeseries"
     },
     {
@@ -631,12 +641,128 @@
       },
       "targets": [
         {
-          "expr": "http_server_requests_seconds_max",
+          "expr": "topk(5, max(http_server_requests_seconds_max{uri!~\"/actuator.*\"}) by (instance, uri))",
           "legendFormat": "{{instance}} {{uri}}",
           "refId": "A"
         }
       ],
       "title": "Max Response Time per Endpoint (Server Side)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      },
+      "id": 24,
+      "panels": [],
+      "title": "Database Metrics (HikariCP)",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "Connections",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "stepBefore",
+            "lineWidth": 2,
+            "spanNulls": false
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 36
+      },
+      "id": 14,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "expr": "hikaricp_connections_active",
+          "legendFormat": "{{instance}} Active",
+          "refId": "A"
+        },
+        {
+          "expr": "hikaricp_connections_idle",
+          "legendFormat": "{{instance}} Idle",
+          "refId": "B"
+        }
+      ],
+      "title": "DB Connections (Active vs Idle)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "Pending Requests",
+            "axisPlacement": "auto",
+            "drawStyle": "bars",
+            "fillOpacity": 50,
+            "lineInterpolation": "linear",
+            "lineWidth": 1
+          },
+          "min": 0
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "user-service Pending"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": "red"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 36
+      },
+      "id": 16,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "expr": "hikaricp_connections_pending",
+          "legendFormat": "{{instance}} Pending",
+          "refId": "A"
+        }
+      ],
+      "title": "DB Connection Pending (Bottleneck Indicator)",
       "type": "timeseries"
     }
   ],
