@@ -1,5 +1,7 @@
 package com.uitgo.tripservice.config;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
@@ -18,13 +20,24 @@ public class SqsConfig {
     @Value("${AWS_SQS_ENDPOINT:#{null}}")
     private String sqsEndpoint;
 
+    @Value("${cloud.aws.credentials.access-key:test}")
+    private String accessKey;
+
+    @Value("${cloud.aws.credentials.secret-key:test}")
+    private String secretKey;
+
     @Bean
     @Primary
     public AmazonSQSAsync amazonSQSAsync() {
-        AmazonSQSAsyncClientBuilder builder = AmazonSQSAsyncClientBuilder.standard();
+        BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
+        AmazonSQSAsyncClientBuilder builder = AmazonSQSAsyncClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(awsCredentials));
         
         if (sqsEndpoint != null && !sqsEndpoint.isEmpty()) {
-            builder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(sqsEndpoint, region));
+            // LocalStack: use the same region as queue creation
+            builder.withEndpointConfiguration(
+                new AwsClientBuilder.EndpointConfiguration(sqsEndpoint, region)
+            );
         } else {
             builder.withRegion(region);
         }

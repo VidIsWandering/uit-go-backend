@@ -235,7 +235,7 @@
               },
               {
                 "params": [],
-                "type": "rate"
+                "type": "count"
               }
             ]
           ],

@@ -40,7 +40,7 @@ export function setup() {
     throw new Error(`Login failed: ${res.status} ${res.body}`);
   }
 
-  return { token: res.json("token") };
+  return { token: res.json("access_token") };
 }
 
 export default function (data) {

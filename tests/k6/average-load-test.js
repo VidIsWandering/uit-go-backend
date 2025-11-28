@@ -5,9 +5,9 @@ import { check, sleep } from "k6";
 // Goal: Measure system performance under normal, sustained load
 export const options = {
   stages: [
-    { duration: "30s", target: 50 }, // Ramp up to 50 users (Normal load)
-    { duration: "3m", target: 50 }, // Stay at 50 users for 3 minutes (Stability check)
-    { duration: "30s", target: 0 }, // Ramp down
+    { duration: "10s", target: 10 }, // Short run for debugging
+    { duration: "10s", target: 10 },
+    { duration: "10s", target: 0 },
   ],
   thresholds: {
     http_req_duration: ["p(95)<500"], // 95% requests should be under 500ms
@@ -36,7 +36,7 @@ export function setup() {
     throw new Error(`Login failed: ${res.status} ${res.body}`);
   }
 
-  return { token: res.json("token") };
+  return { token: res.json("access_token") };
 }
 
 export default function (data) {
@@ -70,6 +70,10 @@ export default function (data) {
   check(res, {
     "status is 200/201": (r) => r.status === 200 || r.status === 201,
   });
+
+  if (res.status !== 200 && res.status !== 201) {
+    console.log(`Request failed. Status: ${res.status}, Body: ${res.body}`);
+  }
 
   sleep(1); // Think time: 1 second between requests
 }

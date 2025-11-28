@@ -16,7 +16,8 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${USER_DB_USER} -d ${USER_DB_NAME}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
 
   # --- CSDL CHO TRIP-SERVICE (ROLE A) ---
   postgres-trip:
@@ -33,7 +34,8 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${TRIP_DB_USER} -d ${TRIP_DB_NAME}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
 
   # --- CSDL CHO DRIVER-SERVICE (ROLE B) ---
   redis-driver:
@@ -77,6 +79,7 @@ services:
     ports:
       - "8081:8081"
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-trip:5432/${TRIP_DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${TRIP_DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${TRIP_DB_PASSWORD}
@@ -95,8 +98,8 @@ services:
         condition: service_started
       driver-service:
         condition: service_started
-      localstack:
-        condition: service_started
+      localstack-setup:
+        condition: service_completed_successfully
 
   # --- SERVICE 3: DRIVER-SERVICE (NODE.JS) ---
   driver-service:
@@ -108,6 +111,7 @@ services:
       - AWS_REGION=ap-southeast-1
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
+      - AWS_SQS_ENDPOINT=http://localstack:4566
       - SQS_QUEUE_URL=http://localstack:4566/000000000000/uit-go-booking-request-queue
     depends_on:
       - redis-driver # Khởi động sau khi redis-driver chạy
@@ -121,9 +125,33 @@ services:
     environment:
       - SERVICES=sqs
       - DEBUG=1
+      - DEFAULT_REGION=ap-southeast-1
     volumes:
-      - "./scripts/localstack-init.sh:/etc/localstack/init/ready.d/init-aws.sh"
       - "/var/run/docker.sock:/var/run/docker.sock"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # Helper service to create SQS queue after LocalStack is ready
+  localstack-setup:
+    image: localstack/localstack:latest
+    depends_on:
+      localstack:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo "Creating SQS queue..."
+        awslocal sqs create-queue --queue-name uit-go-booking-request-queue --region ap-southeast-1 --endpoint-url http://localstack:4566
+        echo "Queue created successfully"
+        awslocal sqs list-queues --region ap-southeast-1 --endpoint-url http://localstack:4566
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=ap-southeast-1
 
   auth-service:
     build: ./auth-service
