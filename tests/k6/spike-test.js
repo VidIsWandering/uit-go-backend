@@ -34,10 +34,10 @@ export function setup() {
 
   check(res, {
     "login successful": (r) => r.status === 200,
-    "has token": (r) => r.json("token") !== undefined,
+    "has token": (r) => r.json("access_token") !== undefined,
   });
 
-  return { token: res.json("token") };
+  return { token: res.json("access_token") };
 }
 
 export default function (data) {
