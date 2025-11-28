@@ -28,7 +28,7 @@ Yêu cầu System
 Hệ thống bao gồm 3 microservices cơ bản, mỗi service có CSDL riêng (Database per Service) và được đóng gói bằng Docker.
 
 - **UserService (Java - Spring Boot):**
-  - **Port:** `8080`
+  - **Port:** `8089`
   - **Trách nhiệm:** Quản lý thông tin người dùng (hành khách và tài xế), xử lý đăng ký, đăng nhập và hồ sơ.
   - **CSDL:** PostgreSQL (AWS RDS).
 - **TripService (Java - Spring Boot):**
@@ -118,7 +118,7 @@ JWT_SECRET=your_jwt_secret
 
 Ports (optional)
 
-USER_SERVICE_PORT=8080
+USER_SERVICE_PORT=8089
 TRIP_SERVICE_PORT=8081
 DRIVER_SERVICE_PORT=8082
 
@@ -144,7 +144,7 @@ Bạn sẽ thấy logs xuất ra từ từng container khi khởi động thành
 
 Khi khởi động xong, bạn có thể truy cập:
 
-http://localhost:8080 → UserService
+http://localhost:8089 → UserService
 
 http://localhost:8081 → TripService
 
@@ -153,7 +153,7 @@ http://localhost:8082 → DriverService
 Kiểm tra health:
 
 ```bash
-curl http://localhost:8080/actuator/health
+curl http://localhost:8089/actuator/health
 curl http://localhost:8081/actuator/health
 ```
 
@@ -190,7 +190,7 @@ Kiểm tra health status nhanh:
 
 ```bash
 Copy code
-curl http://localhost:8080/actuator/health
+curl http://localhost:8089/actuator/health
 curl http://localhost:8081/actuator/health
 ```
 

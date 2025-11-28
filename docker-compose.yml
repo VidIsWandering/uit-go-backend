@@ -16,7 +16,8 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${USER_DB_USER} -d ${USER_DB_NAME}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
 
   # --- CSDL CHO TRIP-SERVICE (ROLE A) ---
   postgres-trip:
@@ -33,7 +34,8 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${TRIP_DB_USER} -d ${TRIP_DB_NAME}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
 
   # --- CSDL CHO DRIVER-SERVICE (ROLE B) ---
   redis-driver:
@@ -47,15 +49,22 @@ services:
   user-service:
     build: ./user-service
     ports:
-      - "8080:8080"
+      - "8089:8080" # Changed from 8080 to 8089 to avoid port conflict on host
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-user:5432/${USER_DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${USER_DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${USER_DB_PASSWORD}
       - JWT_SECRET=${JWT_SECRET}
+      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
+      - SPRING_REDIS_HOST=redis-driver
+      - SPRING_REDIS_PORT=6379
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q --spider http://localhost:8080/actuator/health || exit 1",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -70,6 +79,7 @@ services:
     ports:
       - "8081:8081"
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-trip:5432/${TRIP_DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${TRIP_DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${TRIP_DB_PASSWORD}
@@ -88,8 +98,8 @@ services:
         condition: service_started
       driver-service:
         condition: service_started
-      localstack:
-        condition: service_started
+      localstack-setup:
+        condition: service_completed_successfully
 
   # --- SERVICE 3: DRIVER-SERVICE (NODE.JS) ---
   driver-service:
@@ -101,6 +111,7 @@ services:
       - AWS_REGION=ap-southeast-1
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
+      - AWS_SQS_ENDPOINT=http://localstack:4566
       - SQS_QUEUE_URL=http://localstack:4566/000000000000/uit-go-booking-request-queue
     depends_on:
       - redis-driver # Khởi động sau khi redis-driver chạy
@@ -114,9 +125,33 @@ services:
     environment:
       - SERVICES=sqs
       - DEBUG=1
+      - DEFAULT_REGION=ap-southeast-1
     volumes:
-      - "./localstack-init.sh:/etc/localstack/init/ready.d/init-aws.sh"
       - "/var/run/docker.sock:/var/run/docker.sock"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # Helper service to create SQS queue after LocalStack is ready
+  localstack-setup:
+    image: localstack/localstack:latest
+    depends_on:
+      localstack:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo "Creating SQS queue..."
+        awslocal sqs create-queue --queue-name uit-go-booking-request-queue --region ap-southeast-1 --endpoint-url http://localstack:4566
+        echo "Queue created successfully"
+        awslocal sqs list-queues --region ap-southeast-1 --endpoint-url http://localstack:4566
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=ap-southeast-1
 
   auth-service:
     build: ./auth-service
@@ -157,6 +192,17 @@ services:
       - trip-service
     restart: unless-stopped
 
+  influxdb:
+    image: influxdb:1.8
+    container_name: uit-go-influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      - INFLUXDB_DB=k6
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+    restart: unless-stopped
+
   grafana:
     image: grafana/grafana:latest
     container_name: uit-go-grafana
@@ -172,6 +218,7 @@ services:
       - ./monitoring/dashboards:/etc/grafana/provisioning/dashboards:ro
     depends_on:
       - prometheus
+      - influxdb
     restart: unless-stopped
 
 # Định nghĩa các "ổ đĩa ảo" để CSDL lưu dữ liệu
@@ -181,3 +228,4 @@ volumes:
   redis_driver_data:
   prometheus_data:
   grafana_data:
+  influxdb_data:

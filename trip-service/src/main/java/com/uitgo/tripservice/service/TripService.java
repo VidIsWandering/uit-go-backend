@@ -30,7 +30,7 @@ public class TripService {
     private final PricingService pricingService;
     private final QueueMessagingTemplate queueMessagingTemplate;
 
-    @Value("${SQS_QUEUE_URL}")
+    @Value("${sqs.queue.url}")
     private String queueUrl;
 
     public TripService(TripRepository tripRepository, PricingService pricingService, QueueMessagingTemplate queueMessagingTemplate) {

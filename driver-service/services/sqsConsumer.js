@@ -23,6 +23,7 @@ const app = Consumer.create({
   },
   sqs: new SQSClient({
     region: process.env.AWS_REGION || "ap-southeast-1",
+    endpoint: process.env.AWS_SQS_ENDPOINT || "http://localstack:4566",
   }),
 });
 
