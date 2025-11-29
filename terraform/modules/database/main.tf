@@ -40,6 +40,7 @@ resource "aws_security_group" "trip_db_sg" {
 
 # 3. Security Group cho Redis (chỉ cho driver-service truy cập)
 resource "aws_security_group" "redis_sg" {
+  count       = var.enable_redis ? 1 : 0
   name        = "uit-go-redis-sg"
   description = "Allow access to Redis only from driver-service"
   vpc_id      = var.vpc_id
@@ -159,12 +160,13 @@ resource "aws_security_group_rule" "trip_service_to_trip_db" {
 
 # Rule: driver-service → redis (port 6379)
 resource "aws_security_group_rule" "driver_service_to_redis" {
+  count                    = var.enable_redis ? 1 : 0
   type                     = "ingress"
   from_port                = 6379
   to_port                  = 6379
   protocol                 = "tcp"
   source_security_group_id = aws_security_group.driver_service_sg.id
-  security_group_id        = aws_security_group.redis_sg.id
+  security_group_id        = var.enable_redis ? aws_security_group.redis_sg[0].id : aws_security_group.driver_service_sg.id
   description              = "Allow driver-service to access Redis"
 }
 
@@ -221,6 +223,7 @@ resource "aws_db_subnet_group" "rds_subnet_group" {
 
 # Tạo CSDL Postgres cho UserService
 resource "aws_db_instance" "user_db" {
+  count             = var.enable_rds ? 1 : 0
   identifier        = "uit-go-user-db"
   allocated_storage = 20 # Dung lượng ổ đĩa (GB) - tối thiểu cho Free Tier
   engine            = "postgres"
@@ -243,6 +246,7 @@ resource "aws_db_instance" "user_db" {
 
 # Tạo CSDL Postgres cho TripService
 resource "aws_db_instance" "trip_db" {
+  count             = var.enable_rds ? 1 : 0
   identifier        = "uit-go-trip-db"
   allocated_storage = 20
   engine            = "postgres"
@@ -267,14 +271,15 @@ resource "aws_db_instance" "trip_db" {
 # Read replica để phân tải read queries (trip history, analytics)
 
 resource "aws_db_instance" "trip_db_replica" {
+  count              = var.enable_rds && var.enable_read_replica ? 1 : 0
   identifier          = "uit-go-trip-db-replica"
-  replicate_source_db = aws_db_instance.trip_db.identifier
+  replicate_source_db = aws_db_instance.trip_db[0].identifier
 
   # Same instance class as primary (có thể nhỏ hơn nếu cần)
   instance_class = "db.t3.micro"
 
   # MUST be in different AZ for high availability
-  availability_zone = "ap-southeast-1b" # Khác với primary (assumed ap-southeast-1a)
+  availability_zone = var.read_replica_az # Khác với primary (ví dụ: ap-southeast-1b)
 
   # Inherit settings from primary
   publicly_accessible = false
@@ -292,6 +297,7 @@ resource "aws_db_instance" "trip_db_replica" {
 
 # Tạo một Subnet Group cho ElastiCache, sử dụng 2 private subnets
 resource "aws_elasticache_subnet_group" "redis_subnet_group" {
+  count = var.enable_redis ? 1 : 0
   name = "uit-go-redis-subnet-group"
   # Chỉ định ID của 2 private subnets
   subnet_ids = var.private_subnet_ids
@@ -303,19 +309,19 @@ resource "aws_elasticache_subnet_group" "redis_subnet_group" {
 
 # Tạo ElastiCache Redis Cluster (1 node)
 resource "aws_elasticache_cluster" "redis_cluster" {
+  count           = var.enable_redis ? 1 : 0
   cluster_id      = "uit-go-redis-cluster"
   engine          = "redis"
-  engine_version  = "7.0"            # Chọn phiên bản Redis (kiểm tra phiên bản mới nhất)
-  node_type       = "cache.t3.micro" # Loại node nhỏ (kiểm tra Free Tier eligibility)
-  num_cache_nodes = 1                # Chỉ cần 1 node cho đồ án
+  engine_version  = "7.0"
+  node_type       = "cache.t3.micro"
+  num_cache_nodes = 1
 
-  subnet_group_name  = aws_elasticache_subnet_group.redis_subnet_group.name # Đặt Redis vào private subnets
-  security_group_ids = [aws_security_group.redis_sg.id]                     # Sử dụng SG riêng cho Redis
-  port               = 6379                                                 # Port mặc định của Redis
+  subnet_group_name  = var.enable_redis ? aws_elasticache_subnet_group.redis_subnet_group[0].name : ""
+  security_group_ids = var.enable_redis ? [aws_security_group.redis_sg[0].id] : []
+  port               = 6379
 
-  # --- Backup Configuration ---
-  snapshot_retention_limit = 5             # Giữ 5 ngày backups (prevent data loss)
-  snapshot_window          = "03:00-05:00" # Backup từ 3-5 AM UTC (10-12 PM Vietnam time)
+  snapshot_retention_limit = 5
+  snapshot_window          = "03:00-05:00"
 
   tags = {
     Name = "uit-go-redis-cluster"

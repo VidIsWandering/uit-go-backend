@@ -1,27 +1,27 @@
 # Output địa chỉ endpoint của User DB
 output "user_db_endpoint" {
-  description = "Endpoint for the User RDS database"
-  value       = aws_db_instance.user_db.address
+  description = "Endpoint for the User RDS database (empty if disabled)"
+  value       = var.enable_rds ? aws_db_instance.user_db[0].address : ""
 }
 
 # Output địa chỉ endpoint của Trip DB
 output "trip_db_endpoint" {
-  description = "Endpoint for the Trip RDS database"
-  value       = aws_db_instance.trip_db.address
+  description = "Endpoint for the Trip RDS database (empty if disabled)"
+  value       = var.enable_rds ? aws_db_instance.trip_db[0].address : ""
 }
 
 # Output địa chỉ endpoint của Trip DB Read Replica
 output "trip_db_replica_endpoint" {
-  description = "Endpoint for the Trip DB read replica (for read-only queries)"
-  value       = aws_db_instance.trip_db_replica.address
+  description = "Endpoint for the Trip DB read replica (empty if disabled)"
+  value       = var.enable_rds && var.enable_read_replica ? aws_db_instance.trip_db_replica[0].address : ""
 }
 
 output "user_db_name" {
-  value = aws_db_instance.user_db.db_name
+  value = var.enable_rds ? aws_db_instance.user_db[0].db_name : ""
 }
 
 output "trip_db_name" {
-  value = aws_db_instance.trip_db.db_name
+  value = var.enable_rds ? aws_db_instance.trip_db[0].db_name : ""
 }
 
 # Output ARN của secret chứa mật khẩu User DB
@@ -38,9 +38,8 @@ output "trip_db_password_secret_arn" {
 
 # Output địa chỉ endpoint của Redis Cluster
 output "redis_endpoint" {
-  description = "Primary endpoint for the ElastiCache Redis cluster"
-  # ElastiCache trả về endpoint chính qua thuộc tính này
-  value = aws_elasticache_cluster.redis_cluster.cache_nodes[0].address
+  description = "Primary endpoint for the ElastiCache Redis cluster (empty if redis disabled)"
+  value       = var.enable_redis ? aws_elasticache_cluster.redis_cluster[0].cache_nodes[0].address : ""
 }
 
 # Output Security Group IDs (segregated)
@@ -70,6 +69,6 @@ output "trip_db_sg_id" {
 }
 
 output "redis_sg_id" {
-  description = "Security group ID for Redis cluster"
-  value       = aws_security_group.redis_sg.id
+  description = "Security group ID for Redis cluster (empty if redis disabled)"
+  value       = var.enable_redis ? aws_security_group.redis_sg[0].id : ""
 }

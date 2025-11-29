@@ -23,6 +23,8 @@ import com.uitgo.tripservice.model.Location;
 import com.uitgo.tripservice.model.Trip;
 import com.uitgo.tripservice.model.TripStatus;
 import com.uitgo.tripservice.repository.TripRepository;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 public class TripService {
@@ -68,11 +70,13 @@ public class TripService {
         return savedTrip;
     }
 
+    @Cacheable(value = "tripById", key = "#tripId")
     public Optional<Trip> getTripById(UUID tripId) {
         return tripRepository.findById(tripId);
     }
 
     @Transactional
+    @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory", "driverEarnings"}, allEntries = true)
     public Trip acceptTrip(UUID tripId, UUID driverId) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
@@ -88,6 +92,7 @@ public class TripService {
     }
 
     @Transactional
+    @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory"}, allEntries = true)
     public void rejectTrip(UUID tripId, UUID driverId) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
@@ -101,6 +106,7 @@ public class TripService {
     }
 
     @Transactional
+    @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory"}, allEntries = true)
     public Trip startTrip(UUID tripId, UUID driverId) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
@@ -119,6 +125,7 @@ public class TripService {
     }
 
     @Transactional
+    @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory", "driverEarnings"}, allEntries = true)
     public Trip completeTrip(UUID tripId, UUID driverId) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
@@ -137,6 +144,7 @@ public class TripService {
     }
 
     @Transactional
+    @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory", "driverEarnings"}, allEntries = true)
     public Trip cancelTrip(UUID tripId, UUID passengerId) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
@@ -155,6 +163,7 @@ public class TripService {
     }
 
     @Transactional
+    @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory"}, allEntries = true)
     public Trip rateTrip(UUID tripId, UUID passengerId, int rating, String comment) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
@@ -176,6 +185,7 @@ public class TripService {
         return tripRepository.save(trip);
     }
 
+    @Cacheable(value = "availableTrips", key = "#radiusMeters")
     public List<Trip> getAvailableTrips(Location driverLocation, int radiusMeters) {
         // Lấy các chuyến đi đang chờ tài xế
         // Trong thực tế, nên dùng spatial query để tìm trong radius
@@ -183,6 +193,7 @@ public class TripService {
         return tripRepository.findByStatus(TripStatus.FINDING_DRIVER);
     }
 
+    @Cacheable(value = "passengerHistory", key = "#passengerId + ':' + (#status != null ? #status.name() : 'ALL') + ':' + #page + ':' + #limit")
     public Page<Trip> getPassengerHistory(UUID passengerId, TripStatus status, int page, int limit) {
         Pageable pageable = PageRequest.of(page - 1, limit, Sort.by("createdAt").descending());
         
@@ -192,6 +203,7 @@ public class TripService {
         return tripRepository.findByPassengerId(passengerId, pageable);
     }
 
+    @Cacheable(value = "driverHistory", key = "#driverId + ':' + (#status != null ? #status.name() : 'ALL') + ':' + #page + ':' + #limit")
     public Page<Trip> getDriverHistory(UUID driverId, TripStatus status, int page, int limit) {
         Pageable pageable = PageRequest.of(page - 1, limit, Sort.by("createdAt").descending());
         
@@ -201,6 +213,7 @@ public class TripService {
         return tripRepository.findByDriverId(driverId, pageable);
     }
 
+    @Cacheable(value = "driverEarnings", key = "#driverId + ':' + #period + ':' + (#from != null ? #from.toEpochSecond() : 'NF') + ':' + (#to != null ? #to.toEpochSecond() : 'NT')")
     public EarningsData calculateEarnings(UUID driverId, String period, OffsetDateTime from, OffsetDateTime to) {
         // Xác định khoảng thời gian
         if (from == null || to == null) {

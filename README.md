@@ -341,3 +341,47 @@ Sau khi cả 3 image đã được đẩy lên ECR:
 2.  **Sử dụng Postman/curl:** Gửi request đến các API của bạn thông qua DNS name của ALB (ví dụ: `http://<alb_dns_name>/users`, `http://<alb_dns_name>/drivers/search?lat=...`).
 
 ---
+
+## 7. Infrastructure Toggles (Hybrid vs Cloud) 🧩
+
+Để hỗ trợ chế độ **Hybrid Zero-Cost** và bật dần tài nguyên thật khi có ngân sách, Terraform root định nghĩa các biến toggle:
+
+| Biến | Mặc định | Mô tả |
+|------|----------|-------|
+| `enable_rds` | `false` | Bật tạo RDS chính (user & trip). |
+| `enable_read_replica` | `false` | Bật Trip DB read replica (tốn thêm chi phí). |
+| `enable_redis` | `false` | Bật ElastiCache Redis (cache geospatial). |
+| `enable_ecs` | `false` | Bật ECS Cluster + Task Definitions. |
+| `enable_services` | `false` | Bật ECS Services (phụ thuộc `enable_ecs`). |
+| `enable_alb` | `false` | Bật Application Load Balancer + listener & routing. |
+| `enable_autoscaling` | `false` | Bật autoscaling policies cho ECS services. |
+| `enable_ecr` | `false` | Tạo ECR repositories (scan_on_push). |
+| `enable_service_discovery` | `false` | Tạo Cloud Map private DNS namespace/services. |
+
+### Cách cấu hình nhanh
+Chỉnh giá trị trong `terraform/main.tf` hoặc sử dụng `-var` khi chạy plan/apply:
+
+```bash
+terraform plan -var enable_rds=true -var enable_ecs=true -var enable_services=true -var enable_alb=true
+```
+
+### Profile đề xuất
+| Mục tiêu | enable_rds | enable_read_replica | enable_redis | enable_ecs | enable_services | enable_alb | enable_autoscaling | enable_ecr | enable_service_discovery |
+|----------|------------|---------------------|--------------|-----------|-----------------|------------|--------------------|-----------|-------------------------|
+| Hybrid Zero-Cost | false | false | false | false | false | false | false | false | false |
+| Dev Minimal (DB + Queue) | true | false | false | false | false | false | false | false | false |
+| Functional Demo (ECS + DB) | true | false | false | true | true | true | false | true | false |
+| Scale Ready | true | true | true | true | true | true | true | true | true |
+
+### Hành vi khi tắt
+- Outputs trả về chuỗi rỗng hoặc map rỗng → tránh lỗi tham chiếu.
+- ECS Services không tạo nếu ALB hoặc ECS bị tắt.
+- Autoscaling chỉ tạo khi services chạy.
+- Task definitions vẫn có thể tạo (khi `enable_ecs=true`, `enable_services=false`) giúp chuẩn bị trước image mà không chạy containers.
+
+### Lưu ý chi phí
+- Bật replica & Redis làm tăng chi phí cố định hàng tháng; nên bật sau khi đã cần mở rộng đọc hoặc cache hit quan trọng.
+- ALB tính phí giờ + LCU → bật khi cần truy cập public hoặc dùng request-based autoscaling.
+- Có thể dùng SQS thật mặc dù các toggle khác tắt (SQS phí ~0 ở Free Tier).
+
+---

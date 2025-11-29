@@ -37,6 +37,25 @@ services:
       retries: 10
       start_period: 30s
 
+  # --- READ REPLICA (SIMULATED) CHO TRIP-SERVICE ---
+  # Mô phỏng replica để test read-only routing. Dùng chung cấu hình, chạy migrations riêng nếu cần.
+  postgres-trip-replica:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${TRIP_DB_USER}
+      - POSTGRES_PASSWORD=${TRIP_DB_PASSWORD}
+      - POSTGRES_DB=${TRIP_DB_NAME}
+    ports:
+      - "5433:5432" # Map replica ra 5433 host để quan sát riêng nếu muốn
+    volumes:
+      - postgres_trip_replica_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TRIP_DB_USER} -d ${TRIP_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
   # --- CSDL CHO DRIVER-SERVICE (ROLE B) ---
   redis-driver:
     image: redis:7-alpine
@@ -80,7 +99,8 @@ services:
       - "8081:8081"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-trip:5432/${TRIP_DB_NAME}
+      - SPRING_DATASOURCE_URL=jdbc:p6spy:postgresql://postgres-trip:5432/${TRIP_DB_NAME}
+      - SPRING_DATASOURCE_READ_URL=jdbc:p6spy:postgresql://postgres-trip-replica:5432/${TRIP_DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${TRIP_DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${TRIP_DB_PASSWORD}
       - JWT_SECRET=${JWT_SECRET}
@@ -225,6 +245,7 @@ services:
 volumes:
   postgres_user_data:
   postgres_trip_data:
+  postgres_trip_replica_data:
   redis_driver_data:
   prometheus_data:
   grafana_data:

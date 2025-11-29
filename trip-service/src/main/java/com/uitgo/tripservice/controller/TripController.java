@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -77,6 +78,7 @@ public class TripController {
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public ResponseEntity<TripDetailResponse> getTripDetail(@PathVariable("id") UUID tripId) {
         UUID userId = getCurrentUserId();
         if (userId == null) {
@@ -187,6 +189,7 @@ public class TripController {
     }
 
     @GetMapping("/{id}/driver-location")
+    @Transactional(readOnly = true)
     public ResponseEntity<DriverLocationResponse> getDriverLocation(@PathVariable("id") UUID tripId) {
         UUID passengerId = getCurrentUserId();
         if (passengerId == null) {
@@ -211,6 +214,7 @@ public class TripController {
     }
 
     @GetMapping("/available")
+    @Transactional(readOnly = true)
     public ResponseEntity<List<TripDetailResponse>> getAvailableTrips(@RequestParam(defaultValue = "5000") int radius) {
         UUID driverId = getCurrentUserId();
         if (driverId == null) {
@@ -230,6 +234,7 @@ public class TripController {
     }
 
     @GetMapping("/passenger/{passengerId}/history")
+    @Transactional(readOnly = true)
     public ResponseEntity<TripHistoryResponse> getPassengerHistory(
             @PathVariable UUID passengerId,
             @RequestParam(required = false) String status,
@@ -259,6 +264,7 @@ public class TripController {
     }
 
     @GetMapping("/driver/{driverId}/history")
+    @Transactional(readOnly = true)
     public ResponseEntity<TripHistoryResponse> getDriverHistory(
             @PathVariable UUID driverId,
             @RequestParam(required = false) String status,
@@ -288,6 +294,7 @@ public class TripController {
     }
 
     @GetMapping("/driver/{driverId}/earnings")
+    @Transactional(readOnly = true)
     public ResponseEntity<EarningsResponse> getDriverEarnings(
             @PathVariable UUID driverId,
             @RequestParam(defaultValue = "today") String period,
