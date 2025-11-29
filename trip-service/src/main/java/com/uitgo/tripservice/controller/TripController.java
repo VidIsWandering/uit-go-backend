@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import io.micrometer.core.annotation.Timed;
 
 import com.uitgo.tripservice.dto.CreateTripRequest;
 import com.uitgo.tripservice.dto.DriverLocationResponse;
@@ -49,6 +50,7 @@ public class TripController {
         this.driverService = driverService;
     }
 
+    @Timed(value = "trip.create.sync", description = "Synchronous trip creation duration")
     @PostMapping
     public ResponseEntity<TripResponse> create(@RequestBody CreateTripRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -68,6 +70,27 @@ public class TripController {
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
+    // Async variant: enqueue and return 202 quickly
+    @Timed(value = "trip.create.async", description = "Asynchronous trip creation enqueue latency")
+    @PostMapping("/async")
+    public ResponseEntity<?> createAsync(@RequestBody CreateTripRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getPrincipal() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        UUID passengerId;
+        try {
+            passengerId = UUID.fromString(auth.getPrincipal().toString());
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Location origin = request.getOrigin().toLocation();
+        Location destination = request.getDestination().toLocation();
+        // Enqueue only (service method will build minimal message)
+        UUID tripId = tripService.enqueueTrip(passengerId, origin, destination);
+        return ResponseEntity.accepted().body(tripId);
+    }
+
     @PostMapping("/estimate")
     public EstimateTripResponse estimate(@RequestBody CreateTripRequest request) {
         Location origin = toLoc(request.getOrigin());
@@ -79,6 +102,7 @@ public class TripController {
 
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
+    @Timed(value = "trip.detail.read", description = "Fetch trip detail read-only path")
     public ResponseEntity<TripDetailResponse> getTripDetail(@PathVariable("id") UUID tripId) {
         UUID userId = getCurrentUserId();
         if (userId == null) {
@@ -190,6 +214,7 @@ public class TripController {
 
     @GetMapping("/{id}/driver-location")
     @Transactional(readOnly = true)
+    @Timed(value = "trip.driver.location.read", description = "Driver location lookup latency")
     public ResponseEntity<DriverLocationResponse> getDriverLocation(@PathVariable("id") UUID tripId) {
         UUID passengerId = getCurrentUserId();
         if (passengerId == null) {
@@ -215,6 +240,7 @@ public class TripController {
 
     @GetMapping("/available")
     @Transactional(readOnly = true)
+    @Timed(value = "trip.available.read", description = "Available trips query latency")
     public ResponseEntity<List<TripDetailResponse>> getAvailableTrips(@RequestParam(defaultValue = "5000") int radius) {
         UUID driverId = getCurrentUserId();
         if (driverId == null) {
@@ -235,6 +261,7 @@ public class TripController {
 
     @GetMapping("/passenger/{passengerId}/history")
     @Transactional(readOnly = true)
+    @Timed(value = "trip.passenger.history.read", description = "Passenger history query latency")
     public ResponseEntity<TripHistoryResponse> getPassengerHistory(
             @PathVariable UUID passengerId,
             @RequestParam(required = false) String status,
@@ -265,6 +292,7 @@ public class TripController {
 
     @GetMapping("/driver/{driverId}/history")
     @Transactional(readOnly = true)
+    @Timed(value = "trip.driver.history.read", description = "Driver history query latency")
     public ResponseEntity<TripHistoryResponse> getDriverHistory(
             @PathVariable UUID driverId,
             @RequestParam(required = false) String status,
@@ -295,6 +323,7 @@ public class TripController {
 
     @GetMapping("/driver/{driverId}/earnings")
     @Transactional(readOnly = true)
+    @Timed(value = "trip.driver.earnings.read", description = "Driver earnings calculation latency")
     public ResponseEntity<EarningsResponse> getDriverEarnings(
             @PathVariable UUID driverId,
             @RequestParam(defaultValue = "today") String period,

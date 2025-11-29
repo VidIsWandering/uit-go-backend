@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,61 +29,97 @@ import com.uitgo.tripservice.model.TripStatus;
 import com.uitgo.tripservice.repository.TripRepository;
 
 import io.awspring.cloud.messaging.core.QueueMessagingTemplate;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 
 @Service
 public class TripService {
     private final TripRepository tripRepository;
     private final PricingService pricingService;
     private final QueueMessagingTemplate queueMessagingTemplate;
+    private final MeterRegistry meterRegistry;
 
     @Value("${sqs.queue.url}")
     private String queueUrl;
 
-    public TripService(TripRepository tripRepository, PricingService pricingService, QueueMessagingTemplate queueMessagingTemplate) {
+    public TripService(TripRepository tripRepository,
+                       PricingService pricingService,
+                       QueueMessagingTemplate queueMessagingTemplate,
+                       MeterRegistry meterRegistry) {
         this.tripRepository = tripRepository;
         this.pricingService = pricingService;
         this.queueMessagingTemplate = queueMessagingTemplate;
+        this.meterRegistry = meterRegistry;
     }
 
     @Transactional
     public Trip createTrip(UUID passengerId, Location origin, Location destination) {
-        Trip trip = new Trip();
-        trip.setPassengerId(passengerId);
-        trip.setStatus(TripStatus.FINDING_DRIVER);
-        trip.setOriginLatitude(origin.getLatitude());
-        trip.setOriginLongitude(origin.getLongitude());
-        trip.setDestinationLatitude(destination.getLatitude());
-        trip.setDestinationLongitude(destination.getLongitude());
-        int distance = pricingService.calculateDistanceMeters(origin, destination);
-        double price = pricingService.calculatePrice(origin, destination);
-        trip.setDistanceMeters(distance);
-        trip.setPrice(price);
-        Trip savedTrip = tripRepository.save(trip);
+        Timer.Sample sample = Timer.start(meterRegistry);
+        try {
+            Trip trip = new Trip();
+            trip.setPassengerId(passengerId);
+            trip.setStatus(TripStatus.FINDING_DRIVER);
+            trip.setOriginLatitude(origin.getLatitude());
+            trip.setOriginLongitude(origin.getLongitude());
+            trip.setDestinationLatitude(destination.getLatitude());
+            trip.setDestinationLongitude(destination.getLongitude());
+            int distance = pricingService.calculateDistanceMeters(origin, destination);
+            double price = pricingService.calculatePrice(origin, destination);
+            trip.setDistanceMeters(distance);
+            trip.setPrice(price);
+            Trip savedTrip = tripRepository.save(trip);
 
-        // Send message to SQS
-        Map<String, Object> message = new HashMap<>();
-        message.put("tripId", savedTrip.getId());
-        message.put("passengerId", savedTrip.getPassengerId());
-        message.put("origin", origin);
-        message.put("destination", destination);
-        message.put("distance", savedTrip.getDistanceMeters());
-        message.put("price", savedTrip.getPrice());
-        
-        queueMessagingTemplate.convertAndSend(queueUrl, message);
+            Map<String, Object> message = new HashMap<>();
+            message.put("tripId", savedTrip.getId());
+            message.put("passengerId", savedTrip.getPassengerId());
+            message.put("origin", origin);
+            message.put("destination", destination);
+            message.put("distance", savedTrip.getDistanceMeters());
+            message.put("price", savedTrip.getPrice());
+            queueMessagingTemplate.convertAndSend(queueUrl, message);
 
-        return savedTrip;
+            return savedTrip;
+        } finally {
+            sample.stop(meterRegistry.timer("trip.create.db_and_enqueue"));
+        }
+    }
+
+    // Async enqueue only: create lightweight trip shell and push to queue immediately
+    @Transactional
+    public UUID enqueueTrip(UUID passengerId, Location origin, Location destination) {
+        Timer.Sample sample = Timer.start(meterRegistry);
+        try {
+            Trip trip = new Trip();
+            trip.setPassengerId(passengerId);
+            trip.setStatus(TripStatus.FINDING_DRIVER);
+            trip.setOriginLatitude(origin.getLatitude());
+            trip.setOriginLongitude(origin.getLongitude());
+            trip.setDestinationLatitude(destination.getLatitude());
+            trip.setDestinationLongitude(destination.getLongitude());
+            Trip savedTrip = tripRepository.save(trip);
+
+            Map<String, Object> message = new HashMap<>();
+            message.put("tripId", savedTrip.getId());
+            message.put("passengerId", passengerId);
+            message.put("origin", origin);
+            message.put("destination", destination);
+            queueMessagingTemplate.convertAndSend(queueUrl, message);
+            return savedTrip.getId();
+        } finally {
+            sample.stop(meterRegistry.timer("trip.enqueue.latency"));
+        }
     }
 
     @Cacheable(value = "tripById", key = "#tripId")
     public Optional<Trip> getTripById(UUID tripId) {
-        return tripRepository.findById(tripId);
+        return tripRepository.findById(Objects.requireNonNull(tripId));
     }
 
     @Transactional
     @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory", "driverEarnings"}, allEntries = true)
     public Trip acceptTrip(UUID tripId, UUID driverId) {
         try {
-            Trip trip = tripRepository.findById(tripId)
+            Trip trip = tripRepository.findById(Objects.requireNonNull(tripId))
                     .orElseThrow(() -> new RuntimeException("Trip not found"));
             
             if (trip.getStatus() != TripStatus.FINDING_DRIVER) {
@@ -101,7 +138,7 @@ public class TripService {
     @Transactional
     @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory"}, allEntries = true)
     public void rejectTrip(UUID tripId, UUID driverId) {
-        Trip trip = tripRepository.findById(tripId)
+        Trip trip = tripRepository.findById(Objects.requireNonNull(tripId))
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
         
         if (trip.getStatus() != TripStatus.FINDING_DRIVER) {
@@ -115,7 +152,7 @@ public class TripService {
     @Transactional
     @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory"}, allEntries = true)
     public Trip startTrip(UUID tripId, UUID driverId) {
-        Trip trip = tripRepository.findById(tripId)
+        Trip trip = tripRepository.findById(Objects.requireNonNull(tripId))
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
         
         if (!trip.getDriverId().equals(driverId)) {
@@ -134,7 +171,7 @@ public class TripService {
     @Transactional
     @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory", "driverEarnings"}, allEntries = true)
     public Trip completeTrip(UUID tripId, UUID driverId) {
-        Trip trip = tripRepository.findById(tripId)
+        Trip trip = tripRepository.findById(Objects.requireNonNull(tripId))
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
         
         if (!trip.getDriverId().equals(driverId)) {
@@ -153,7 +190,7 @@ public class TripService {
     @Transactional
     @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory", "driverEarnings"}, allEntries = true)
     public Trip cancelTrip(UUID tripId, UUID passengerId) {
-        Trip trip = tripRepository.findById(tripId)
+        Trip trip = tripRepository.findById(Objects.requireNonNull(tripId))
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
         
         if (!trip.getPassengerId().equals(passengerId)) {
@@ -172,7 +209,7 @@ public class TripService {
     @Transactional
     @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory"}, allEntries = true)
     public Trip rateTrip(UUID tripId, UUID passengerId, int rating, String comment) {
-        Trip trip = tripRepository.findById(tripId)
+        Trip trip = tripRepository.findById(Objects.requireNonNull(tripId))
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
         
         if (!trip.getPassengerId().equals(passengerId)) {
@@ -225,26 +262,13 @@ public class TripService {
         // Xác định khoảng thời gian
         if (from == null || to == null) {
             OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-            switch (period != null ? period : "today") {
-                case "today":
-                    from = now.truncatedTo(ChronoUnit.DAYS);
-                    to = now;
-                    break;
-                case "week":
-                    from = now.minusWeeks(1);
-                    to = now;
-                    break;
-                case "month":
-                    from = now.minusMonths(1);
-                    to = now;
-                    break;
-                case "year":
-                    from = now.minusYears(1);
-                    to = now;
-                    break;
-                default:
-                    from = now.truncatedTo(ChronoUnit.DAYS);
-                    to = now;
+            String effective = (period != null ? period : "today");
+            switch (effective) {
+                case "today" -> { from = now.truncatedTo(ChronoUnit.DAYS); to = now; }
+                case "week" -> { from = now.minusWeeks(1); to = now; }
+                case "month" -> { from = now.minusMonths(1); to = now; }
+                case "year" -> { from = now.minusYears(1); to = now; }
+                default -> { from = now.truncatedTo(ChronoUnit.DAYS); to = now; }
             }
         }
         
@@ -257,8 +281,11 @@ public class TripService {
                 .toList();
         
         double totalEarnings = completedTrips.stream()
-                .mapToDouble(t -> t.getPrice() != null ? t.getPrice() : 0.0)
-                .sum();
+                .mapToDouble(t -> {
+                    Double p = t.getPrice();
+                    return p == null ? 0.0 : p;
+                })
+            .sum();
         
         double averageEarnings = completedTrips.isEmpty() ? 0.0 : totalEarnings / completedTrips.size();
         

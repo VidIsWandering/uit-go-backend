@@ -8,6 +8,7 @@ services:
       - POSTGRES_USER=${USER_DB_USER}
       - POSTGRES_PASSWORD=${USER_DB_PASSWORD}
       - POSTGRES_DB=${USER_DB_NAME}
+    command: postgres -c max_connections=1200 -c shared_buffers=512MB -c effective_cache_size=1GB -c work_mem=16MB
     ports:
       - "5431:5432" # Map port 5431 ở máy bạn vào 5432 của container
     volumes:
@@ -26,6 +27,7 @@ services:
       - POSTGRES_USER=${TRIP_DB_USER}
       - POSTGRES_PASSWORD=${TRIP_DB_PASSWORD}
       - POSTGRES_DB=${TRIP_DB_NAME}
+    command: postgres -c max_connections=1200 -c shared_buffers=512MB -c effective_cache_size=1GB -c work_mem=16MB
     ports:
       - "5432:5432" # Map port 5432 ở máy bạn vào 5432 của container
     volumes:
@@ -45,8 +47,9 @@ services:
       - POSTGRES_USER=${TRIP_DB_USER}
       - POSTGRES_PASSWORD=${TRIP_DB_PASSWORD}
       - POSTGRES_DB=${TRIP_DB_NAME}
+    command: postgres -c max_connections=1200 -c shared_buffers=512MB -c effective_cache_size=1GB -c work_mem=16MB
     ports:
-      - "5433:5432" # Map replica ra 5433 host để quan sát riêng nếu muốn
+      - "5433:5432" # Chạy ở port 5433 trên máy bạn
     volumes:
       - postgres_trip_replica_data:/var/lib/postgresql/data
     healthcheck:
@@ -59,6 +62,7 @@ services:
   # --- CSDL CHO DRIVER-SERVICE (ROLE B) ---
   redis-driver:
     image: redis:7-alpine
+    command: redis-server --maxclients 10000 --maxmemory 512mb --maxmemory-policy allkeys-lru
     ports:
       - "6379:6379" # Map port 6379 ở máy bạn
     volumes:
@@ -78,6 +82,7 @@ services:
       - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
       - SPRING_REDIS_HOST=redis-driver
       - SPRING_REDIS_PORT=6379
+      - JAVA_OPTS=-Xmx1g -Xms512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200
     healthcheck:
       test:
         [
@@ -111,6 +116,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=test
       - AWS_SQS_ENDPOINT=http://localstack:4566
       - SQS_QUEUE_URL=http://localstack:4566/000000000000/uit-go-booking-request-queue
+      - JAVA_OPTS=-Xms1g -Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:InitiatingHeapOccupancyPercent=40
     depends_on:
       postgres-trip:
         condition: service_healthy

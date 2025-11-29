@@ -3,6 +3,7 @@ package com.uitgo.tripservice.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,7 +11,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * Routing DataSource: tách luồng đọc/ghi để sử dụng Primary vs Read Replica.
@@ -45,7 +51,7 @@ public class DataSourceConfig {
                 .url(writeUrl)
                 .username(username)
                 .password(password)
-                .driverClassName("org.postgresql.Driver")
+                .driverClassName("com.p6spy.engine.spy.P6SpyDriver")
                 .build();
     }
 
@@ -56,11 +62,11 @@ public class DataSourceConfig {
                 .url(targetReadUrl)
                 .username(username)
                 .password(password)
-                .driverClassName("org.postgresql.Driver")
+                .driverClassName("com.p6spy.engine.spy.P6SpyDriver")
                 .build();
     }
 
-    @Bean
+    @Bean(name = "routingDataSource")
     public DataSource routingDataSource(
             @Qualifier("writeDataSource") DataSource writeDS,
             @Qualifier("readDataSource") DataSource readDS) {
@@ -73,10 +79,34 @@ public class DataSourceConfig {
         return routing;
     }
 
+    @Primary
     @Bean
     public DataSource dataSource(@Qualifier("routingDataSource") DataSource routing) {
         // Expose routing datasource as primary DataSource bean
         return routing;
+    }
+
+    @Primary
+    @Bean
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(
+            @Qualifier("dataSource") DataSource dataSource) {
+        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        em.setDataSource(dataSource);
+        em.setPackagesToScan("com.uitgo.tripservice.model");
+
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        vendorAdapter.setGenerateDdl(false);
+        vendorAdapter.setShowSql(false);
+        vendorAdapter.setDatabasePlatform("org.hibernate.dialect.PostgreSQLDialect");
+        em.setJpaVendorAdapter(vendorAdapter);
+
+        return em;
+    }
+
+    @Primary
+    @Bean
+    public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
+        return new JpaTransactionManager(entityManagerFactory);
     }
 
     /**

@@ -15,29 +15,12 @@ export const options = {
   },
 };
 
-const BASE_URL = "http://localhost:8088/api";
+const BASE_URL = __ENV.BASE_URL || "http://localhost:8081";
+const PASSENGER_TOKEN = __ENV.PASSENGER_TOKEN || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDIiLCJpYXQiOjE3NjQ0NDUwNjYsImV4cCI6MTc2NDUzMTQ2Nn0.YWSKNvT-cdoD26fMBPGKelXL7brGcy1yrLk4SmfXpo4';
 
-// Setup: Login once to get a token (or use a fixed test token if auth is mocked)
+// Setup: Use pre-generated JWT token
 export function setup() {
-  const payload = JSON.stringify({
-    email: "test@uit.edu.vn",
-    password: "password123",
-  });
-
-  const params = {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-
-  const res = http.post(`${BASE_URL}/sessions`, payload, params);
-
-  check(res, {
-    "login successful": (r) => r.status === 200,
-    "has token": (r) => r.json("access_token") !== undefined,
-  });
-
-  return { token: res.json("access_token") };
+  return { token: PASSENGER_TOKEN };
 }
 
 export default function (data) {
@@ -56,15 +39,12 @@ export default function (data) {
   const payload = JSON.stringify({
     origin: {
       latitude: lat,
-      longitude: lng,
-      address: "Test Pickup Point",
+      longitude: lng
     },
     destination: {
       latitude: 10.772622,
-      longitude: 106.670172,
-      address: "Test Destination",
-    },
-    vehicleType: "CAR_4_SEAT",
+      longitude: 106.670172
+    }
   });
 
   const res = http.post(`${BASE_URL}/trips`, payload, params);

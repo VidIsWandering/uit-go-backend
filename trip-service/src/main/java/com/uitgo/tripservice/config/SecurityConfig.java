@@ -21,8 +21,7 @@ public class SecurityConfig {
             .csrf().disable()
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeRequests(auth -> auth
-                .antMatchers("/trips/estimate", "/actuator/health", "/actuator/prometheus").permitAll()
-                .anyRequest().authenticated()
+                .anyRequest().permitAll()
             );
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
