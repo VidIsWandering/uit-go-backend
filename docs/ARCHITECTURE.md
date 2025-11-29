@@ -25,20 +25,20 @@ Tài liệu này mô tả chi tiết kiến trúc của hệ thống **UIT-Go Ba
 
 ### Các thành phần chính
 
-Hệ thống được xây dựng dựa trên các quyết định kiến trúc (ADR) quan trọng:
+Hệ thống được xây dựng dựa trên các quyết định kiến trúc (ADR) quan trọng, đặc biệt là các ADR thuộc **Module A (Scalability)**:
 
 1.  **Compute (Tính toán):**
 
     - Sử dụng **AWS ECS Fargate** (Serverless Container) giúp loại bỏ gánh nặng quản lý server vật lý.
-    - **Auto Scaling (ADR-004):** Tự động tăng giảm số lượng task dựa trên CPU/Memory.
+    - **Auto Scaling (Module A - ADR-004):** Tự động tăng giảm số lượng task dựa trên CPU/Memory.
 
 2.  **Database (Cơ sở dữ liệu):**
 
-    - **RDS PostgreSQL:** Triển khai mô hình **Primary/Read Replica (ADR-002)**. Primary phục vụ ghi, Replica phục vụ đọc để phân tải.
+    - **RDS PostgreSQL:** Triển khai mô hình **Primary/Read Replica (Module A - ADR-002)**. Primary phục vụ ghi, Replica phục vụ đọc để phân tải.
     - **ElastiCache Redis:** Đóng vai trò bộ nhớ đệm trung tâm và xử lý dữ liệu địa lý.
 
 3.  **Networking & Security:**
-    - **VPC Segmentation (ADR-013):** Toàn bộ Database và Application Server nằm trong Private Subnet.
+    - **VPC Segmentation (Basic - ADR-013):** Toàn bộ Database và Application Server nằm trong Private Subnet.
     - **NAT Gateway:** Đảm bảo kết nối Internet chiều đi (Outbound) an toàn cho các Private Resources.
 
 ---
@@ -49,7 +49,7 @@ Phần này đi sâu vào các cơ chế xử lý bên trong giúp hệ thống 
 
 ### 2.1. Luồng Xử lý Đặt chuyến Bất đồng bộ (Async Booking Flow)
 
-_Minh họa cho **ADR-001 (Async Processing)**._
+_Minh họa cho **Module A - ADR-001 (Async Processing)**._
 
 Thay vì xử lý tuần tự (Synchronous) dễ gây nghẽn, hệ thống sử dụng SQS để tách rời việc nhận yêu cầu và xử lý nghiệp vụ tìm tài xế.
 
@@ -58,7 +58,7 @@ _(Source: [docs/diagrams/mermaid/booking_flow.mmd](diagrams/mermaid/booking_flow
 
 ### 2.2. Chiến lược Dữ liệu & Caching (Data Access Strategy)
 
-_Minh họa cho **ADR-002 (Read Replicas)** và **ADR-003 (Caching Strategy)**._
+_Minh họa cho **Module A - ADR-002 (Read Replicas)** và **Module A - ADR-003 (Caching Strategy)**._
 
 Hệ thống tối ưu hóa hiệu năng bằng cách định tuyến các loại truy vấn đến đúng nơi lưu trữ phù hợp nhất.
 
