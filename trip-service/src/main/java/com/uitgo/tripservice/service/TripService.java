@@ -3,28 +3,31 @@ package com.uitgo.tripservice.service;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.persistence.OptimisticLockException;
 import javax.transaction.Transactional;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
-import io.awspring.cloud.messaging.core.QueueMessagingTemplate;
-import java.util.HashMap;
-import java.util.Map;
 
+import com.uitgo.tripservice.exception.TripConcurrentUpdateException;
 import com.uitgo.tripservice.model.Location;
 import com.uitgo.tripservice.model.Trip;
 import com.uitgo.tripservice.model.TripStatus;
 import com.uitgo.tripservice.repository.TripRepository;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.CacheEvict;
+
+import io.awspring.cloud.messaging.core.QueueMessagingTemplate;
 
 @Service
 public class TripService {
@@ -78,17 +81,21 @@ public class TripService {
     @Transactional
     @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory", "driverEarnings"}, allEntries = true)
     public Trip acceptTrip(UUID tripId, UUID driverId) {
-        Trip trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new RuntimeException("Trip not found"));
-        
-        if (trip.getStatus() != TripStatus.FINDING_DRIVER) {
-            throw new RuntimeException("Trip is not available for acceptance");
+        try {
+            Trip trip = tripRepository.findById(tripId)
+                    .orElseThrow(() -> new RuntimeException("Trip not found"));
+            
+            if (trip.getStatus() != TripStatus.FINDING_DRIVER) {
+                throw new RuntimeException("Trip is not available for acceptance");
+            }
+            
+            trip.setDriverId(driverId);
+            trip.setStatus(TripStatus.DRIVER_ACCEPTED);
+            trip.setAcceptedAt(OffsetDateTime.now(ZoneOffset.UTC));
+            return tripRepository.save(trip);
+        } catch (OptimisticLockException e) {
+            throw new TripConcurrentUpdateException("Chuyến đi đã được tài xế khác nhận. Vui lòng chọn chuyến khác.", e);
         }
-        
-        trip.setDriverId(driverId);
-        trip.setStatus(TripStatus.DRIVER_ACCEPTED);
-        trip.setAcceptedAt(OffsetDateTime.now(ZoneOffset.UTC));
-        return tripRepository.save(trip);
     }
 
     @Transactional

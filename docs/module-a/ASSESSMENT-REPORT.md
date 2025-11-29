@@ -285,20 +285,33 @@ docker-compose up --scale trip-service=3
 
 **Kiểm tra code:**
 ```java
-// File: Trip.java (model)
-// ❌ KHÔNG CÓ field version
-// ❌ KHÔNG CÓ @Version annotation
+// File: Trip.java (model) - UPDATED
+@Version
+@Column(name = "version")
+private Integer version;  // ✅ ĐÃ CÓ
+
+// File: V3__Add_version_column_for_optimistic_locking.sql
+ALTER TABLE trips ADD COLUMN version INTEGER DEFAULT 0 NOT NULL;  // ✅
+
+// File: TripService.java - acceptTrip method
+try {
+    // ... business logic
+    return tripRepository.save(trip);
+} catch (OptimisticLockException e) {
+    throw new TripConcurrentUpdateException(...);  // ✅ Exception handling
+}
+
+// File: GlobalExceptionHandler.java
+@ExceptionHandler({OptimisticLockException.class, ...})
+public ResponseEntity<Map<String, Object>> handleOptimisticLockException(...)
+// ✅ Trả HTTP 409 Conflict với message rõ ràng
 ```
 
-**Kết luận:** ❌ **CHƯA TRIỂN KHAI**
-- ADR-005 chỉ có tài liệu, chưa có code.
-- Cần thêm:
-  ```java
-  @Version
-  @Column(name = "version")
-  private Integer version;
-  ```
-- Cần migration thêm cột `version` trong Flyway.
+**Kết luận:** ✅ **ĐÃ TRIỂN KHAI ĐẦY ĐỦ**
+- `@Version` field có trong Trip.java.
+- Flyway migration V3 thêm cột `version`.
+- Exception handler xử lý conflict trả về HTTP 409.
+- Test case OptimisticLockingTest.java demo race condition.
 
 ---
 

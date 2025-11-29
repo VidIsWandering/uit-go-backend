@@ -11,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
+import javax.persistence.Version;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -77,6 +78,10 @@ public class Trip {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
+    @Version
+    @Column(name = "version")
+    private Integer version;
+
     public Trip() {}
 
     // Getters and setters
@@ -130,6 +135,8 @@ public class Trip {
     public void setCancelledAt(OffsetDateTime cancelledAt) { this.cancelledAt = cancelledAt; }
 
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
+
+    public Integer getVersion() { return version; }
 
     @PrePersist
     public void prePersist() {
