@@ -507,22 +507,18 @@ appender=com.p6spy.engine.spy.appender.Slf4JLogger  # ✅ Log qua SLF4J
 
 ### 5.1. Để đạt mức "ĐẠT YÊU CẦU" (Passing Grade)
 
-**Bước 1: Thêm Optimistic Locking (1-2 giờ)**
-```java
-// File: Trip.java
-@Version
-@Column(name = "version")
-private Integer version;
-```
+**Bước 1: Rebuild trip-service với Optimistic Locking (5 phút)**
+```bash
+# 1. Build lại image với code mới
+docker-compose build trip-service
 
-```sql
--- File: V3__add_version_column.sql (Flyway migration)
-ALTER TABLE trips ADD COLUMN version INTEGER DEFAULT 0 NOT NULL;
+# 2. Restart để apply migration V3
+docker-compose up -d trip-service
 ```
 
 **Bước 2: Chạy Load Test Round 2 (30 phút)**
 ```bash
-# 1. Khởi động hệ thống
+# 1. Khởi động toàn bộ hệ thống
 docker-compose up -d
 
 # 2. Seed data
