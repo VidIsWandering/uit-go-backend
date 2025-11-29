@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant Client
+    participant TripService
+    participant SQS as AWS SQS
+    participant DriverService
+    participant DB as Database
+
+    Note over Client, TripService: Giai đoạn 1: Nhận yêu cầu (Fast)
+    Client->>TripService: POST /trips (Đặt xe)
+    TripService->>TripService: Validate Request
+    TripService->>DB: Lưu Trip (Status: CREATED)
+    TripService->>SQS: Push Message {trip_id, lat, long}
+    TripService-->>Client: 202 Accepted (Đang tìm tài xế...)
+    
+    Note over SQS, DriverService: Giai đoạn 2: Xử lý nền (Background)
+    loop Worker Polling
+        DriverService->>SQS: Poll Message
+        SQS-->>DriverService: Message {trip_id...}
+    end
+    DriverService->>DriverService: Tìm tài xế (Heavy Logic)
+    DriverService->>DB: Update Trip (Status: DRIVER_FOUND)
+    DriverService-->>Client: Thông báo (qua WebSocket/Push)

@@ -1,6 +1,6 @@
 module.network.data.aws_region.current: Reading...
-module.ecs.data.aws_caller_identity.current: Reading...
 module.network.data.aws_region.current: Read complete after 0s [id=ap-southeast-1]
+module.ecs.data.aws_caller_identity.current: Reading...
 module.ecs.data.aws_caller_identity.current: Read complete after 0s [id=774041140143]
 
 Terraform used the selected providers to generate the following execution
@@ -1753,6 +1753,34 @@ Terraform will perform the following actions:
         }
     }
 
+  # module.network.aws_eip.nat will be created
+  + resource "aws_eip" "nat" {
+      + allocation_id        = (known after apply)
+      + arn                  = (known after apply)
+      + association_id       = (known after apply)
+      + carrier_ip           = (known after apply)
+      + customer_owned_ip    = (known after apply)
+      + domain               = "vpc"
+      + id                   = (known after apply)
+      + instance             = (known after apply)
+      + ipam_pool_id         = (known after apply)
+      + network_border_group = (known after apply)
+      + network_interface    = (known after apply)
+      + private_dns          = (known after apply)
+      + private_ip           = (known after apply)
+      + ptr_record           = (known after apply)
+      + public_dns           = (known after apply)
+      + public_ip            = (known after apply)
+      + public_ipv4_pool     = (known after apply)
+      + tags                 = {
+          + "Name" = "uit-go-nat-eip"
+        }
+      + tags_all             = {
+          + "Name" = "uit-go-nat-eip"
+        }
+      + vpc                  = (known after apply)
+    }
+
   # module.network.aws_internet_gateway.gw will be created
   + resource "aws_internet_gateway" "gw" {
       + arn      = (known after apply)
@@ -1765,6 +1793,98 @@ Terraform will perform the following actions:
           + "Name" = "uit-go-igw"
         }
       + vpc_id   = (known after apply)
+    }
+
+  # module.network.aws_nat_gateway.main will be created
+  + resource "aws_nat_gateway" "main" {
+      + allocation_id                      = (known after apply)
+      + association_id                     = (known after apply)
+      + connectivity_type                  = "public"
+      + id                                 = (known after apply)
+      + network_interface_id               = (known after apply)
+      + private_ip                         = (known after apply)
+      + public_ip                          = (known after apply)
+      + secondary_private_ip_address_count = (known after apply)
+      + secondary_private_ip_addresses     = (known after apply)
+      + subnet_id                          = (known after apply)
+      + tags                               = {
+          + "Name" = "uit-go-nat-gw"
+        }
+      + tags_all                           = {
+          + "Name" = "uit-go-nat-gw"
+        }
+    }
+
+  # module.network.aws_route_table.private will be created
+  + resource "aws_route_table" "private" {
+      + arn              = (known after apply)
+      + id               = (known after apply)
+      + owner_id         = (known after apply)
+      + propagating_vgws = (known after apply)
+      + route            = [
+          + {
+              + cidr_block                 = "0.0.0.0/0"
+              + nat_gateway_id             = (known after apply)
+                # (11 unchanged attributes hidden)
+            },
+        ]
+      + tags             = {
+          + "Name" = "uit-go-private-rt"
+        }
+      + tags_all         = {
+          + "Name" = "uit-go-private-rt"
+        }
+      + vpc_id           = (known after apply)
+    }
+
+  # module.network.aws_route_table.public will be created
+  + resource "aws_route_table" "public" {
+      + arn              = (known after apply)
+      + id               = (known after apply)
+      + owner_id         = (known after apply)
+      + propagating_vgws = (known after apply)
+      + route            = [
+          + {
+              + cidr_block                 = "0.0.0.0/0"
+              + gateway_id                 = (known after apply)
+                # (11 unchanged attributes hidden)
+            },
+        ]
+      + tags             = {
+          + "Name" = "uit-go-public-rt"
+        }
+      + tags_all         = {
+          + "Name" = "uit-go-public-rt"
+        }
+      + vpc_id           = (known after apply)
+    }
+
+  # module.network.aws_route_table_association.private_a will be created
+  + resource "aws_route_table_association" "private_a" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # module.network.aws_route_table_association.private_b will be created
+  + resource "aws_route_table_association" "private_b" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # module.network.aws_route_table_association.public_a will be created
+  + resource "aws_route_table_association" "public_a" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # module.network.aws_route_table_association.public_b will be created
+  + resource "aws_route_table_association" "public_b" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
     }
 
   # module.network.aws_security_group.alb_sg will be created
@@ -1994,7 +2114,7 @@ Terraform will perform the following actions:
       + visibility_timeout_seconds        = 30
     }
 
-Plan: 73 to add, 0 to change, 0 to destroy.
+Plan: 81 to add, 0 to change, 0 to destroy.
 
 Changes to Outputs:
   + alb_dns_name                = (known after apply)
