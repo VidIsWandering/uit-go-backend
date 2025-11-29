@@ -428,7 +428,7 @@ appender=com.p6spy.engine.spy.appender.Slf4JLogger  # ✅ Log qua SLF4J
 |---------|------------|---------|
 | **1. Phân tích & Bảo vệ Lựa chọn Kiến trúc** | ✅ HOÀN THÀNH | Có 5 ADRs đầy đủ, giải thích trade-offs |
 | **2. Load Testing** | ✅ SẴN SÀNG | Có script Round 2, template báo cáo, chưa chạy thực tế |
-| **3. Tuning Techniques** | ⚠️ 4/5 | - Caching: ✅<br>- Read Replica: ✅<br>- Auto Scaling: ✅ (Terraform)<br>- Connection Pool: ✅<br>- Optimistic Locking: ❌ |
+| **3. Tuning Techniques** | ✅ 5/5 | - Caching: ✅<br>- Read Replica: ✅<br>- Auto Scaling: ✅ (Terraform)<br>- Connection Pool: ✅<br>- Optimistic Locking: ✅ |
 
 ### 4.2. So với yêu cầu đồng nghiệp (Hybrid Local)
 
@@ -481,21 +481,15 @@ appender=com.p6spy.engine.spy.appender.Slf4JLogger  # ✅ Log qua SLF4J
 
 ### 4.4. Điểm yếu cần bổ sung
 
-#### ❌ Những gì còn thiếu:
+#### ⚠️ Những gì còn thiếu:
 
-1. **Optimistic Locking (ADR-005):**
-   - **Thiếu:** Field `version` trong Trip.java.
-   - **Thiếu:** Migration Flyway thêm cột `version`.
-   - **Tác động:** Không ngăn được race condition khi 2 driver accept cùng trip.
-   - **Độ ưu tiên:** ⚠️ TRUNG BÌNH (trong môi trường test ít xảy ra, nhưng cần cho production).
-
-2. **Load Test Round 2 Execution:**
+1. **Load Test Round 2 Execution:**
    - **Thiếu:** Kết quả thực tế (metrics, screenshots).
    - **Thiếu:** So sánh Before/After optimization.
    - **Tác động:** Không chứng minh được cải thiện hiệu năng.
    - **Độ ưu tiên:** 🔴 CAO (cần chạy và ghi kết quả để hoàn thành Module A).
 
-3. **Replica Data Sync:**
+2. **Replica Data Sync:**
    - **Thiếu:** Cơ chế đồng bộ dữ liệu từ primary → replica.
    - **Hiện tại:** 2 DB độc lập, dữ liệu không giống nhau.
    - **Giải pháp gợi ý:**
@@ -503,7 +497,7 @@ appender=com.p6spy.engine.spy.appender.Slf4JLogger  # ✅ Log qua SLF4J
      - Hoặc ghi chú: "Replica simulation chỉ để test routing logic, data không sync 100%".
    - **Độ ưu tiên:** 🟡 THẤP (chấp nhận được trong local test).
 
-4. **Cost Calculator Link:**
+3. **Cost Calculator Link:**
    - **Thiếu:** Link AWS Pricing Calculator với config cụ thể.
    - **Độ ưu tiên:** 🟡 THẤP (có bảng cost estimate manual đã đủ).
 
