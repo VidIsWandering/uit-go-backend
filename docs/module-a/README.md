@@ -5,28 +5,35 @@
 Module này tập trung vào việc chuyển đổi hệ thống UIT-Go từ kiến trúc cơ bản sang kiến trúc **Hyper-scale**, có khả năng chịu tải cao và mở rộng linh hoạt.
 Vai trò: **System Architect**.
 
-## 2. Các Quyết định Kiến trúc (ADRs)
+## 2. Tài liệu Quy hoạch & Kiến trúc (Planning)
 
-Chúng tôi đã phân tích và đưa ra các quyết định quan trọng sau:
+- **[Kế hoạch Thực hiện (Implementation Plan)](./PLAN.md)**: Lộ trình chi tiết các bước thực hiện Module A.
+- **Các Quyết định Kiến trúc (ADRs)**:
+  - **[ADR-001: Async Communication (SQS)](../adr/module-a/001-architecture-async-processing.md)**
+  - **[ADR-002: Database Read Scalability](../adr/module-a/002-database-read-replicas.md)**
+  - **[ADR-003: Caching Strategy](../adr/module-a/003-caching-strategy.md)**
+  - **[ADR-004: Auto-scaling Strategy](../adr/module-a/004-autoscaling-strategy.md)**
+  - **[ADR-005: Concurrency Control](../adr/module-a/005-concurrency-control.md)**
 
-- **[ADR-001: Async Communication (SQS)](../adr/module-a/001-architecture-async-processing.md)**
-  - **Vấn đề**: API đặt xe đồng bộ gây nghẽn cổ chai.
-  - **Giải pháp**: Sử dụng SQS để tách rời TripService và DriverService.
-- **[ADR-002: Database Read Scalability](../adr/module-a/002-database-read-replicas.md)**
-  - **Vấn đề**: Database quá tải vì lượng query đọc lớn.
-  - **Giải pháp**: Triển khai Read Replicas.
-- **[ADR-003: Caching Strategy](../adr/module-a/003-caching-strategy.md)**
-  - **Vấn đề**: Độ trễ cao khi truy xuất dữ liệu tĩnh/geo.
-  - **Giải pháp**: Redis Cache & Geo-spatial.
-- **[ADR-004: Auto-scaling Strategy](../adr/module-a/004-autoscaling-strategy.md)**
-  - **Vấn đề**: Lãng phí tài nguyên giờ thấp điểm, sập giờ cao điểm.
-  - **Giải pháp**: ECS Service Auto Scaling & RDS Storage Scaling.
+## 3. Môi trường & Hướng dẫn Kiểm thử (Testing)
 
-## 3. Kế hoạch Thực hiện
+Để đảm bảo tính khách quan và khả năng tái lập kết quả, chúng tôi đã tài liệu hóa chi tiết môi trường và quy trình test:
 
-Chi tiết lộ trình triển khai xem tại: **[PLAN.md](./PLAN.md)**.
+- **[Môi trường Kiểm thử (Test Environment)](./TEST_ENVIRONMENT.md)**: Cấu hình phần cứng, phần mềm và các thông số Docker.
+- **[Hướng dẫn Kiểm chứng (Verification Guide)](./VERIFICATION_GUIDE.md)**: Các bước thực hiện Load Test (Spike, Stress) và cách thu thập dữ liệu.
 
-## 4. Kiến trúc Hệ thống (Target Architecture)
+## 4. Báo cáo Kết quả (Results)
+
+Quá trình tối ưu hóa được chia làm 2 giai đoạn để đo lường hiệu quả:
+
+- **[Giai đoạn 1: Baseline (Load Test 1)](./load-test-1-baseline/README.md)**
+  - Trạng thái: **Đã hoàn thành**.
+  - Kết quả: Xác định được điểm nghẽn tại Database Connection Pool.
+- **[Giai đoạn 2: Tuning & Optimization (Load Test 2)](./load-test-2-tuning/README.md)**
+  - Trạng thái: **Đang thực hiện**.
+  - Mục tiêu: Kiểm chứng hiệu quả của Connection Pool Tuning, Read Replicas và Caching.
+
+## 5. Kiến trúc Hệ thống (Target Architecture)
 
 _(Sẽ được cập nhật sau khi hoàn tất triển khai Terraform)_
 

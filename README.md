@@ -78,8 +78,12 @@ Các quyết định thiết kế và đánh đổi (trade-offs) quan trọng c�
 
 ## 3. Hợp đồng API (API Contracts) 📜
 
-Toàn bộ API (request/response) của 3 services, bao gồm đủ 10 User Stories, được định nghĩa chi tiết tại file:
-**[docs/API_CONTRACTS.md](docs/API_CONTRACTS.md)**
+Toàn bộ API (request/response) của 3 services, bao gồm đủ 10 User Stories, được định nghĩa chi tiết và phân tách theo từng service tại thư mục:
+**[docs/specs/api/](docs/specs/api/)**
+
+- **[User Service API](docs/specs/api/user-service.md)**
+- **[Trip Service API](docs/specs/api/trip-service.md)**
+- **[Driver Service API](docs/specs/api/driver-service.md)**
 
 ---
 
