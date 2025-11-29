@@ -1,0 +1,2016 @@
+module.network.data.aws_region.current: Reading...
+module.ecs.data.aws_caller_identity.current: Reading...
+module.network.data.aws_region.current: Read complete after 0s [id=ap-southeast-1]
+module.ecs.data.aws_caller_identity.current: Read complete after 0s [id=774041140143]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # module.database.aws_db_instance.trip_db will be created
+  + resource "aws_db_instance" "trip_db" {
+      + address                               = (known after apply)
+      + allocated_storage                     = 20
+      + apply_immediately                     = false
+      + arn                                   = (known after apply)
+      + auto_minor_version_upgrade            = true
+      + availability_zone                     = (known after apply)
+      + backup_retention_period               = (known after apply)
+      + backup_target                         = (known after apply)
+      + backup_window                         = (known after apply)
+      + ca_cert_identifier                    = (known after apply)
+      + character_set_name                    = (known after apply)
+      + copy_tags_to_snapshot                 = false
+      + database_insights_mode                = (known after apply)
+      + db_name                               = "uit_trip_db"
+      + db_subnet_group_name                  = "uit-go-rds-subnet-group"
+      + dedicated_log_volume                  = false
+      + delete_automated_backups              = true
+      + domain_fqdn                           = (known after apply)
+      + endpoint                              = (known after apply)
+      + engine                                = "postgres"
+      + engine_lifecycle_support              = (known after apply)
+      + engine_version                        = "15"
+      + engine_version_actual                 = (known after apply)
+      + hosted_zone_id                        = (known after apply)
+      + id                                    = (known after apply)
+      + identifier                            = "uit-go-trip-db"
+      + identifier_prefix                     = (known after apply)
+      + instance_class                        = "db.t3.micro"
+      + iops                                  = (known after apply)
+      + kms_key_id                            = (known after apply)
+      + latest_restorable_time                = (known after apply)
+      + license_model                         = (known after apply)
+      + listener_endpoint                     = (known after apply)
+      + maintenance_window                    = (known after apply)
+      + manage_master_user_password           = true
+      + master_user_secret                    = (known after apply)
+      + master_user_secret_kms_key_id         = (known after apply)
+      + monitoring_interval                   = 0
+      + monitoring_role_arn                   = (known after apply)
+      + multi_az                              = (known after apply)
+      + nchar_character_set_name              = (known after apply)
+      + network_type                          = (known after apply)
+      + option_group_name                     = (known after apply)
+      + parameter_group_name                  = (known after apply)
+      + password_wo                           = (write-only attribute)
+      + performance_insights_enabled          = false
+      + performance_insights_kms_key_id       = (known after apply)
+      + performance_insights_retention_period = (known after apply)
+      + port                                  = (known after apply)
+      + publicly_accessible                   = false
+      + replica_mode                          = (known after apply)
+      + replicas                              = (known after apply)
+      + resource_id                           = (known after apply)
+      + skip_final_snapshot                   = true
+      + snapshot_identifier                   = (known after apply)
+      + status                                = (known after apply)
+      + storage_throughput                    = (known after apply)
+      + storage_type                          = (known after apply)
+      + tags                                  = {
+          + "Name" = "uit-go-trip-db"
+        }
+      + tags_all                              = {
+          + "Name" = "uit-go-trip-db"
+        }
+      + timezone                              = (known after apply)
+      + username                              = "pgadmin"
+      + vpc_security_group_ids                = (known after apply)
+    }
+
+  # module.database.aws_db_instance.trip_db_replica will be created
+  + resource "aws_db_instance" "trip_db_replica" {
+      + address                               = (known after apply)
+      + allocated_storage                     = (known after apply)
+      + apply_immediately                     = false
+      + arn                                   = (known after apply)
+      + auto_minor_version_upgrade            = true
+      + availability_zone                     = "ap-southeast-1b"
+      + backup_retention_period               = (known after apply)
+      + backup_target                         = (known after apply)
+      + backup_window                         = (known after apply)
+      + ca_cert_identifier                    = (known after apply)
+      + character_set_name                    = (known after apply)
+      + copy_tags_to_snapshot                 = false
+      + database_insights_mode                = (known after apply)
+      + db_name                               = (known after apply)
+      + db_subnet_group_name                  = (known after apply)
+      + dedicated_log_volume                  = false
+      + delete_automated_backups              = true
+      + domain_fqdn                           = (known after apply)
+      + endpoint                              = (known after apply)
+      + engine                                = (known after apply)
+      + engine_lifecycle_support              = (known after apply)
+      + engine_version                        = (known after apply)
+      + engine_version_actual                 = (known after apply)
+      + hosted_zone_id                        = (known after apply)
+      + id                                    = (known after apply)
+      + identifier                            = "uit-go-trip-db-replica"
+      + identifier_prefix                     = (known after apply)
+      + instance_class                        = "db.t3.micro"
+      + iops                                  = (known after apply)
+      + kms_key_id                            = (known after apply)
+      + latest_restorable_time                = (known after apply)
+      + license_model                         = (known after apply)
+      + listener_endpoint                     = (known after apply)
+      + maintenance_window                    = (known after apply)
+      + master_user_secret                    = (known after apply)
+      + master_user_secret_kms_key_id         = (known after apply)
+      + monitoring_interval                   = 0
+      + monitoring_role_arn                   = (known after apply)
+      + multi_az                              = (known after apply)
+      + nchar_character_set_name              = (known after apply)
+      + network_type                          = (known after apply)
+      + option_group_name                     = (known after apply)
+      + parameter_group_name                  = (known after apply)
+      + password_wo                           = (write-only attribute)
+      + performance_insights_enabled          = false
+      + performance_insights_kms_key_id       = (known after apply)
+      + performance_insights_retention_period = (known after apply)
+      + port                                  = (known after apply)
+      + publicly_accessible                   = false
+      + replica_mode                          = (known after apply)
+      + replicas                              = (known after apply)
+      + replicate_source_db                   = "uit-go-trip-db"
+      + resource_id                           = (known after apply)
+      + skip_final_snapshot                   = true
+      + snapshot_identifier                   = (known after apply)
+      + status                                = (known after apply)
+      + storage_throughput                    = (known after apply)
+      + storage_type                          = (known after apply)
+      + tags                                  = {
+          + "Name" = "uit-go-trip-db-replica"
+        }
+      + tags_all                              = {
+          + "Name" = "uit-go-trip-db-replica"
+        }
+      + timezone                              = (known after apply)
+      + username                              = (known after apply)
+      + vpc_security_group_ids                = (known after apply)
+    }
+
+  # module.database.aws_db_instance.user_db will be created
+  + resource "aws_db_instance" "user_db" {
+      + address                               = (known after apply)
+      + allocated_storage                     = 20
+      + apply_immediately                     = false
+      + arn                                   = (known after apply)
+      + auto_minor_version_upgrade            = true
+      + availability_zone                     = (known after apply)
+      + backup_retention_period               = (known after apply)
+      + backup_target                         = (known after apply)
+      + backup_window                         = (known after apply)
+      + ca_cert_identifier                    = (known after apply)
+      + character_set_name                    = (known after apply)
+      + copy_tags_to_snapshot                 = false
+      + database_insights_mode                = (known after apply)
+      + db_name                               = "uit_user_db"
+      + db_subnet_group_name                  = "uit-go-rds-subnet-group"
+      + dedicated_log_volume                  = false
+      + delete_automated_backups              = true
+      + domain_fqdn                           = (known after apply)
+      + endpoint                              = (known after apply)
+      + engine                                = "postgres"
+      + engine_lifecycle_support              = (known after apply)
+      + engine_version                        = "15"
+      + engine_version_actual                 = (known after apply)
+      + hosted_zone_id                        = (known after apply)
+      + id                                    = (known after apply)
+      + identifier                            = "uit-go-user-db"
+      + identifier_prefix                     = (known after apply)
+      + instance_class                        = "db.t3.micro"
+      + iops                                  = (known after apply)
+      + kms_key_id                            = (known after apply)
+      + latest_restorable_time                = (known after apply)
+      + license_model                         = (known after apply)
+      + listener_endpoint                     = (known after apply)
+      + maintenance_window                    = (known after apply)
+      + manage_master_user_password           = true
+      + master_user_secret                    = (known after apply)
+      + master_user_secret_kms_key_id         = (known after apply)
+      + monitoring_interval                   = 0
+      + monitoring_role_arn                   = (known after apply)
+      + multi_az                              = (known after apply)
+      + nchar_character_set_name              = (known after apply)
+      + network_type                          = (known after apply)
+      + option_group_name                     = (known after apply)
+      + parameter_group_name                  = (known after apply)
+      + password_wo                           = (write-only attribute)
+      + performance_insights_enabled          = false
+      + performance_insights_kms_key_id       = (known after apply)
+      + performance_insights_retention_period = (known after apply)
+      + port                                  = (known after apply)
+      + publicly_accessible                   = false
+      + replica_mode                          = (known after apply)
+      + replicas                              = (known after apply)
+      + resource_id                           = (known after apply)
+      + skip_final_snapshot                   = true
+      + snapshot_identifier                   = (known after apply)
+      + status                                = (known after apply)
+      + storage_throughput                    = (known after apply)
+      + storage_type                          = (known after apply)
+      + tags                                  = {
+          + "Name" = "uit-go-user-db"
+        }
+      + tags_all                              = {
+          + "Name" = "uit-go-user-db"
+        }
+      + timezone                              = (known after apply)
+      + username                              = "pgadmin"
+      + vpc_security_group_ids                = (known after apply)
+    }
+
+  # module.database.aws_db_subnet_group.rds_subnet_group will be created
+  + resource "aws_db_subnet_group" "rds_subnet_group" {
+      + arn                     = (known after apply)
+      + description             = "Managed by Terraform"
+      + id                      = (known after apply)
+      + name                    = "uit-go-rds-subnet-group"
+      + name_prefix             = (known after apply)
+      + subnet_ids              = (known after apply)
+      + supported_network_types = (known after apply)
+      + tags                    = {
+          + "Name" = "uit-go-rds-subnet-group"
+        }
+      + tags_all                = {
+          + "Name" = "uit-go-rds-subnet-group"
+        }
+      + vpc_id                  = (known after apply)
+    }
+
+  # module.database.aws_elasticache_cluster.redis_cluster will be created
+  + resource "aws_elasticache_cluster" "redis_cluster" {
+      + apply_immediately          = (known after apply)
+      + arn                        = (known after apply)
+      + auto_minor_version_upgrade = "true"
+      + availability_zone          = (known after apply)
+      + az_mode                    = (known after apply)
+      + cache_nodes                = (known after apply)
+      + cluster_address            = (known after apply)
+      + cluster_id                 = "uit-go-redis-cluster"
+      + configuration_endpoint     = (known after apply)
+      + engine                     = "redis"
+      + engine_version             = "7.0"
+      + engine_version_actual      = (known after apply)
+      + id                         = (known after apply)
+      + ip_discovery               = (known after apply)
+      + maintenance_window         = (known after apply)
+      + network_type               = (known after apply)
+      + node_type                  = "cache.t3.micro"
+      + num_cache_nodes            = 1
+      + parameter_group_name       = (known after apply)
+      + port                       = 6379
+      + preferred_outpost_arn      = (known after apply)
+      + replication_group_id       = (known after apply)
+      + security_group_ids         = (known after apply)
+      + snapshot_retention_limit   = 5
+      + snapshot_window            = "03:00-05:00"
+      + subnet_group_name          = "uit-go-redis-subnet-group"
+      + tags                       = {
+          + "Name" = "uit-go-redis-cluster"
+        }
+      + tags_all                   = {
+          + "Name" = "uit-go-redis-cluster"
+        }
+      + transit_encryption_enabled = (known after apply)
+    }
+
+  # module.database.aws_elasticache_subnet_group.redis_subnet_group will be created
+  + resource "aws_elasticache_subnet_group" "redis_subnet_group" {
+      + arn         = (known after apply)
+      + description = "Managed by Terraform"
+      + id          = (known after apply)
+      + name        = "uit-go-redis-subnet-group"
+      + subnet_ids  = (known after apply)
+      + tags        = {
+          + "Name" = "uit-go-redis-subnet-group"
+        }
+      + tags_all    = {
+          + "Name" = "uit-go-redis-subnet-group"
+        }
+      + vpc_id      = (known after apply)
+    }
+
+  # module.database.aws_secretsmanager_secret.trip_db_password will be created
+  + resource "aws_secretsmanager_secret" "trip_db_password" {
+      + arn                            = (known after apply)
+      + force_overwrite_replica_secret = false
+      + id                             = (known after apply)
+      + name                           = "uit-go/trip-db/password"
+      + name_prefix                    = (known after apply)
+      + policy                         = (known after apply)
+      + recovery_window_in_days        = 0
+      + tags_all                       = (known after apply)
+
+      + replica (known after apply)
+    }
+
+  # module.database.aws_secretsmanager_secret.user_db_password will be created
+  + resource "aws_secretsmanager_secret" "user_db_password" {
+      + arn                            = (known after apply)
+      + force_overwrite_replica_secret = false
+      + id                             = (known after apply)
+      + name                           = "uit-go/user-db/password"
+      + name_prefix                    = (known after apply)
+      + policy                         = (known after apply)
+      + recovery_window_in_days        = 0
+      + tags_all                       = (known after apply)
+
+      + replica (known after apply)
+    }
+
+  # module.database.aws_secretsmanager_secret_version.trip_db_password_version will be created
+  + resource "aws_secretsmanager_secret_version" "trip_db_password_version" {
+      + arn                  = (known after apply)
+      + has_secret_string_wo = (known after apply)
+      + id                   = (known after apply)
+      + secret_id            = (known after apply)
+      + secret_string        = (sensitive value)
+      + secret_string_wo     = (write-only attribute)
+      + version_id           = (known after apply)
+      + version_stages       = (known after apply)
+    }
+
+  # module.database.aws_secretsmanager_secret_version.user_db_password_version will be created
+  + resource "aws_secretsmanager_secret_version" "user_db_password_version" {
+      + arn                  = (known after apply)
+      + has_secret_string_wo = (known after apply)
+      + id                   = (known after apply)
+      + secret_id            = (known after apply)
+      + secret_string        = (sensitive value)
+      + secret_string_wo     = (write-only attribute)
+      + version_id           = (known after apply)
+      + version_stages       = (known after apply)
+    }
+
+  # module.database.aws_security_group.driver_service_sg will be created
+  + resource "aws_security_group" "driver_service_sg" {
+      + arn                    = (known after apply)
+      + description            = "Security group for driver-service ECS tasks"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 0
+                # (1 unchanged attribute hidden)
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = []
+              + from_port        = 8082
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = (known after apply)
+              + self             = false
+              + to_port          = 8082
+                # (1 unchanged attribute hidden)
+            },
+        ]
+      + name                   = "uit-go-driver-service-sg"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "uit-go-driver-service-sg"
+        }
+      + tags_all               = {
+          + "Name" = "uit-go-driver-service-sg"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # module.database.aws_security_group.redis_sg will be created
+  + resource "aws_security_group" "redis_sg" {
+      + arn                    = (known after apply)
+      + description            = "Allow access to Redis only from driver-service"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 0
+                # (1 unchanged attribute hidden)
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = (known after apply)
+      + name                   = "uit-go-redis-sg"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "uit-go-redis-sg"
+        }
+      + tags_all               = {
+          + "Name" = "uit-go-redis-sg"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # module.database.aws_security_group.trip_db_sg will be created
+  + resource "aws_security_group" "trip_db_sg" {
+      + arn                    = (known after apply)
+      + description            = "Allow access to trip DB only from trip-service"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 0
+                # (1 unchanged attribute hidden)
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = (known after apply)
+      + name                   = "uit-go-trip-db-sg"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "uit-go-trip-db-sg"
+        }
+      + tags_all               = {
+          + "Name" = "uit-go-trip-db-sg"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # module.database.aws_security_group.trip_service_sg will be created
+  + resource "aws_security_group" "trip_service_sg" {
+      + arn                    = (known after apply)
+      + description            = "Security group for trip-service ECS tasks"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 0
+                # (1 unchanged attribute hidden)
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = []
+              + from_port        = 8081
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = (known after apply)
+              + self             = false
+              + to_port          = 8081
+                # (1 unchanged attribute hidden)
+            },
+        ]
+      + name                   = "uit-go-trip-service-sg"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "uit-go-trip-service-sg"
+        }
+      + tags_all               = {
+          + "Name" = "uit-go-trip-service-sg"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # module.database.aws_security_group.user_db_sg will be created
+  + resource "aws_security_group" "user_db_sg" {
+      + arn                    = (known after apply)
+      + description            = "Allow access to user DB only from user-service"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 0
+                # (1 unchanged attribute hidden)
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = (known after apply)
+      + name                   = "uit-go-user-db-sg"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "uit-go-user-db-sg"
+        }
+      + tags_all               = {
+          + "Name" = "uit-go-user-db-sg"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # module.database.aws_security_group.user_service_sg will be created
+  + resource "aws_security_group" "user_service_sg" {
+      + arn                    = (known after apply)
+      + description            = "Security group for user-service ECS tasks"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 0
+                # (1 unchanged attribute hidden)
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = []
+              + from_port        = 8080
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = (known after apply)
+              + self             = false
+              + to_port          = 8080
+                # (1 unchanged attribute hidden)
+            },
+        ]
+      + name                   = "uit-go-user-service-sg"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "uit-go-user-service-sg"
+        }
+      + tags_all               = {
+          + "Name" = "uit-go-user-service-sg"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # module.database.aws_security_group_rule.driver_service_to_redis will be created
+  + resource "aws_security_group_rule" "driver_service_to_redis" {
+      + description              = "Allow driver-service to access Redis"
+      + from_port                = 6379
+      + id                       = (known after apply)
+      + protocol                 = "tcp"
+      + security_group_id        = (known after apply)
+      + security_group_rule_id   = (known after apply)
+      + self                     = false
+      + source_security_group_id = (known after apply)
+      + to_port                  = 6379
+      + type                     = "ingress"
+    }
+
+  # module.database.aws_security_group_rule.trip_service_to_trip_db will be created
+  + resource "aws_security_group_rule" "trip_service_to_trip_db" {
+      + description              = "Allow trip-service to access trip_db"
+      + from_port                = 5432
+      + id                       = (known after apply)
+      + protocol                 = "tcp"
+      + security_group_id        = (known after apply)
+      + security_group_rule_id   = (known after apply)
+      + self                     = false
+      + source_security_group_id = (known after apply)
+      + to_port                  = 5432
+      + type                     = "ingress"
+    }
+
+  # module.database.aws_security_group_rule.trip_to_driver_service will be created
+  + resource "aws_security_group_rule" "trip_to_driver_service" {
+      + description              = "Allow trip-service to call driver-service"
+      + from_port                = 8082
+      + id                       = (known after apply)
+      + protocol                 = "tcp"
+      + security_group_id        = (known after apply)
+      + security_group_rule_id   = (known after apply)
+      + self                     = false
+      + source_security_group_id = (known after apply)
+      + to_port                  = 8082
+      + type                     = "ingress"
+    }
+
+  # module.database.aws_security_group_rule.user_service_to_user_db will be created
+  + resource "aws_security_group_rule" "user_service_to_user_db" {
+      + description              = "Allow user-service to access user_db"
+      + from_port                = 5432
+      + id                       = (known after apply)
+      + protocol                 = "tcp"
+      + security_group_id        = (known after apply)
+      + security_group_rule_id   = (known after apply)
+      + self                     = false
+      + source_security_group_id = (known after apply)
+      + to_port                  = 5432
+      + type                     = "ingress"
+    }
+
+  # module.database.random_password.trip_db_password will be created
+  + resource "random_password" "trip_db_password" {
+      + bcrypt_hash      = (sensitive value)
+      + id               = (known after apply)
+      + length           = 16
+      + lower            = true
+      + min_lower        = 0
+      + min_numeric      = 0
+      + min_special      = 0
+      + min_upper        = 0
+      + number           = true
+      + numeric          = true
+      + override_special = "!#$%&*()-_=+[]{}<>:?"
+      + result           = (sensitive value)
+      + special          = true
+      + upper            = true
+    }
+
+  # module.database.random_password.user_db_password will be created
+  + resource "random_password" "user_db_password" {
+      + bcrypt_hash      = (sensitive value)
+      + id               = (known after apply)
+      + length           = 16
+      + lower            = true
+      + min_lower        = 0
+      + min_numeric      = 0
+      + min_special      = 0
+      + min_upper        = 0
+      + number           = true
+      + numeric          = true
+      + override_special = "!#$%&*()-_=+[]{}<>:?"
+      + result           = (sensitive value)
+      + special          = true
+      + upper            = true
+    }
+
+  # module.ecs.aws_appautoscaling_policy.ecs_policy_cpu["driver"] will be created
+  + resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
+      + alarm_arns         = (known after apply)
+      + arn                = (known after apply)
+      + id                 = (known after apply)
+      + name               = "cpu-autoscaling-driver"
+      + policy_type        = "TargetTrackingScaling"
+      + resource_id        = "service/uit-go-cluster/uit-go-driver-service"
+      + scalable_dimension = "ecs:service:DesiredCount"
+      + service_namespace  = "ecs"
+
+      + target_tracking_scaling_policy_configuration {
+          + disable_scale_in   = false
+          + scale_in_cooldown  = 300
+          + scale_out_cooldown = 60
+          + target_value       = 70
+
+          + predefined_metric_specification {
+              + predefined_metric_type = "ECSServiceAverageCPUUtilization"
+            }
+        }
+    }
+
+  # module.ecs.aws_appautoscaling_policy.ecs_policy_cpu["trip"] will be created
+  + resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
+      + alarm_arns         = (known after apply)
+      + arn                = (known after apply)
+      + id                 = (known after apply)
+      + name               = "cpu-autoscaling-trip"
+      + policy_type        = "TargetTrackingScaling"
+      + resource_id        = "service/uit-go-cluster/uit-go-trip-service"
+      + scalable_dimension = "ecs:service:DesiredCount"
+      + service_namespace  = "ecs"
+
+      + target_tracking_scaling_policy_configuration {
+          + disable_scale_in   = false
+          + scale_in_cooldown  = 300
+          + scale_out_cooldown = 60
+          + target_value       = 70
+
+          + predefined_metric_specification {
+              + predefined_metric_type = "ECSServiceAverageCPUUtilization"
+            }
+        }
+    }
+
+  # module.ecs.aws_appautoscaling_policy.ecs_policy_cpu["user"] will be created
+  + resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
+      + alarm_arns         = (known after apply)
+      + arn                = (known after apply)
+      + id                 = (known after apply)
+      + name               = "cpu-autoscaling-user"
+      + policy_type        = "TargetTrackingScaling"
+      + resource_id        = "service/uit-go-cluster/uit-go-user-service"
+      + scalable_dimension = "ecs:service:DesiredCount"
+      + service_namespace  = "ecs"
+
+      + target_tracking_scaling_policy_configuration {
+          + disable_scale_in   = false
+          + scale_in_cooldown  = 300
+          + scale_out_cooldown = 60
+          + target_value       = 70
+
+          + predefined_metric_specification {
+              + predefined_metric_type = "ECSServiceAverageCPUUtilization"
+            }
+        }
+    }
+
+  # module.ecs.aws_appautoscaling_policy.ecs_policy_memory["driver"] will be created
+  + resource "aws_appautoscaling_policy" "ecs_policy_memory" {
+      + alarm_arns         = (known after apply)
+      + arn                = (known after apply)
+      + id                 = (known after apply)
+      + name               = "memory-autoscaling-driver"
+      + policy_type        = "TargetTrackingScaling"
+      + resource_id        = "service/uit-go-cluster/uit-go-driver-service"
+      + scalable_dimension = "ecs:service:DesiredCount"
+      + service_namespace  = "ecs"
+
+      + target_tracking_scaling_policy_configuration {
+          + disable_scale_in   = false
+          + scale_in_cooldown  = 300
+          + scale_out_cooldown = 60
+          + target_value       = 80
+
+          + predefined_metric_specification {
+              + predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+            }
+        }
+    }
+
+  # module.ecs.aws_appautoscaling_policy.ecs_policy_memory["trip"] will be created
+  + resource "aws_appautoscaling_policy" "ecs_policy_memory" {
+      + alarm_arns         = (known after apply)
+      + arn                = (known after apply)
+      + id                 = (known after apply)
+      + name               = "memory-autoscaling-trip"
+      + policy_type        = "TargetTrackingScaling"
+      + resource_id        = "service/uit-go-cluster/uit-go-trip-service"
+      + scalable_dimension = "ecs:service:DesiredCount"
+      + service_namespace  = "ecs"
+
+      + target_tracking_scaling_policy_configuration {
+          + disable_scale_in   = false
+          + scale_in_cooldown  = 300
+          + scale_out_cooldown = 60
+          + target_value       = 80
+
+          + predefined_metric_specification {
+              + predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+            }
+        }
+    }
+
+  # module.ecs.aws_appautoscaling_policy.ecs_policy_memory["user"] will be created
+  + resource "aws_appautoscaling_policy" "ecs_policy_memory" {
+      + alarm_arns         = (known after apply)
+      + arn                = (known after apply)
+      + id                 = (known after apply)
+      + name               = "memory-autoscaling-user"
+      + policy_type        = "TargetTrackingScaling"
+      + resource_id        = "service/uit-go-cluster/uit-go-user-service"
+      + scalable_dimension = "ecs:service:DesiredCount"
+      + service_namespace  = "ecs"
+
+      + target_tracking_scaling_policy_configuration {
+          + disable_scale_in   = false
+          + scale_in_cooldown  = 300
+          + scale_out_cooldown = 60
+          + target_value       = 80
+
+          + predefined_metric_specification {
+              + predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+            }
+        }
+    }
+
+  # module.ecs.aws_appautoscaling_policy.ecs_policy_requests["driver"] will be created
+  + resource "aws_appautoscaling_policy" "ecs_policy_requests" {
+      + alarm_arns         = (known after apply)
+      + arn                = (known after apply)
+      + id                 = (known after apply)
+      + name               = "requests-autoscaling-driver"
+      + policy_type        = "TargetTrackingScaling"
+      + resource_id        = "service/uit-go-cluster/uit-go-driver-service"
+      + scalable_dimension = "ecs:service:DesiredCount"
+      + service_namespace  = "ecs"
+
+      + target_tracking_scaling_policy_configuration {
+          + disable_scale_in   = false
+          + scale_in_cooldown  = 300
+          + scale_out_cooldown = 60
+          + target_value       = 1000
+
+          + predefined_metric_specification {
+              + predefined_metric_type = "ALBRequestCountPerTarget"
+              + resource_label         = (known after apply)
+            }
+        }
+    }
+
+  # module.ecs.aws_appautoscaling_policy.ecs_policy_requests["trip"] will be created
+  + resource "aws_appautoscaling_policy" "ecs_policy_requests" {
+      + alarm_arns         = (known after apply)
+      + arn                = (known after apply)
+      + id                 = (known after apply)
+      + name               = "requests-autoscaling-trip"
+      + policy_type        = "TargetTrackingScaling"
+      + resource_id        = "service/uit-go-cluster/uit-go-trip-service"
+      + scalable_dimension = "ecs:service:DesiredCount"
+      + service_namespace  = "ecs"
+
+      + target_tracking_scaling_policy_configuration {
+          + disable_scale_in   = false
+          + scale_in_cooldown  = 300
+          + scale_out_cooldown = 60
+          + target_value       = 1000
+
+          + predefined_metric_specification {
+              + predefined_metric_type = "ALBRequestCountPerTarget"
+              + resource_label         = (known after apply)
+            }
+        }
+    }
+
+  # module.ecs.aws_appautoscaling_policy.ecs_policy_requests["user"] will be created
+  + resource "aws_appautoscaling_policy" "ecs_policy_requests" {
+      + alarm_arns         = (known after apply)
+      + arn                = (known after apply)
+      + id                 = (known after apply)
+      + name               = "requests-autoscaling-user"
+      + policy_type        = "TargetTrackingScaling"
+      + resource_id        = "service/uit-go-cluster/uit-go-user-service"
+      + scalable_dimension = "ecs:service:DesiredCount"
+      + service_namespace  = "ecs"
+
+      + target_tracking_scaling_policy_configuration {
+          + disable_scale_in   = false
+          + scale_in_cooldown  = 300
+          + scale_out_cooldown = 60
+          + target_value       = 1000
+
+          + predefined_metric_specification {
+              + predefined_metric_type = "ALBRequestCountPerTarget"
+              + resource_label         = (known after apply)
+            }
+        }
+    }
+
+  # module.ecs.aws_appautoscaling_target.ecs_target["driver"] will be created
+  + resource "aws_appautoscaling_target" "ecs_target" {
+      + arn                = (known after apply)
+      + id                 = (known after apply)
+      + max_capacity       = 10
+      + min_capacity       = 1
+      + resource_id        = "service/uit-go-cluster/uit-go-driver-service"
+      + role_arn           = (known after apply)
+      + scalable_dimension = "ecs:service:DesiredCount"
+      + service_namespace  = "ecs"
+      + tags_all           = (known after apply)
+
+      + suspended_state (known after apply)
+    }
+
+  # module.ecs.aws_appautoscaling_target.ecs_target["trip"] will be created
+  + resource "aws_appautoscaling_target" "ecs_target" {
+      + arn                = (known after apply)
+      + id                 = (known after apply)
+      + max_capacity       = 10
+      + min_capacity       = 1
+      + resource_id        = "service/uit-go-cluster/uit-go-trip-service"
+      + role_arn           = (known after apply)
+      + scalable_dimension = "ecs:service:DesiredCount"
+      + service_namespace  = "ecs"
+      + tags_all           = (known after apply)
+
+      + suspended_state (known after apply)
+    }
+
+  # module.ecs.aws_appautoscaling_target.ecs_target["user"] will be created
+  + resource "aws_appautoscaling_target" "ecs_target" {
+      + arn                = (known after apply)
+      + id                 = (known after apply)
+      + max_capacity       = 10
+      + min_capacity       = 1
+      + resource_id        = "service/uit-go-cluster/uit-go-user-service"
+      + role_arn           = (known after apply)
+      + scalable_dimension = "ecs:service:DesiredCount"
+      + service_namespace  = "ecs"
+      + tags_all           = (known after apply)
+
+      + suspended_state (known after apply)
+    }
+
+  # module.ecs.aws_cloudwatch_log_group.driver_service_lg will be created
+  + resource "aws_cloudwatch_log_group" "driver_service_lg" {
+      + arn               = (known after apply)
+      + id                = (known after apply)
+      + log_group_class   = (known after apply)
+      + name              = "/ecs/driver-service"
+      + name_prefix       = (known after apply)
+      + retention_in_days = 0
+      + skip_destroy      = false
+      + tags              = {
+          + "Name" = "uit-go-driver-service-lg"
+        }
+      + tags_all          = {
+          + "Name" = "uit-go-driver-service-lg"
+        }
+    }
+
+  # module.ecs.aws_cloudwatch_log_group.trip_service_lg will be created
+  + resource "aws_cloudwatch_log_group" "trip_service_lg" {
+      + arn               = (known after apply)
+      + id                = (known after apply)
+      + log_group_class   = (known after apply)
+      + name              = "/ecs/trip-service"
+      + name_prefix       = (known after apply)
+      + retention_in_days = 0
+      + skip_destroy      = false
+      + tags              = {
+          + "Name" = "uit-go-trip-service-lg"
+        }
+      + tags_all          = {
+          + "Name" = "uit-go-trip-service-lg"
+        }
+    }
+
+  # module.ecs.aws_cloudwatch_log_group.user_service_lg will be created
+  + resource "aws_cloudwatch_log_group" "user_service_lg" {
+      + arn               = (known after apply)
+      + id                = (known after apply)
+      + log_group_class   = (known after apply)
+      + name              = "/ecs/user-service"
+      + name_prefix       = (known after apply)
+      + retention_in_days = 0
+      + skip_destroy      = false
+      + tags              = {
+          + "Name" = "uit-go-user-service-lg"
+        }
+      + tags_all          = {
+          + "Name" = "uit-go-user-service-lg"
+        }
+    }
+
+  # module.ecs.aws_ecr_repository.service_ecr["driver"] will be created
+  + resource "aws_ecr_repository" "service_ecr" {
+      + arn                  = (known after apply)
+      + id                   = (known after apply)
+      + image_tag_mutability = "MUTABLE"
+      + name                 = "uit-go/driver-service"
+      + registry_id          = (known after apply)
+      + repository_url       = (known after apply)
+      + tags                 = {
+          + "Name" = "uit-go-driver-service-ecr"
+        }
+      + tags_all             = {
+          + "Name" = "uit-go-driver-service-ecr"
+        }
+
+      + image_scanning_configuration {
+          + scan_on_push = true
+        }
+    }
+
+  # module.ecs.aws_ecr_repository.service_ecr["trip"] will be created
+  + resource "aws_ecr_repository" "service_ecr" {
+      + arn                  = (known after apply)
+      + id                   = (known after apply)
+      + image_tag_mutability = "MUTABLE"
+      + name                 = "uit-go/trip-service"
+      + registry_id          = (known after apply)
+      + repository_url       = (known after apply)
+      + tags                 = {
+          + "Name" = "uit-go-trip-service-ecr"
+        }
+      + tags_all             = {
+          + "Name" = "uit-go-trip-service-ecr"
+        }
+
+      + image_scanning_configuration {
+          + scan_on_push = true
+        }
+    }
+
+  # module.ecs.aws_ecr_repository.service_ecr["user"] will be created
+  + resource "aws_ecr_repository" "service_ecr" {
+      + arn                  = (known after apply)
+      + id                   = (known after apply)
+      + image_tag_mutability = "MUTABLE"
+      + name                 = "uit-go/user-service"
+      + registry_id          = (known after apply)
+      + repository_url       = (known after apply)
+      + tags                 = {
+          + "Name" = "uit-go-user-service-ecr"
+        }
+      + tags_all             = {
+          + "Name" = "uit-go-user-service-ecr"
+        }
+
+      + image_scanning_configuration {
+          + scan_on_push = true
+        }
+    }
+
+  # module.ecs.aws_ecs_cluster.main will be created
+  + resource "aws_ecs_cluster" "main" {
+      + arn      = (known after apply)
+      + id       = (known after apply)
+      + name     = "uit-go-cluster"
+      + tags     = {
+          + "Name" = "uit-go-cluster"
+        }
+      + tags_all = {
+          + "Name" = "uit-go-cluster"
+        }
+
+      + setting (known after apply)
+    }
+
+  # module.ecs.aws_ecs_service.main["driver"] will be created
+  + resource "aws_ecs_service" "main" {
+      + availability_zone_rebalancing      = "DISABLED"
+      + cluster                            = (known after apply)
+      + deployment_maximum_percent         = 200
+      + deployment_minimum_healthy_percent = 100
+      + desired_count                      = 1
+      + enable_ecs_managed_tags            = false
+      + enable_execute_command             = false
+      + iam_role                           = (known after apply)
+      + id                                 = (known after apply)
+      + launch_type                        = "FARGATE"
+      + name                               = "uit-go-driver-service"
+      + platform_version                   = (known after apply)
+      + scheduling_strategy                = "REPLICA"
+      + tags_all                           = (known after apply)
+      + task_definition                    = (known after apply)
+      + triggers                           = (known after apply)
+      + wait_for_steady_state              = false
+
+      + load_balancer {
+          + container_name   = "driver-service"
+          + container_port   = 8082
+          + target_group_arn = (known after apply)
+            # (1 unchanged attribute hidden)
+        }
+
+      + network_configuration {
+          + assign_public_ip = false
+          + security_groups  = (known after apply)
+          + subnets          = (known after apply)
+        }
+
+      + service_registries {
+          + registry_arn = (known after apply)
+        }
+    }
+
+  # module.ecs.aws_ecs_service.main["trip"] will be created
+  + resource "aws_ecs_service" "main" {
+      + availability_zone_rebalancing      = "DISABLED"
+      + cluster                            = (known after apply)
+      + deployment_maximum_percent         = 200
+      + deployment_minimum_healthy_percent = 100
+      + desired_count                      = 1
+      + enable_ecs_managed_tags            = false
+      + enable_execute_command             = false
+      + iam_role                           = (known after apply)
+      + id                                 = (known after apply)
+      + launch_type                        = "FARGATE"
+      + name                               = "uit-go-trip-service"
+      + platform_version                   = (known after apply)
+      + scheduling_strategy                = "REPLICA"
+      + tags_all                           = (known after apply)
+      + task_definition                    = (known after apply)
+      + triggers                           = (known after apply)
+      + wait_for_steady_state              = false
+
+      + load_balancer {
+          + container_name   = "trip-service"
+          + container_port   = 8081
+          + target_group_arn = (known after apply)
+            # (1 unchanged attribute hidden)
+        }
+
+      + network_configuration {
+          + assign_public_ip = false
+          + security_groups  = (known after apply)
+          + subnets          = (known after apply)
+        }
+
+      + service_registries {
+          + registry_arn = (known after apply)
+        }
+    }
+
+  # module.ecs.aws_ecs_service.main["user"] will be created
+  + resource "aws_ecs_service" "main" {
+      + availability_zone_rebalancing      = "DISABLED"
+      + cluster                            = (known after apply)
+      + deployment_maximum_percent         = 200
+      + deployment_minimum_healthy_percent = 100
+      + desired_count                      = 1
+      + enable_ecs_managed_tags            = false
+      + enable_execute_command             = false
+      + iam_role                           = (known after apply)
+      + id                                 = (known after apply)
+      + launch_type                        = "FARGATE"
+      + name                               = "uit-go-user-service"
+      + platform_version                   = (known after apply)
+      + scheduling_strategy                = "REPLICA"
+      + tags_all                           = (known after apply)
+      + task_definition                    = (known after apply)
+      + triggers                           = (known after apply)
+      + wait_for_steady_state              = false
+
+      + load_balancer {
+          + container_name   = "user-service"
+          + container_port   = 8080
+          + target_group_arn = (known after apply)
+            # (1 unchanged attribute hidden)
+        }
+
+      + network_configuration {
+          + assign_public_ip = false
+          + security_groups  = (known after apply)
+          + subnets          = (known after apply)
+        }
+
+      + service_registries {
+          + registry_arn = (known after apply)
+        }
+    }
+
+  # module.ecs.aws_ecs_task_definition.driver_service_task will be created
+  + resource "aws_ecs_task_definition" "driver_service_task" {
+      + arn                      = (known after apply)
+      + arn_without_revision     = (known after apply)
+      + container_definitions    = (known after apply)
+      + cpu                      = "256"
+      + enable_fault_injection   = (known after apply)
+      + execution_role_arn       = (known after apply)
+      + family                   = "driver-service"
+      + id                       = (known after apply)
+      + memory                   = "512"
+      + network_mode             = "awsvpc"
+      + requires_compatibilities = [
+          + "FARGATE",
+        ]
+      + revision                 = (known after apply)
+      + skip_destroy             = false
+      + tags                     = {
+          + "Name" = "uit-go-driver-service-task"
+        }
+      + tags_all                 = {
+          + "Name" = "uit-go-driver-service-task"
+        }
+      + task_role_arn            = (known after apply)
+      + track_latest             = false
+    }
+
+  # module.ecs.aws_ecs_task_definition.trip_service_task will be created
+  + resource "aws_ecs_task_definition" "trip_service_task" {
+      + arn                      = (known after apply)
+      + arn_without_revision     = (known after apply)
+      + container_definitions    = (known after apply)
+      + cpu                      = "256"
+      + enable_fault_injection   = (known after apply)
+      + execution_role_arn       = (known after apply)
+      + family                   = "trip-service"
+      + id                       = (known after apply)
+      + memory                   = "512"
+      + network_mode             = "awsvpc"
+      + requires_compatibilities = [
+          + "FARGATE",
+        ]
+      + revision                 = (known after apply)
+      + skip_destroy             = false
+      + tags                     = {
+          + "Name" = "uit-go-trip-service-task"
+        }
+      + tags_all                 = {
+          + "Name" = "uit-go-trip-service-task"
+        }
+      + task_role_arn            = (known after apply)
+      + track_latest             = false
+    }
+
+  # module.ecs.aws_ecs_task_definition.user_service_task will be created
+  + resource "aws_ecs_task_definition" "user_service_task" {
+      + arn                      = (known after apply)
+      + arn_without_revision     = (known after apply)
+      + container_definitions    = (known after apply)
+      + cpu                      = "256"
+      + enable_fault_injection   = (known after apply)
+      + execution_role_arn       = (known after apply)
+      + family                   = "user-service"
+      + id                       = (known after apply)
+      + memory                   = "512"
+      + network_mode             = "awsvpc"
+      + requires_compatibilities = [
+          + "FARGATE",
+        ]
+      + revision                 = (known after apply)
+      + skip_destroy             = false
+      + tags                     = {
+          + "Name" = "uit-go-user-service-task"
+        }
+      + tags_all                 = {
+          + "Name" = "uit-go-user-service-task"
+        }
+      + task_role_arn            = (known after apply)
+      + track_latest             = false
+    }
+
+  # module.ecs.aws_iam_role.ecs_task_execution_role will be created
+  + resource "aws_iam_role" "ecs_task_execution_role" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "ecs-tasks.amazonaws.com"
+                        }
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "uit-go-ecs-task-execution-role"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags                  = {
+          + "Name" = "uit-go-ecs-task-execution-role"
+        }
+      + tags_all              = {
+          + "Name" = "uit-go-ecs-task-execution-role"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # module.ecs.aws_iam_role.ecs_task_role will be created
+  + resource "aws_iam_role" "ecs_task_role" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "ecs-tasks.amazonaws.com"
+                        }
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "uit-go-ecs-task-role"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags                  = {
+          + "Name" = "uit-go-ecs-task-role"
+        }
+      + tags_all              = {
+          + "Name" = "uit-go-ecs-task-role"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # module.ecs.aws_iam_role_policy.ecs_task_secrets_policy will be created
+  + resource "aws_iam_role_policy" "ecs_task_secrets_policy" {
+      + id          = (known after apply)
+      + name        = "uit-go-ecs-task-secrets-policy"
+      + name_prefix = (known after apply)
+      + policy      = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action   = [
+                          + "secretsmanager:GetSecretValue",
+                        ]
+                      + Effect   = "Allow"
+                      + Resource = "arn:aws:secretsmanager:ap-southeast-1:774041140143:secret:uit-go/*"
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + role        = (known after apply)
+    }
+
+  # module.ecs.aws_iam_role_policy.ecs_task_sqs_policy will be created
+  + resource "aws_iam_role_policy" "ecs_task_sqs_policy" {
+      + id          = (known after apply)
+      + name        = "uit-go-ecs-task-sqs-policy"
+      + name_prefix = (known after apply)
+      + policy      = (known after apply)
+      + role        = (known after apply)
+    }
+
+  # module.ecs.aws_iam_role_policy_attachment.ecs_task_execution_role_policy will be created
+  + resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+      + role       = "uit-go-ecs-task-execution-role"
+    }
+
+  # module.ecs.aws_lb.main will be created
+  + resource "aws_lb" "main" {
+      + arn                                                          = (known after apply)
+      + arn_suffix                                                   = (known after apply)
+      + client_keep_alive                                            = 3600
+      + desync_mitigation_mode                                       = "defensive"
+      + dns_name                                                     = (known after apply)
+      + drop_invalid_header_fields                                   = false
+      + enable_deletion_protection                                   = false
+      + enable_http2                                                 = true
+      + enable_tls_version_and_cipher_suite_headers                  = false
+      + enable_waf_fail_open                                         = false
+      + enable_xff_client_port                                       = false
+      + enable_zonal_shift                                           = false
+      + enforce_security_group_inbound_rules_on_private_link_traffic = (known after apply)
+      + id                                                           = (known after apply)
+      + idle_timeout                                                 = 60
+      + internal                                                     = false
+      + ip_address_type                                              = (known after apply)
+      + load_balancer_type                                           = "application"
+      + name                                                         = "uit-go-alb"
+      + name_prefix                                                  = (known after apply)
+      + preserve_host_header                                         = false
+      + security_groups                                              = (known after apply)
+      + subnets                                                      = (known after apply)
+      + tags                                                         = {
+          + "Name" = "uit-go-alb"
+        }
+      + tags_all                                                     = {
+          + "Name" = "uit-go-alb"
+        }
+      + vpc_id                                                       = (known after apply)
+      + xff_header_processing_mode                                   = "append"
+      + zone_id                                                      = (known after apply)
+
+      + subnet_mapping (known after apply)
+    }
+
+  # module.ecs.aws_lb_listener.http will be created
+  + resource "aws_lb_listener" "http" {
+      + arn                                                                   = (known after apply)
+      + id                                                                    = (known after apply)
+      + load_balancer_arn                                                     = (known after apply)
+      + port                                                                  = 80
+      + protocol                                                              = "HTTP"
+      + routing_http_request_x_amzn_mtls_clientcert_header_name               = (known after apply)
+      + routing_http_request_x_amzn_mtls_clientcert_issuer_header_name        = (known after apply)
+      + routing_http_request_x_amzn_mtls_clientcert_leaf_header_name          = (known after apply)
+      + routing_http_request_x_amzn_mtls_clientcert_serial_number_header_name = (known after apply)
+      + routing_http_request_x_amzn_mtls_clientcert_subject_header_name       = (known after apply)
+      + routing_http_request_x_amzn_mtls_clientcert_validity_header_name      = (known after apply)
+      + routing_http_request_x_amzn_tls_cipher_suite_header_name              = (known after apply)
+      + routing_http_request_x_amzn_tls_version_header_name                   = (known after apply)
+      + routing_http_response_access_control_allow_credentials_header_value   = (known after apply)
+      + routing_http_response_access_control_allow_headers_header_value       = (known after apply)
+      + routing_http_response_access_control_allow_methods_header_value       = (known after apply)
+      + routing_http_response_access_control_allow_origin_header_value        = (known after apply)
+      + routing_http_response_access_control_expose_headers_header_value      = (known after apply)
+      + routing_http_response_access_control_max_age_header_value             = (known after apply)
+      + routing_http_response_content_security_policy_header_value            = (known after apply)
+      + routing_http_response_server_enabled                                  = (known after apply)
+      + routing_http_response_strict_transport_security_header_value          = (known after apply)
+      + routing_http_response_x_content_type_options_header_value             = (known after apply)
+      + routing_http_response_x_frame_options_header_value                    = (known after apply)
+      + ssl_policy                                                            = (known after apply)
+      + tags_all                                                              = (known after apply)
+      + tcp_idle_timeout_seconds                                              = (known after apply)
+
+      + default_action {
+          + order = (known after apply)
+          + type  = "fixed-response"
+
+          + fixed_response {
+              + content_type = "text/plain"
+              + message_body = "Not Found"
+              + status_code  = "404"
+            }
+        }
+
+      + mutual_authentication (known after apply)
+    }
+
+  # module.ecs.aws_lb_listener_rule.service_rule["driver"] will be created
+  + resource "aws_lb_listener_rule" "service_rule" {
+      + arn          = (known after apply)
+      + id           = (known after apply)
+      + listener_arn = (known after apply)
+      + priority     = 100
+      + tags_all     = (known after apply)
+
+      + action {
+          + order            = (known after apply)
+          + target_group_arn = (known after apply)
+          + type             = "forward"
+        }
+
+      + condition {
+          + path_pattern {
+              + values = [
+                  + "/drivers*",
+                ]
+            }
+        }
+    }
+
+  # module.ecs.aws_lb_listener_rule.service_rule["trip"] will be created
+  + resource "aws_lb_listener_rule" "service_rule" {
+      + arn          = (known after apply)
+      + id           = (known after apply)
+      + listener_arn = (known after apply)
+      + priority     = 101
+      + tags_all     = (known after apply)
+
+      + action {
+          + order            = (known after apply)
+          + target_group_arn = (known after apply)
+          + type             = "forward"
+        }
+
+      + condition {
+          + path_pattern {
+              + values = [
+                  + "/trips*",
+                ]
+            }
+        }
+    }
+
+  # module.ecs.aws_lb_listener_rule.service_rule["user"] will be created
+  + resource "aws_lb_listener_rule" "service_rule" {
+      + arn          = (known after apply)
+      + id           = (known after apply)
+      + listener_arn = (known after apply)
+      + priority     = 102
+      + tags_all     = (known after apply)
+
+      + action {
+          + order            = (known after apply)
+          + target_group_arn = (known after apply)
+          + type             = "forward"
+        }
+
+      + condition {
+          + path_pattern {
+              + values = [
+                  + "/users*",
+                ]
+            }
+        }
+    }
+
+  # module.ecs.aws_lb_target_group.service_tg["driver"] will be created
+  + resource "aws_lb_target_group" "service_tg" {
+      + arn                                = (known after apply)
+      + arn_suffix                         = (known after apply)
+      + connection_termination             = (known after apply)
+      + deregistration_delay               = "300"
+      + id                                 = (known after apply)
+      + ip_address_type                    = (known after apply)
+      + lambda_multi_value_headers_enabled = false
+      + load_balancer_arns                 = (known after apply)
+      + load_balancing_algorithm_type      = (known after apply)
+      + load_balancing_anomaly_mitigation  = (known after apply)
+      + load_balancing_cross_zone_enabled  = (known after apply)
+      + name                               = "uit-go-driver-tg"
+      + name_prefix                        = (known after apply)
+      + port                               = 8082
+      + preserve_client_ip                 = (known after apply)
+      + protocol                           = "HTTP"
+      + protocol_version                   = (known after apply)
+      + proxy_protocol_v2                  = false
+      + slow_start                         = 0
+      + tags                               = {
+          + "Name" = "uit-go-driver-tg"
+        }
+      + tags_all                           = {
+          + "Name" = "uit-go-driver-tg"
+        }
+      + target_type                        = "ip"
+      + vpc_id                             = (known after apply)
+
+      + health_check {
+          + enabled             = true
+          + healthy_threshold   = 2
+          + interval            = 30
+          + matcher             = "200"
+          + path                = "/"
+          + port                = "traffic-port"
+          + protocol            = "HTTP"
+          + timeout             = 5
+          + unhealthy_threshold = 2
+        }
+
+      + stickiness (known after apply)
+
+      + target_failover (known after apply)
+
+      + target_group_health (known after apply)
+
+      + target_health_state (known after apply)
+    }
+
+  # module.ecs.aws_lb_target_group.service_tg["trip"] will be created
+  + resource "aws_lb_target_group" "service_tg" {
+      + arn                                = (known after apply)
+      + arn_suffix                         = (known after apply)
+      + connection_termination             = (known after apply)
+      + deregistration_delay               = "300"
+      + id                                 = (known after apply)
+      + ip_address_type                    = (known after apply)
+      + lambda_multi_value_headers_enabled = false
+      + load_balancer_arns                 = (known after apply)
+      + load_balancing_algorithm_type      = (known after apply)
+      + load_balancing_anomaly_mitigation  = (known after apply)
+      + load_balancing_cross_zone_enabled  = (known after apply)
+      + name                               = "uit-go-trip-tg"
+      + name_prefix                        = (known after apply)
+      + port                               = 8081
+      + preserve_client_ip                 = (known after apply)
+      + protocol                           = "HTTP"
+      + protocol_version                   = (known after apply)
+      + proxy_protocol_v2                  = false
+      + slow_start                         = 0
+      + tags                               = {
+          + "Name" = "uit-go-trip-tg"
+        }
+      + tags_all                           = {
+          + "Name" = "uit-go-trip-tg"
+        }
+      + target_type                        = "ip"
+      + vpc_id                             = (known after apply)
+
+      + health_check {
+          + enabled             = true
+          + healthy_threshold   = 2
+          + interval            = 30
+          + matcher             = "200"
+          + path                = "/"
+          + port                = "traffic-port"
+          + protocol            = "HTTP"
+          + timeout             = 5
+          + unhealthy_threshold = 2
+        }
+
+      + stickiness (known after apply)
+
+      + target_failover (known after apply)
+
+      + target_group_health (known after apply)
+
+      + target_health_state (known after apply)
+    }
+
+  # module.ecs.aws_lb_target_group.service_tg["user"] will be created
+  + resource "aws_lb_target_group" "service_tg" {
+      + arn                                = (known after apply)
+      + arn_suffix                         = (known after apply)
+      + connection_termination             = (known after apply)
+      + deregistration_delay               = "300"
+      + id                                 = (known after apply)
+      + ip_address_type                    = (known after apply)
+      + lambda_multi_value_headers_enabled = false
+      + load_balancer_arns                 = (known after apply)
+      + load_balancing_algorithm_type      = (known after apply)
+      + load_balancing_anomaly_mitigation  = (known after apply)
+      + load_balancing_cross_zone_enabled  = (known after apply)
+      + name                               = "uit-go-user-tg"
+      + name_prefix                        = (known after apply)
+      + port                               = 8080
+      + preserve_client_ip                 = (known after apply)
+      + protocol                           = "HTTP"
+      + protocol_version                   = (known after apply)
+      + proxy_protocol_v2                  = false
+      + slow_start                         = 0
+      + tags                               = {
+          + "Name" = "uit-go-user-tg"
+        }
+      + tags_all                           = {
+          + "Name" = "uit-go-user-tg"
+        }
+      + target_type                        = "ip"
+      + vpc_id                             = (known after apply)
+
+      + health_check {
+          + enabled             = true
+          + healthy_threshold   = 2
+          + interval            = 30
+          + matcher             = "200"
+          + path                = "/"
+          + port                = "traffic-port"
+          + protocol            = "HTTP"
+          + timeout             = 5
+          + unhealthy_threshold = 2
+        }
+
+      + stickiness (known after apply)
+
+      + target_failover (known after apply)
+
+      + target_group_health (known after apply)
+
+      + target_health_state (known after apply)
+    }
+
+  # module.ecs.aws_service_discovery_private_dns_namespace.main will be created
+  + resource "aws_service_discovery_private_dns_namespace" "main" {
+      + arn         = (known after apply)
+      + description = "Private DNS namespace for UIT-Go microservices"
+      + hosted_zone = (known after apply)
+      + id          = (known after apply)
+      + name        = "uit-go.local"
+      + tags_all    = (known after apply)
+      + vpc         = (known after apply)
+    }
+
+  # module.ecs.aws_service_discovery_service.main["driver"] will be created
+  + resource "aws_service_discovery_service" "main" {
+      + arn           = (known after apply)
+      + force_destroy = false
+      + id            = (known after apply)
+      + name          = "driver"
+      + namespace_id  = (known after apply)
+      + tags_all      = (known after apply)
+      + type          = (known after apply)
+
+      + dns_config {
+          + namespace_id   = (known after apply)
+          + routing_policy = "MULTIVALUE"
+
+          + dns_records {
+              + ttl  = 10
+              + type = "A"
+            }
+        }
+
+      + health_check_custom_config {
+          + failure_threshold = 1
+        }
+    }
+
+  # module.ecs.aws_service_discovery_service.main["trip"] will be created
+  + resource "aws_service_discovery_service" "main" {
+      + arn           = (known after apply)
+      + force_destroy = false
+      + id            = (known after apply)
+      + name          = "trip"
+      + namespace_id  = (known after apply)
+      + tags_all      = (known after apply)
+      + type          = (known after apply)
+
+      + dns_config {
+          + namespace_id   = (known after apply)
+          + routing_policy = "MULTIVALUE"
+
+          + dns_records {
+              + ttl  = 10
+              + type = "A"
+            }
+        }
+
+      + health_check_custom_config {
+          + failure_threshold = 1
+        }
+    }
+
+  # module.ecs.aws_service_discovery_service.main["user"] will be created
+  + resource "aws_service_discovery_service" "main" {
+      + arn           = (known after apply)
+      + force_destroy = false
+      + id            = (known after apply)
+      + name          = "user"
+      + namespace_id  = (known after apply)
+      + tags_all      = (known after apply)
+      + type          = (known after apply)
+
+      + dns_config {
+          + namespace_id   = (known after apply)
+          + routing_policy = "MULTIVALUE"
+
+          + dns_records {
+              + ttl  = 10
+              + type = "A"
+            }
+        }
+
+      + health_check_custom_config {
+          + failure_threshold = 1
+        }
+    }
+
+  # module.network.aws_internet_gateway.gw will be created
+  + resource "aws_internet_gateway" "gw" {
+      + arn      = (known after apply)
+      + id       = (known after apply)
+      + owner_id = (known after apply)
+      + tags     = {
+          + "Name" = "uit-go-igw"
+        }
+      + tags_all = {
+          + "Name" = "uit-go-igw"
+        }
+      + vpc_id   = (known after apply)
+    }
+
+  # module.network.aws_security_group.alb_sg will be created
+  + resource "aws_security_group" "alb_sg" {
+      + arn                    = (known after apply)
+      + description            = "Allow HTTP inbound traffic to ALB"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 0
+                # (1 unchanged attribute hidden)
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + from_port        = 80
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 80
+                # (1 unchanged attribute hidden)
+            },
+        ]
+      + name                   = "uit-go-alb-sg"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "uit-go-alb-sg"
+        }
+      + tags_all               = {
+          + "Name" = "uit-go-alb-sg"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # module.network.aws_subnet.private_a will be created
+  + resource "aws_subnet" "private_a" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "ap-southeast-1a"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.0.101.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = false
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name" = "uit-go-private-a"
+        }
+      + tags_all                                       = {
+          + "Name" = "uit-go-private-a"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # module.network.aws_subnet.private_b will be created
+  + resource "aws_subnet" "private_b" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "ap-southeast-1b"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.0.102.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = false
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name" = "uit-go-private-b"
+        }
+      + tags_all                                       = {
+          + "Name" = "uit-go-private-b"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # module.network.aws_subnet.public_a will be created
+  + resource "aws_subnet" "public_a" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "ap-southeast-1a"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.0.1.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = false
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name" = "uit-go-public-a"
+        }
+      + tags_all                                       = {
+          + "Name" = "uit-go-public-a"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # module.network.aws_subnet.public_b will be created
+  + resource "aws_subnet" "public_b" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "ap-southeast-1b"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.0.2.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = false
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name" = "uit-go-public-b"
+        }
+      + tags_all                                       = {
+          + "Name" = "uit-go-public-b"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # module.network.aws_vpc.main will be created
+  + resource "aws_vpc" "main" {
+      + arn                                  = (known after apply)
+      + cidr_block                           = "10.0.0.0/16"
+      + default_network_acl_id               = (known after apply)
+      + default_route_table_id               = (known after apply)
+      + default_security_group_id            = (known after apply)
+      + dhcp_options_id                      = (known after apply)
+      + enable_dns_hostnames                 = true
+      + enable_dns_support                   = true
+      + enable_network_address_usage_metrics = (known after apply)
+      + id                                   = (known after apply)
+      + instance_tenancy                     = "default"
+      + ipv6_association_id                  = (known after apply)
+      + ipv6_cidr_block                      = (known after apply)
+      + ipv6_cidr_block_network_border_group = (known after apply)
+      + main_route_table_id                  = (known after apply)
+      + owner_id                             = (known after apply)
+      + tags                                 = {
+          + "Name" = "uit-go-vpc"
+        }
+      + tags_all                             = {
+          + "Name" = "uit-go-vpc"
+        }
+    }
+
+  # module.sqs.aws_sqs_queue.booking_dlq will be created
+  + resource "aws_sqs_queue" "booking_dlq" {
+      + arn                               = (known after apply)
+      + content_based_deduplication       = false
+      + deduplication_scope               = (known after apply)
+      + delay_seconds                     = 0
+      + fifo_queue                        = false
+      + fifo_throughput_limit             = (known after apply)
+      + id                                = (known after apply)
+      + kms_data_key_reuse_period_seconds = (known after apply)
+      + max_message_size                  = 262144
+      + message_retention_seconds         = 345600
+      + name                              = "uit-go-booking-request-dlq"
+      + name_prefix                       = (known after apply)
+      + policy                            = (known after apply)
+      + receive_wait_time_seconds         = 0
+      + redrive_allow_policy              = (known after apply)
+      + redrive_policy                    = (known after apply)
+      + sqs_managed_sse_enabled           = (known after apply)
+      + tags_all                          = (known after apply)
+      + url                               = (known after apply)
+      + visibility_timeout_seconds        = 30
+    }
+
+  # module.sqs.aws_sqs_queue.booking_queue will be created
+  + resource "aws_sqs_queue" "booking_queue" {
+      + arn                               = (known after apply)
+      + content_based_deduplication       = false
+      + deduplication_scope               = (known after apply)
+      + delay_seconds                     = 0
+      + fifo_queue                        = false
+      + fifo_throughput_limit             = (known after apply)
+      + id                                = (known after apply)
+      + kms_data_key_reuse_period_seconds = (known after apply)
+      + max_message_size                  = 262144
+      + message_retention_seconds         = 86400
+      + name                              = "uit-go-booking-request-queue"
+      + name_prefix                       = (known after apply)
+      + policy                            = (known after apply)
+      + receive_wait_time_seconds         = 10
+      + redrive_allow_policy              = (known after apply)
+      + redrive_policy                    = (known after apply)
+      + sqs_managed_sse_enabled           = (known after apply)
+      + tags                              = {
+          + "Name" = "uit-go-booking-request-queue"
+        }
+      + tags_all                          = {
+          + "Name" = "uit-go-booking-request-queue"
+        }
+      + url                               = (known after apply)
+      + visibility_timeout_seconds        = 30
+    }
+
+Plan: 73 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + alb_dns_name                = (known after apply)
+  + ecr_repository_urls         = {
+      + driver = (known after apply)
+      + trip   = (known after apply)
+      + user   = (known after apply)
+    }
+  + redis_endpoint              = (known after apply)
+  + trip_db_endpoint            = (known after apply)
+  + trip_db_password_secret_arn = (known after apply)
+  + trip_db_replica_endpoint    = (known after apply)
+  + user_db_endpoint            = (known after apply)
+  + user_db_password_secret_arn = (known after apply)
+
+─────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't
+guarantee to take exactly these actions if you run "terraform apply" now.
