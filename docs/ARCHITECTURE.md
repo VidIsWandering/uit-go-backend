@@ -8,20 +8,19 @@ Tài liệu này mô tả chi tiết kiến trúc của hệ thống **UIT-Go Ba
 
 ### Sơ đồ Kiến trúc Tổng quan
 
-> _[Chèn hình ảnh kiến trúc từ Eraser.io tại đây]_
->
-> _Vị trí file ảnh: `docs/images/architecture/aws-cloud-architecture.png`_
->
-> _Gợi ý nội dung hình ảnh:_
->
-> - **VPC**: Phân chia mạng thành Public Subnets và Private Subnets.
-> - **Public Subnet**:
->   - **Application Load Balancer (ALB)**: Nhận traffic từ Internet.
->   - **NAT Gateway**: Cho phép các service trong Private Subnet truy cập Internet (để pull image, đẩy log, gọi API ngoài) mà không lộ IP ra ngoài.
-> - **Private Subnet**:
->   - **Compute**: AWS ECS Fargate Cluster chạy các microservices (User, Trip, Driver).
->   - **Data**: RDS PostgreSQL (Primary & Read Replica), ElastiCache Redis (Cluster).
-> - **Integration**: Amazon SQS cho giao tiếp bất đồng bộ.
+![AWS Cloud Architecture](images/architecture/aws-cloud-architecture.png)
+
+**Mô tả các thành phần chính trong sơ đồ:**
+
+- **VPC (Virtual Private Cloud)**: Môi trường mạng biệt lập chứa toàn bộ hệ thống.
+- **Public Subnet**:
+  - **Application Load Balancer (ALB)**: Cửa ngõ duy nhất nhận traffic từ Internet (Client App).
+  - **NAT Gateway**: Cung cấp lối ra Internet an toàn cho các service bên trong Private Subnet (để pull image, đẩy log).
+- **Private Subnet**:
+  - **ECS Fargate Cluster**: Nơi chạy các container ứng dụng (User, Trip, Driver Service) mà không cần quản lý server.
+  - **Data Layer**: Bao gồm RDS PostgreSQL (Primary & Read Replica) và ElastiCache Redis.
+  - **Integration**: Amazon SQS đóng vai trò hàng đợi xử lý bất đồng bộ cho luồng đặt chuyến.
+- **Management & Observability**: Các dịch vụ hỗ trợ vận hành như AWS Secrets Manager (quản lý mật khẩu), CloudWatch (logs), ECR (lưu trữ Docker images).
 
 ### Các thành phần chính
 
