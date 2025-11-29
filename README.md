@@ -62,15 +62,17 @@ Các quyết định thiết kế và đánh đổi (trade-offs) quan trọng c�
 10. **[ADR 010: Tái cấu trúc (Refactor) Terraform sang Modules](docs/adr/basic/010-refactor-terraform-sang-modules.md)**
 11. **[ADR 011: Lựa chọn AWS Cloud Map (Service Discovery)](docs/adr/basic/011-chon-cloud-map-cho-service-discovery.md)**
 12. **[ADR 012: Lựa chọn AWS ECR (Container Registry)](docs/adr/basic/012-chon-ecr-lam-container-registry.md)**
+13. **[ADR 013: Phân tách Security Group (Security Group Segregation)](docs/adr/basic/013-security-group-segregation.md)**
 
-### Module A: Scalability & Performance (ADRs 017-020)
+### Module A: Scalability & Performance (ADRs 001-005)
 
 **Location**: `docs/adr/module-a/`
 
-17. **[ADR 017: Security Group Segregation](docs/adr/module-a/017-security-group-segregation.md)**
-18. **[ADR 018: Auto Scaling Strategy](docs/adr/module-a/018-auto-scaling-strategy.md)**
-19. **[ADR 019: RDS Read Replica vs Caching](docs/adr/module-a/019-rds-read-replica-vs-caching.md)**
-20. **[ADR 020: Async Communication (SQS Design)](docs/adr/module-a/020-async-communication-sqs-design.md)**
+1.  **[ADR 001: Architecture Async Processing (SQS)](docs/adr/module-a/001-architecture-async-processing.md)**
+2.  **[ADR 002: Database Read Replicas](docs/adr/module-a/002-database-read-replicas.md)**
+3.  **[ADR 003: Caching Strategy](docs/adr/module-a/003-caching-strategy.md)**
+4.  **[ADR 004: Auto Scaling Strategy](docs/adr/module-a/004-autoscaling-strategy.md)**
+5.  **[ADR 005: Concurrency Control (Optimistic Locking)](docs/adr/module-a/005-concurrency-control.md)**
 
 **📋 Module A Planning**: Xem chi tiết kế hoạch và task assignments tại [`docs/module-a/`](docs/module-a/)
 
