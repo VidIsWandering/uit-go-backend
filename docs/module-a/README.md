@@ -17,9 +17,8 @@ Vai trò: **System Architect**.
 
 ## 3. Môi trường & Hướng dẫn Kiểm thử (Testing)
 
-Để đảm bảo tính khách quan và khả năng tái lập kết quả, chúng tôi đã tài liệu hóa chi tiết môi trường và quy trình test:
+Để đảm bảo tính khách quan và khả năng tái lập kết quả, chúng tôi đã tài liệu hóa quy trình test:
 
-- **[Môi trường Kiểm thử (Test Environment)](./TEST_ENVIRONMENT.md)**: Cấu hình phần cứng, phần mềm và các thông số Docker.
 - **[Hướng dẫn Kiểm chứng (Verification Guide)](./VERIFICATION_GUIDE.md)**: Các bước thực hiện Load Test (Spike, Stress) và cách thu thập dữ liệu.
 
 ## 4. Báo cáo Kết quả (Results)
@@ -30,12 +29,14 @@ Quá trình tối ưu hóa được chia làm 2 giai đoạn để đo lường 
   - Trạng thái: **Đã hoàn thành**.
   - Kết quả: Xác định được điểm nghẽn tại Database Connection Pool.
 - **[Giai đoạn 2: Tuning & Optimization (Load Test 2)](./load-test-2-tuning/README.md)**
-  - Trạng thái: **Đang thực hiện**.
+  - Trạng thái: **Đã hoàn thành**.
   - Mục tiêu: Kiểm chứng hiệu quả của Connection Pool Tuning, Read Replicas và Caching.
 
 ## 5. Kiến trúc Hệ thống (Target Architecture)
 
-_(Sẽ được cập nhật sau khi hoàn tất triển khai Terraform)_
+Chi tiết kiến trúc hệ thống đích (Target Architecture) sau khi áp dụng Module A được mô tả đầy đủ tại tài liệu chính:
+
+👉 **[Xem Tài liệu Kiến trúc Hệ thống (System Architecture)](../ARCHITECTURE.md)**
 
 ### Luồng Đặt xe (Booking Flow) - Asynchronous
 
