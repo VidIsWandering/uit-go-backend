@@ -31,7 +31,7 @@ Mục tiêu: Chuyển đổi mã nguồn và hạ tầng để hỗ trợ kiến
 - [x] **TripService (Producer)**: Tách luồng đặt xe, gửi message vào SQS.
 - [x] **DriverService (Consumer)**: Implement Worker xử lý message tìm tài xế.
 - [x] **UserService**: Implement Caching Layer (@Cacheable) cho User Profile.
-- [ ] **TripService**: Implement Optimistic Locking (@Version) cho Trip entity.
+- [x] **TripService**: Implement Optimistic Locking (@Version) cho Trip entity.
 
 ## 3. Chiến lược Kiểm chứng (Verification Strategy)
 

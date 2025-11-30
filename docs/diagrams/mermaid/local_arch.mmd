@@ -1,0 +1,55 @@
+graph LR
+    subgraph LoadTest [Load Test Env]
+        k6[k6 Load Generator]
+    end
+
+    subgraph PublicLayer [Public Layer]
+        NGINX["Nginx Gateway"]
+    end
+    
+    subgraph AppLayer [App Layer]
+        direction TB
+        Auth[Auth Service]
+        User[User Service]
+        Trip[Trip Service]
+        Driver[Driver Service]
+    end
+    
+    subgraph DataLayer [Data Layer]
+        direction TB
+        Redis[(Redis)]
+        Postgres[(Postgres)]
+    end
+
+    subgraph Observability [Observability]
+        direction TB
+        Prometheus[Prometheus]
+        Grafana[Grafana]
+    end
+
+    %% Traffic Flow
+    k6 -- "High Load" --> NGINX
+    Client[Postman] --> NGINX
+    
+    NGINX --> Auth
+    NGINX --> User
+    NGINX --> Trip
+    NGINX --> Driver
+
+    %% Data Flow
+    Trip --> Postgres
+    User --> Postgres
+    Driver --> Redis
+    
+    %% Monitoring Flow
+    Prometheus -.-> User
+    Prometheus -.-> Trip
+    Prometheus -.-> Driver
+    Grafana --> Prometheus
+
+    %% Styling
+    classDef container fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef tool fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    
+    class NGINX,Auth,User,Trip,Driver,Redis,Postgres container
+    class k6,Prometheus,Grafana tool
