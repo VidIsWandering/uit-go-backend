@@ -1,20 +1,24 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
 
-// Configuration for STRESS TEST (async variant)
+// Configuration for STRESS TEST - Find Breaking Point
+// Strategy: Gradually increase load to find bottleneck (where failure rate >10%)
 export const options = {
   stages: [
-    { duration: "30s", target: 150 },     // Faster warm up
-    { duration: "1m", target: 400 },      // Moderate stress
-    { duration: "1m", target: 700 },      // High stress
-    { duration: "1m", target: 900 },      // Approaching peak
-    { duration: "1m", target: 1000 },     // Peak load
-    { duration: "1m", target: 1000 },     // Sustained peak
-    { duration: "45s", target: 0 },       // Ramp down
+    { duration: "1m", target: 100 },      // Baseline: Low load
+    { duration: "1m", target: 200 },      // 2x: Moderate load
+    { duration: "1m", target: 400 },      // 4x: High load
+    { duration: "1m", target: 600 },      // 6x: Very high load
+    { duration: "1m", target: 800 },      // 8x: Extreme load
+    { duration: "1m", target: 1000 },     // 10x: Peak load
+    { duration: "1m", target: 1200 },     // 12x: Beyond peak (find breaking point)
+    { duration: "1m", target: 1200 },     // Sustained peak to confirm break
+    { duration: "1m", target: 0 },        // Ramp down
   ],
   thresholds: {
-    http_req_duration: ["p(95)<3000"],    // Expect lower p95 with async
-    http_req_failed: ["rate<0.05"],
+    // Relaxed thresholds to observe degradation patterns
+    http_req_duration: ["p(95)<10000"],   // Allow up to 10s to see where it breaks
+    http_req_failed: ["rate<0.50"],       // Allow 50% failure to find exact breaking point
   },
 };
 

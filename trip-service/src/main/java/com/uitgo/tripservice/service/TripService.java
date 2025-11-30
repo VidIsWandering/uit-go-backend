@@ -110,13 +110,13 @@ public class TripService {
         }
     }
 
-    @Cacheable(value = "tripById", key = "#tripId")
+    @Cacheable(value = "trips", key = "#tripId")
     public Optional<Trip> getTripById(UUID tripId) {
         return tripRepository.findById(Objects.requireNonNull(tripId));
     }
 
     @Transactional
-    @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory", "driverEarnings"}, allEntries = true)
+    @CacheEvict(value = {"trips", "tripsByDriver", "tripsByPassenger", "driverEarnings"}, allEntries = true)
     public Trip acceptTrip(UUID tripId, UUID driverId) {
         try {
             Trip trip = tripRepository.findById(Objects.requireNonNull(tripId))
@@ -136,7 +136,7 @@ public class TripService {
     }
 
     @Transactional
-    @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory"}, allEntries = true)
+    @CacheEvict(value = {"trips", "tripsByDriver", "tripsByPassenger"}, allEntries = true)
     public void rejectTrip(UUID tripId, UUID driverId) {
         Trip trip = tripRepository.findById(Objects.requireNonNull(tripId))
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
@@ -150,7 +150,7 @@ public class TripService {
     }
 
     @Transactional
-    @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory"}, allEntries = true)
+    @CacheEvict(value = {"trips", "tripsByDriver", "tripsByPassenger"}, allEntries = true)
     public Trip startTrip(UUID tripId, UUID driverId) {
         Trip trip = tripRepository.findById(Objects.requireNonNull(tripId))
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
@@ -169,7 +169,7 @@ public class TripService {
     }
 
     @Transactional
-    @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory", "driverEarnings"}, allEntries = true)
+    @CacheEvict(value = {"trips", "tripsByDriver", "tripsByPassenger", "driverEarnings"}, allEntries = true)
     public Trip completeTrip(UUID tripId, UUID driverId) {
         Trip trip = tripRepository.findById(Objects.requireNonNull(tripId))
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
@@ -188,7 +188,7 @@ public class TripService {
     }
 
     @Transactional
-    @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory", "driverEarnings"}, allEntries = true)
+    @CacheEvict(value = {"trips", "tripsByDriver", "tripsByPassenger", "driverEarnings"}, allEntries = true)
     public Trip cancelTrip(UUID tripId, UUID passengerId) {
         Trip trip = tripRepository.findById(Objects.requireNonNull(tripId))
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
@@ -207,7 +207,7 @@ public class TripService {
     }
 
     @Transactional
-    @CacheEvict(value = {"tripById", "driverHistory", "passengerHistory"}, allEntries = true)
+    @CacheEvict(value = {"trips", "tripsByDriver", "tripsByPassenger"}, allEntries = true)
     public Trip rateTrip(UUID tripId, UUID passengerId, int rating, String comment) {
         Trip trip = tripRepository.findById(Objects.requireNonNull(tripId))
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
@@ -237,7 +237,8 @@ public class TripService {
         return tripRepository.findByStatus(TripStatus.FINDING_DRIVER);
     }
 
-    @Cacheable(value = "passengerHistory", key = "#passengerId + ':' + (#status != null ? #status.name() : 'ALL') + ':' + #page + ':' + #limit")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Cacheable(value = "tripsByPassenger", key = "#passengerId + ':' + (#status != null ? #status.name() : 'ALL') + ':' + #page + ':' + #limit")
     public Page<Trip> getPassengerHistory(UUID passengerId, TripStatus status, int page, int limit) {
         Pageable pageable = PageRequest.of(page - 1, limit, Sort.by("createdAt").descending());
         
@@ -247,7 +248,8 @@ public class TripService {
         return tripRepository.findByPassengerId(passengerId, pageable);
     }
 
-    @Cacheable(value = "driverHistory", key = "#driverId + ':' + (#status != null ? #status.name() : 'ALL') + ':' + #page + ':' + #limit")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Cacheable(value = "tripsByDriver", key = "#driverId + ':' + (#status != null ? #status.name() : 'ALL') + ':' + #page + ':' + #limit")
     public Page<Trip> getDriverHistory(UUID driverId, TripStatus status, int page, int limit) {
         Pageable pageable = PageRequest.of(page - 1, limit, Sort.by("createdAt").descending());
         
@@ -257,6 +259,7 @@ public class TripService {
         return tripRepository.findByDriverId(driverId, pageable);
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     @Cacheable(value = "driverEarnings", key = "#driverId + ':' + #period + ':' + (#from != null ? #from.toEpochSecond() : 'NF') + ':' + (#to != null ? #to.toEpochSecond() : 'NT')")
     public EarningsData calculateEarnings(UUID driverId, String period, OffsetDateTime from, OffsetDateTime to) {
         // Xác định khoảng thời gian

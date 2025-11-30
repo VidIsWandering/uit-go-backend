@@ -8,7 +8,7 @@ services:
       - POSTGRES_USER=${USER_DB_USER}
       - POSTGRES_PASSWORD=${USER_DB_PASSWORD}
       - POSTGRES_DB=${USER_DB_NAME}
-    command: postgres -c max_connections=1200 -c shared_buffers=512MB -c effective_cache_size=1GB -c work_mem=16MB
+    command: postgres -c max_connections=2000 -c shared_buffers=512MB -c effective_cache_size=1GB -c work_mem=16MB
     ports:
       - "5431:5432" # Map port 5431 ở máy bạn vào 5432 của container
     volumes:
@@ -27,7 +27,7 @@ services:
       - POSTGRES_USER=${TRIP_DB_USER}
       - POSTGRES_PASSWORD=${TRIP_DB_PASSWORD}
       - POSTGRES_DB=${TRIP_DB_NAME}
-    command: postgres -c max_connections=1200 -c shared_buffers=512MB -c effective_cache_size=1GB -c work_mem=16MB
+    command: postgres -c max_connections=2000 -c shared_buffers=512MB -c effective_cache_size=1GB -c work_mem=16MB
     ports:
       - "5432:5432" # Map port 5432 ở máy bạn vào 5432 của container
     volumes:
@@ -47,7 +47,7 @@ services:
       - POSTGRES_USER=${TRIP_DB_USER}
       - POSTGRES_PASSWORD=${TRIP_DB_PASSWORD}
       - POSTGRES_DB=${TRIP_DB_NAME}
-    command: postgres -c max_connections=1200 -c shared_buffers=512MB -c effective_cache_size=1GB -c work_mem=16MB
+    command: postgres -c max_connections=2000 -c shared_buffers=512MB -c effective_cache_size=1GB -c work_mem=16MB
     ports:
       - "5433:5432" # Chạy ở port 5433 trên máy bạn
     volumes:
@@ -100,8 +100,6 @@ services:
   # --- SERVICE 2: TRIP-SERVICE (JAVA) ---
   trip-service:
     build: ./trip-service
-    ports:
-      - "8081:8081"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:p6spy:postgresql://postgres-trip:5432/${TRIP_DB_NAME}
