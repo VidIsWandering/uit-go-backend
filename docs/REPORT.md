@@ -1,134 +1,87 @@
-# Báo cáo Cột mốc 1: Đồ án SE360 - UIT-Go
-## (Hệ thống Backend Microservices Cloud-Native)
-
-### Thông tin chung
-- **Thành viên A (Backend Logic)**: Nguyễn Việt Khoa - 22520682
-- **Thành viên B (Backend Platform)**: Nguyễn Quốc Bảo - 23520126 
-- **Giảng viên hướng dẫn**: Lê Văn Tuấn 
-
-**Module Chuyên sâu (Giai đoạn 2)**: Module A - Thiết kế Kiến trúc cho Scalability & Performance
+# Báo cáo Tổng kết Dự án UIT-Go Backend
 
 ## 1. Tổng quan kiến trúc hệ thống
-![Sơ đồ Kiến trúc AWS Giai đoạn 1](images/aws_architecture_g1.png)
 
-Kiến trúc Giai đoạn 1 được thiết kế để đáp ứng toàn bộ 10 User Stories cơ bản. Hệ thống bao gồm 3 microservices chính, áp dụng kiến trúc đa ngôn ngữ (polyglot) và tuân thủ nguyên tắc "Database per Service".
+![Sơ đồ Kiến trúc AWS](images/architecture/aws-cloud-architecture.png)
 
-Toàn bộ hạ tầng được định nghĩa bằng Terraform (Infrastructure as Code - IaC) và triển khai trên AWS ECS Fargate, với CSDL (RDS, ElastiCache) nằm trong private subnets để đảm bảo bảo mật.
+Hệ thống UIT-Go Backend được xây dựng theo mô hình microservices, triển khai trên AWS với các thành phần chính:
 
-(Xem chi tiết tại: [ARCHITECTURE.md](ARCHITECTURE.md))
+- **ECS Fargate Cluster**: Chạy các service User, Trip, Driver.
+- **RDS PostgreSQL (Primary & Read Replica)**: Lưu trữ dữ liệu giao dịch và phân tải đọc.
+- **ElastiCache Redis**: Caching và xử lý dữ liệu vị trí.
+- **Amazon SQS**: Hàng đợi bất đồng bộ cho luồng đặt chuyến.
+- **ALB, NAT Gateway, Secrets Manager, CloudWatch, ECR**: Đảm bảo bảo mật, vận hành và quản lý hiện đại.
 
-## 2. Phân tích Module chuyên sâu (Module A)
-Nhóm đã lựa chọn Module A: Thiết kế Kiến trúc cho Scalability & Performance cho Giai đoạn 2.
+> Xem chi tiết tại: [ARCHITECTURE.md](ARCHITECTURE.md)
 
-Tập trung vào việc thiết kế và kiểm chứng một kiến trúc có khả năng đạt tới "hyper-scale" (khả năng mở rộng quy mô cực lớn), phù hợp với bản chất của ứng dụng gọi xe, nơi luồng nghiệp vụ tìm kiếm tài xế và cập nhật vị trí đòi hỏi hiệu năng cao và khả năng chịu tải đột biến.
+---
 
-*Kế hoạch thực hiện Giai đoạn 2: (Kế hoạch chi tiết cho Module A được trình bày trong một tài liệu riêng được gửi kèm trong folder nộp báo cáo giai đoạn 1)*
+## 2. Phân tích Module chuyên sâu: Scalability & Performance (Module A)
 
-## 3. Tổng hợp Các quyết định thiết kế và Trade-off (ADRs)
+### Cách tiếp cận
 
-### 3.1. ADR 001: Lựa chọn RESTful API 
-- **Quyết định**: Sử dụng RESTful API cho giao tiếp service-to-service.
-- **Lý do (Ưu tiên)**: Tốc độ phát triển và tính tương thích đa ngôn ngữ (Polyglot)
-- **Đánh đổi (Chấp nhận)**: Chấp nhận hiệu năng (overhead/độ trễ) của HTTP/JSON sẽ cao hơn so với gRPC.
+- **Async Processing**: Tách luồng đặt chuyến thành producer (Trip Service) và consumer (Driver Service) qua SQS.
+- **Read Replicas**: Tối ưu hóa truy vấn đọc với RDS Read Replica, giảm tải cho Primary.
+- **Centralized Caching**: Sử dụng Redis cho các truy vấn vị trí và profile có tần suất cao.
+- **Auto Scaling**: Cấu hình scaling động cho ECS và RDS dựa trên CPU, Memory, Request Count.
+- **Concurrency Control**: Áp dụng Optimistic Locking cho các thao tác nhận chuyến.
 
-### 3.2. ADR 002: Lựa chọn Redis Geospatial
-- **Quyết định**: Sử dụng Redis (ElastiCache) với tính năng Geospatial để lưu trữ vị trí tài xế.
-- **Lý do (Ưu tiên)**: Tốc độ truy vấn (Speed-first)
-- **Đánh đổi (Chấp nhận)**: Chi phí vận hành (RAM) cao hơn
+### Kết quả tuning & load test 2
 
-### 3.3. ADR 003: Lựa chọn Kiến trúc Đa ngôn ngữ (Polyglot)
-- **Quyết định**: Sử dụng Java (Spring Boot) và Node.js (Express)
-- **Lý do (Ưu tiên)**: Đúng công cụ cho đúng việc
-- **Đánh đổi (Chấp nhận)**: Phức tạp vận hành
+> **[Phần này sẽ được cập nhật sau khi có kết quả load test 2 từ thành viên phụ trách.]**
+>
+> - Thống kê RPS, Latency, Success Rate trước/sau tuning.
+> - So sánh hiệu quả từng giải pháp (SQS, Read Replica, Redis, Auto Scaling).
 
-### 3.4. ADR 004: Lựa chọn Polling cho Theo dõi Vị trí
-- **Quyết định**: Sử dụng HTTP Polling
-- **Lý do (Ưu tiên)**: Tốc độ hoàn thành (Velocity)
-- **Đánh đổi (Chấp nhận)**: Trải nghiệm người dùng có độ trễ
+---
 
-### 3.5. ADR 005: Lựa chọn Terraform (IaC)
-- **Quyết định**: Sử dụng Terraform cho quản lý hạ tầng
-- **Lý do (Ưu tiên)**: Tính nhất quán và tránh Vendor Lock-in
-- **Đánh đổi (Chấp nhận)**: Tốn thời gian học cú pháp
+## 3. Tổng hợp các quyết định thiết kế & Trade-off (Quan trọng nhất)
 
-### 3.6. ADR 006 & 007: Bảo mật CSDL
-- **Quyết định**: CSDL trong Private Subnets & Secrets Manager
-- **Lý do (Ưu tiên)**: Bảo mật Tối đa
-- **Đánh đổi (Chấp nhận)**: Phức tạp hơn khi debug
+| ADR         | Quyết định chính                                           | Lý do ưu tiên                     | Đánh đổi/Trade-off        |
+| ----------- | ---------------------------------------------------------- | --------------------------------- | ------------------------- |
+| ADR-001     | RESTful API                                                | Đơn giản, đa ngôn ngữ             | Overhead HTTP/JSON        |
+| ADR-002     | Redis Geospatial                                           | Truy vấn vị trí cực nhanh         | Tốn RAM, chi phí Redis    |
+| ADR-003     | Polyglot                                                   | Đúng tool cho đúng việc           | Phức tạp vận hành         |
+| ADR-004     | Polling                                                    | Dễ triển khai                     | Độ trễ cập nhật           |
+| ADR-005     | Terraform (IaC)                                            | Quản lý hạ tầng chuẩn             | Học cú pháp, debug khó    |
+| ADR-006/007 | Secrets/Private Subnet                                     | Bảo mật tối đa                    | Debug phức tạp            |
+| ADR-008/009 | ECS Fargate                                                | Không quản lý server              | Chi phí cao hơn EC2       |
+| ADR-010     | Modular Terraform                                          | Dễ bảo trì, mở rộng               | Refactor tốn công         |
+| ADR-011     | Cloud Map                                                  | Service Discovery nội bộ          | Tăng cấu hình             |
+| ADR-012     | ECR                                                        | Registry bảo mật                  | Vendor lock-in            |
+| ADR-013     | SG Segregation                                             | Least Privilege, Defense in Depth | Quản lý rules phức tạp    |
+| Module A    | SQS, Read Replica, Redis, Auto Scaling, Optimistic Locking | Đạt hyper-scale                   | Tăng chi phí, độ phức tạp |
 
-### 3.7. ADR 008 & 009: Lựa chọn Triển khai ECS Fargate
-- **Quyết định**: Sử dụng AWS ECS với Fargate
-- **Lý do (Ưu tiên)**: Đơn giản Vận hành Tối đa
-- **Đánh đổi (Chấp nhận)**: Chi phí có thể cao hơn
+---
 
-### 3.8. ADR 011: Lựa chọn AWS Cloud Map
-- **Quyết định**: Sử dụng AWS Cloud Map cho Service Discovery
-- **Lý do (Ưu tiên)**: Hiệu năng & Kiến trúc Chuẩn
-- **Đánh đổi (Chấp nhận)**: Tăng độ phức tạp cấu hình
+## 4. Thách thức & Bài học kinh nghiệm
 
-### 3.9. ADR 012: Lựa chọn AWS ECR
-- **Quyết định**: Sử dụng AWS ECR cho Container Registry
-- **Lý do (Ưu tiên)**: Bảo mật Tích hợp và Tốc độ
-- **Đánh đổi (Chấp nhận)**: "Vendor lock-in" mức registry
+### Thách thức
 
-### 3.10. ADR 010: Tái cấu trúc Code IaC
-- **Quyết định**: Tái cấu trúc thành 3 Terraform Modules
-- **Lý do (Ưu tiên)**: Tính bảo trì và rõ ràng
-- **Đánh đổi (Chấp nhận)**: Tốn công sức refactor
-
-## 4. Thách thức & Bài học kinh nghiệm (Giai đoạn 1)
-
-### Thách thức Gặp phải
-1. **Thách thức về Giới hạn Tài khoản AWS**
-    - Giới hạn dịch vụ cho tài khoản mới
-    - Vấn đề với ALB và quyền hạn
-    - Gián đoạn tiến độ triển khai
-
-2. **Thách thức Kỹ thuật (IaC & Refactor)**
-    - Quản lý 40+ tài nguyên AWS
-    - Phức tạp trong refactor Terraform
-
-3. **Thách thức Thiết kế**
-    - Vấn đề giao tiếp nội bộ
-    - Implement Service Discovery
-
-4. **Thách thức Tích hợp Đa ngôn ngữ**
-    - Đồng bộ DTOs giữa Java và Node.js
+- **Giới hạn AWS**: Quota thấp, phải xin tăng hạn mức.
+- **Quản lý IaC**: Refactor Terraform modules, debug resource dependencies.
+- **Đồng bộ đa ngôn ngữ**: Mapping DTOs giữa Java và Node.js.
+- **Tối ưu hiệu năng**: Phát hiện và xử lý bottleneck DB, tuning connection pool.
 
 ### Bài học kinh nghiệm
-- Sức mạnh của IaC
-- Tầm quan trọng của ADRs
-- Giá trị của việc Refactor
+
+- **ADR giúp minh bạch hóa quyết định và tránh tranh luận lặp lại.**
+- **IaC là chìa khóa cho vận hành hiện đại, nhưng cần đầu tư thời gian học và refactor.**
+- **Kiến trúc tốt phải luôn cân bằng giữa hiệu năng, chi phí và độ phức tạp.**
+
+---
 
 ## 5. Kết quả & Hướng phát triển
 
-### Kết quả Giai đoạn 1
-1. **Hạ tầng (IaC)**
-    - 100% mã nguồn Terraform
-    - Refactor hoàn chỉnh
+### Kết quả đã đạt được
 
-2. **Thiết kế**
-    - ARCHITECTURE.md
-    - 12 ADRs
+- Hoàn thiện kiến trúc cloud-native, IaC 100%.
+- Đáp ứng đầy đủ các user stories và yêu cầu phi chức năng.
+- Đã thực hiện load test 1 (baseline), xác định bottleneck và lên kế hoạch tuning.
 
-3. **Ứng dụng**
-    - Logic cho 10 User Stories
-    - Clean Code và Unit Tests
+### Hướng phát triển tiếp theo
 
-4. **Tích hợp**
-    - Kiểm thử thành công local
-
-### Hướng phát triển
-1. **Hoàn thiện Triển khai**
-    - Build và push Docker images
-    - Cập nhật task definitions
-    - Triển khai final
-
-2. **Thiết lập CI/CD**
-    - GitHub Actions pipeline
-
-3. **Hiện thực Module A**
-    - Load Testing
-    - Tối ưu hóa hệ thống
-    - Phân tích và cải tiến
-
+- **Cập nhật kết quả tuning & load test 2** (bổ sung sau).
+- Triển khai CI/CD tự động hóa.
+- Mở rộng sang các module Reliability, Security, Cost Optimization.
+- Đề xuất tích hợp thêm các giải pháp observability (tracing, alerting).

@@ -1,0 +1,33 @@
+flowchart TD
+    subgraph Services
+        US[User Service]
+        TS[Trip Service]
+        DS[Driver Service]
+    end
+
+    subgraph DataLayer ["Data Layer (Private Subnet)"]
+        Redis[(ElastiCache Redis)]
+        Primary[(RDS Primary)]
+        Replica[(RDS Read Replica)]
+    end
+
+    %% Write Operations
+    TS -- "Write (INSERT/UPDATE)" --> Primary
+    US -- "Write (Profile Update)" --> Primary
+
+    %% Read Operations - Caching Strategy (ADR-003)
+    US -- "1. Get Profile (Cache Hit)" --> Redis
+    Redis -.->|"2. Cache Miss"| Replica
+    
+    DS -- "Geo Search (Radius)" --> Redis
+    
+    %% Read Operations - Read Replica (ADR-002)
+    DS -- "Read History/List" --> Replica
+    TS -- "Read Analytics" --> Replica
+
+    %% Replication
+    Primary -.->|"Async Replication"| Replica
+    
+    style Redis fill:#FF6B6B,stroke:#333,stroke-width:2px,color:white
+    style Primary fill:#4D96FF,stroke:#333,stroke-width:2px,color:white
+    style Replica fill:#6BCB77,stroke:#333,stroke-width:2px,color:white
