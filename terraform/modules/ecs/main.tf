@@ -2,11 +2,9 @@
 
 # Tạo một ECS Cluster
 resource "aws_ecs_cluster" "main" {
-  name = "uit-go-cluster" # Đặt tên cho cluster
-
-  tags = {
-    Name = "uit-go-cluster"
-  }
+  count = var.enable_ecs ? 1 : 0
+  name  = "uit-go-cluster"
+  tags = { Name = "uit-go-cluster" }
 }
 
 # --- Định nghĩa Vai trò IAM cho ECS Tasks ---
@@ -14,7 +12,8 @@ resource "aws_ecs_cluster" "main" {
 # 1. ECS Task Execution Role (Bắt buộc)
 # Vai trò này cho phép ECS Agent thực hiện các hành động cần thiết
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "uit-go-ecs-task-execution-role"
+  count = var.enable_ecs ? 1 : 0
+  name  = "uit-go-ecs-task-execution-role"
 
   # Chính sách tin cậy (Trust Policy): Cho phép dịch vụ ecs-tasks.amazonaws.com đảm nhận vai trò này
   assume_role_policy = jsonencode({
@@ -37,7 +36,8 @@ resource "aws_iam_role" "ecs_task_execution_role" {
 
 # Đính kèm chính sách quản lý của AWS cho Task Execution Role
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
-  role = aws_iam_role.ecs_task_execution_role.name
+  count    = var.enable_ecs ? 1 : 0
+  role     = aws_iam_role.ecs_task_execution_role[0].name
   # Chính sách này cung cấp quyền kéo ECR image, ghi CloudWatch logs,...
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
@@ -46,7 +46,8 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 # 2. ECS Task Role (Tùy chọn, nhưng cần thiết để truy cập Secrets Manager)
 # Vai trò này được code BÊN TRONG container của bạn đảm nhận
 resource "aws_iam_role" "ecs_task_role" {
-  name = "uit-go-ecs-task-role"
+  count = var.enable_ecs ? 1 : 0
+  name  = "uit-go-ecs-task-role"
 
   # Chính sách tin cậy tương tự như trên
   assume_role_policy = jsonencode({
@@ -69,8 +70,9 @@ resource "aws_iam_role" "ecs_task_role" {
 
 # Tạo một Chính sách IAM tùy chỉnh (Inline Policy) cho phép đọc Secrets
 resource "aws_iam_role_policy" "ecs_task_secrets_policy" {
-  name = "uit-go-ecs-task-secrets-policy"
-  role = aws_iam_role.ecs_task_role.id
+  count = var.enable_ecs ? 1 : 0
+  name  = "uit-go-ecs-task-secrets-policy"
+  role  = aws_iam_role.ecs_task_role[0].id
 
   # Chính sách này cho phép đọc giá trị của các secret có tên bắt đầu bằng "uit-go/"
   policy = jsonencode({
@@ -91,8 +93,9 @@ resource "aws_iam_role_policy" "ecs_task_secrets_policy" {
 
 # Tạo một Chính sách IAM tùy chỉnh (Inline Policy) cho phép truy cập SQS
 resource "aws_iam_role_policy" "ecs_task_sqs_policy" {
-  name = "uit-go-ecs-task-sqs-policy"
-  role = aws_iam_role.ecs_task_role.id
+  count = var.enable_ecs ? 1 : 0
+  name  = "uit-go-ecs-task-sqs-policy"
+  role  = aws_iam_role.ecs_task_role[0].id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -119,14 +122,15 @@ data "aws_caller_identity" "current" {}
 
 # 1. Task Definition cho UserService (Java)
 resource "aws_ecs_task_definition" "user_service_task" {
+  count                    = var.enable_ecs ? 1 : 0
   family                   = "user-service" # Tên định danh
   network_mode             = "awsvpc"       # Bắt buộc cho Fargate
   requires_compatibilities = ["FARGATE"]    # Chỉ định chạy trên Fargate
   cpu                      = "256"          # 0.25 vCPU (chọn giá trị nhỏ cho Free Tier/test)
   memory                   = "512"          # 512 MB RAM (chọn giá trị nhỏ cho Free Tier/test)
 
-  execution_role_arn = aws_iam_role.ecs_task_execution_role.arn # Vai trò để ECS Agent chạy
-  task_role_arn      = aws_iam_role.ecs_task_role.arn           # Vai trò cho code bên trong container (để đọc Secret)
+  execution_role_arn = var.enable_ecs ? aws_iam_role.ecs_task_execution_role[0].arn : null
+  task_role_arn      = var.enable_ecs ? aws_iam_role.ecs_task_role[0].arn : null
 
   # Định nghĩa Container
   container_definitions = jsonencode([
@@ -166,7 +170,8 @@ resource "aws_ecs_task_definition" "user_service_task" {
 
 # Tạo CloudWatch Log Group cho UserService
 resource "aws_cloudwatch_log_group" "user_service_lg" {
-  name = "/ecs/user-service"
+  count = var.enable_ecs ? 1 : 0
+  name  = "/ecs/user-service"
 
   tags = {
     Name = "uit-go-user-service-lg"
@@ -176,14 +181,15 @@ resource "aws_cloudwatch_log_group" "user_service_lg" {
 
 # 2. Task Definition cho TripService (Java) - Tương tự UserService
 resource "aws_ecs_task_definition" "trip_service_task" {
+  count                    = var.enable_ecs ? 1 : 0
   family                   = "trip-service"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
   memory                   = "512"
 
-  execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
-  task_role_arn      = aws_iam_role.ecs_task_role.arn
+  execution_role_arn = var.enable_ecs ? aws_iam_role.ecs_task_execution_role[0].arn : null
+  task_role_arn      = var.enable_ecs ? aws_iam_role.ecs_task_role[0].arn : null
 
   container_definitions = jsonencode([
     {
@@ -194,6 +200,7 @@ resource "aws_ecs_task_definition" "trip_service_task" {
       environment = [
         { name = "SPRING_DATASOURCE_USERNAME", value = "pgadmin" },
         { name = "SPRING_DATASOURCE_URL", value = "jdbc:postgresql://${var.trip_db_endpoint}/${var.trip_db_name}" },
+        { name = "SPRING_DATASOURCE_READ_URL", value = "jdbc:postgresql://${var.trip_db_replica_endpoint}/${var.trip_db_name}" },
         # URL của các service khác (sẽ dùng Service Discovery hoặc Load Balancer sau)
         { name = "USER_SERVICE_URL", value = "http://user.uit-go.local:8080" },    # Tạm thời
         { name = "DRIVER_SERVICE_URL", value = "http://driver.uit-go.local:8082" }, # Tạm thời
@@ -220,21 +227,23 @@ resource "aws_ecs_task_definition" "trip_service_task" {
 
 # Tạo CloudWatch Log Group cho TripService
 resource "aws_cloudwatch_log_group" "trip_service_lg" {
-  name = "/ecs/trip-service"
+  count = var.enable_ecs ? 1 : 0
+  name  = "/ecs/trip-service"
   tags = { Name = "uit-go-trip-service-lg" }
 }
 
 
 # 3. Task Definition cho DriverService (Node.js)
 resource "aws_ecs_task_definition" "driver_service_task" {
+  count                    = var.enable_ecs ? 1 : 0
   family                   = "driver-service"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
   memory                   = "512"
 
-  execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
-  task_role_arn      = aws_iam_role.ecs_task_role.arn # Cần quyền đọc Secret nếu dùng sau này
+  execution_role_arn = var.enable_ecs ? aws_iam_role.ecs_task_execution_role[0].arn : null
+  task_role_arn      = var.enable_ecs ? aws_iam_role.ecs_task_role[0].arn : null
 
   container_definitions = jsonencode([
     {
@@ -266,7 +275,8 @@ resource "aws_ecs_task_definition" "driver_service_task" {
 
 # Tạo CloudWatch Log Group cho DriverService
 resource "aws_cloudwatch_log_group" "driver_service_lg" {
-  name = "/ecs/driver-service"
+  count = var.enable_ecs ? 1 : 0
+  name  = "/ecs/driver-service"
   tags = { Name = "uit-go-driver-service-lg" }
 }
 
@@ -274,6 +284,7 @@ resource "aws_cloudwatch_log_group" "driver_service_lg" {
 
 # Tạo Application Load Balancer
 resource "aws_lb" "main" {
+  count              = var.enable_alb ? 1 : 0
   name               = "uit-go-alb"
   internal           = false # ALB này hướng ra Internet
   load_balancer_type = "application"
@@ -290,7 +301,8 @@ resource "aws_lb" "main" {
 
 # Tạo Listener cho ALB trên port 80 (HTTP)
 resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.main.arn
+  count            = var.enable_alb ? 1 : 0
+  load_balancer_arn = var.enable_alb ? aws_lb.main[0].arn : null
   port              = "80"
   protocol          = "HTTP"
 
@@ -309,31 +321,31 @@ resource "aws_lb_listener" "http" {
 
 # Hàm tạo lặp (sử dụng for_each để tránh lặp code)
 locals {
-  services = {
+  services = var.enable_ecs && var.enable_services ? {
     user = {
       port            = 8080
-      task_definition = aws_ecs_task_definition.user_service_task.arn
+      task_definition = var.enable_ecs ? aws_ecs_task_definition.user_service_task[0].arn : null
       path_pattern    = "/users*" # Các request đến /users... sẽ vào service này
       security_group  = var.user_service_sg_id
     },
     trip = {
       port            = 8081
-      task_definition = aws_ecs_task_definition.trip_service_task.arn
+      task_definition = var.enable_ecs ? aws_ecs_task_definition.trip_service_task[0].arn : null
       path_pattern    = "/trips*" # Các request đến /trips... sẽ vào service này
       security_group  = var.trip_service_sg_id
     },
     driver = {
       port            = 8082
-      task_definition = aws_ecs_task_definition.driver_service_task.arn
+      task_definition = var.enable_ecs ? aws_ecs_task_definition.driver_service_task[0].arn : null
       path_pattern    = "/drivers*" # Các request đến /drivers... sẽ vào service này
       security_group  = var.driver_service_sg_id
     }
-  }
+  } : {}
 }
 
 # Tạo Target Group và ECS Service cho mỗi service trong locals.services
 resource "aws_lb_target_group" "service_tg" {
-  for_each = local.services
+  for_each = var.enable_alb ? local.services : {}
 
   name        = "uit-go-${each.key}-tg"
   port        = each.value.port # Port của container
@@ -357,10 +369,10 @@ resource "aws_lb_target_group" "service_tg" {
 }
 
 resource "aws_ecs_service" "main" {
-  for_each = local.services
+  for_each = (var.enable_ecs && var.enable_services && var.enable_alb) ? local.services : {}
 
   name            = "uit-go-${each.key}-service"
-  cluster         = aws_ecs_cluster.main.id
+  cluster         = aws_ecs_cluster.main[0].id
   task_definition = each.value.task_definition
   desired_count   = 1 # Chạy 1 container cho mỗi service
   launch_type     = "FARGATE"
@@ -384,24 +396,25 @@ resource "aws_ecs_service" "main" {
   }
 
   # Đảm bảo Service được tạo sau Listener
-  depends_on = [aws_lb_listener.http]
+  depends_on = [for l in aws_lb_listener.http : l]
 }
 
 # --- Định nghĩa Service Discovery (Cloud Map) ---
 
 resource "aws_service_discovery_private_dns_namespace" "main" {
+  count       = var.enable_service_discovery ? 1 : 0
   name        = "uit-go.local" # Tên DNS nội bộ
   description = "Private DNS namespace for UIT-Go microservices"
   vpc         = var.vpc_id # Gắn vào VPC của chúng ta
 }
 
 resource "aws_service_discovery_service" "main" {
-  for_each = local.services # Dùng lại for_each
+  for_each = var.enable_service_discovery ? local.services : {}
 
   name = each.key # Sẽ tạo service tên "user", "trip", "driver"
 
   dns_config {
-    namespace_id = aws_service_discovery_private_dns_namespace.main.id
+    namespace_id = aws_service_discovery_private_dns_namespace.main[0].id
 
     dns_records {
       ttl  = 10
@@ -419,9 +432,9 @@ resource "aws_service_discovery_service" "main" {
 
 # Tạo Listener Rule cho ALB để định tuyến request đến từng Target Group
 resource "aws_lb_listener_rule" "service_rule" {
-  for_each = local.services
+  for_each = var.enable_alb ? local.services : {}
 
-  listener_arn = aws_lb_listener.http.arn
+  listener_arn = aws_lb_listener.http[0].arn
   priority     = 100 + index(keys(local.services), each.key) # Ưu tiên dựa trên thứ tự
 
   action {
@@ -442,7 +455,7 @@ resource "aws_lb_listener_rule" "service_rule" {
 
 # Auto Scaling Target for each service
 resource "aws_appautoscaling_target" "ecs_target" {
-  for_each = local.services
+  for_each = (var.enable_autoscaling && var.enable_ecs && var.enable_services) ? local.services : {}
 
   max_capacity       = 10 # Max tasks
   min_capacity       = 1  # Min tasks
@@ -453,7 +466,7 @@ resource "aws_appautoscaling_target" "ecs_target" {
 
 # Auto Scaling Policy - CPU based
 resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
-  for_each = local.services
+  for_each = (var.enable_autoscaling && var.enable_ecs && var.enable_services) ? local.services : {}
 
   name               = "cpu-autoscaling-${each.key}"
   policy_type        = "TargetTrackingScaling"
@@ -474,7 +487,7 @@ resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
 
 # Auto Scaling Policy - Memory based
 resource "aws_appautoscaling_policy" "ecs_policy_memory" {
-  for_each = local.services
+  for_each = (var.enable_autoscaling && var.enable_ecs && var.enable_services) ? local.services : {}
 
   name               = "memory-autoscaling-${each.key}"
   policy_type        = "TargetTrackingScaling"
@@ -495,7 +508,7 @@ resource "aws_appautoscaling_policy" "ecs_policy_memory" {
 
 # Auto Scaling Policy - Request Count (ALB based)
 resource "aws_appautoscaling_policy" "ecs_policy_requests" {
-  for_each = local.services
+  for_each = (var.enable_autoscaling && var.enable_ecs && var.enable_services && var.enable_alb) ? local.services : {}
 
   name               = "requests-autoscaling-${each.key}"
   policy_type        = "TargetTrackingScaling"
@@ -521,7 +534,7 @@ resource "aws_appautoscaling_policy" "ecs_policy_requests" {
 
 # Tạo ECR Repository cho mỗi service
 resource "aws_ecr_repository" "service_ecr" {
-  for_each = local.services # Dùng lại map 'services' đã định nghĩa
+  for_each = var.enable_ecr ? local.services : {}
 
   name = "uit-go/${each.key}-service" # Tên repo, ví dụ: uit-go/user-service
 

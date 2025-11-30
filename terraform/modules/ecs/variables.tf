@@ -82,8 +82,50 @@ variable "booking_queue_url" {
   description = "URL of the SQS booking queue"
   type        = string
 }
+# Database endpoints for read/write routing
+variable "trip_db_replica_endpoint" {
+  description = "Endpoint address of Trip DB read replica"
+  type        = string
+}
 
 variable "booking_queue_arn" {
   description = "ARN of the SQS booking queue"
   type        = string
+}
+
+# Toggles to enable/disable major cost components in cloud deployment
+variable "enable_ecs" {
+  description = "Enable ECS cluster, task definitions, and (optionally) services."
+  type        = bool
+  default     = true
+}
+
+variable "enable_alb" {
+  description = "Enable Application Load Balancer and listener + target groups + listener rules."
+  type        = bool
+  default     = true
+}
+
+variable "enable_services" {
+  description = "Enable ECS services (requires enable_ecs=true). Disable to only create task definitions."
+  type        = bool
+  default     = true
+}
+
+variable "enable_autoscaling" {
+  description = "Enable autoscaling targets and policies for ECS services."
+  type        = bool
+  default     = true
+}
+
+variable "enable_ecr" {
+  description = "Enable ECR repositories (image scan & storage)."
+  type        = bool
+  default     = true
+}
+
+variable "enable_service_discovery" {
+  description = "Enable Cloud Map private DNS namespace and service registrations."
+  type        = bool
+  default     = true
 }

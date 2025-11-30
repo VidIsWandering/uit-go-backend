@@ -105,13 +105,21 @@
       "targets": [
         {
           "alias": "Virtual Users",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          },
           "groupBy": [
             {
-              "params": ["$__interval"],
+              "params": [
+                "10s"
+              ],
               "type": "time"
             },
             {
-              "params": ["null"],
+              "params": [
+                "linear"
+              ],
               "type": "fill"
             }
           ],
@@ -123,7 +131,9 @@
           "select": [
             [
               {
-                "params": ["value"],
+                "params": [
+                  "value"
+                ],
                 "type": "field"
               },
               {
@@ -212,13 +222,21 @@
       "targets": [
         {
           "alias": "RPS",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          },
           "groupBy": [
             {
-              "params": ["$__interval"],
+              "params": [
+                "1s"
+              ],
               "type": "time"
             },
             {
-              "params": ["null"],
+              "params": [
+                "linear"
+              ],
               "type": "fill"
             }
           ],
@@ -230,12 +248,20 @@
           "select": [
             [
               {
-                "params": ["value"],
+                "params": [
+                  "value"
+                ],
                 "type": "field"
               },
               {
                 "params": [],
-                "type": "count"
+                "type": "sum"
+              },
+              {
+                "params": [
+                  "1s"
+                ],
+                "type": "non_negative_derivative"
               }
             ]
           ],
@@ -321,11 +347,15 @@
           "alias": "p95 Latency",
           "groupBy": [
             {
-              "params": ["$__interval"],
+              "params": [
+                "$__interval"
+              ],
               "type": "time"
             },
             {
-              "params": ["null"],
+              "params": [
+                "null"
+              ],
               "type": "fill"
             }
           ],
@@ -337,11 +367,15 @@
           "select": [
             [
               {
-                "params": ["value"],
+                "params": [
+                  "value"
+                ],
                 "type": "field"
               },
               {
-                "params": ["95"],
+                "params": [
+                  "95"
+                ],
                 "type": "percentile"
               }
             ]
@@ -350,13 +384,21 @@
         },
         {
           "alias": "Average Latency",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          },
           "groupBy": [
             {
-              "params": ["$__interval"],
+              "params": [
+                "10s"
+              ],
               "type": "time"
             },
             {
-              "params": ["null"],
+              "params": [
+                "linear"
+              ],
               "type": "fill"
             }
           ],
@@ -368,7 +410,9 @@
           "select": [
             [
               {
-                "params": ["value"],
+                "params": [
+                  "value"
+                ],
                 "type": "field"
               },
               {

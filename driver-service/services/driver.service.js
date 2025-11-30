@@ -131,6 +131,15 @@ const handleBookingRequest = async (bookingData) => {
 
   const { origin, tripId } = bookingData;
 
+  // Idempotency guard: prevent reprocessing the same tripId within TTL
+  const idemKey = `booking_processed:${tripId}`;
+  // Try to set a guard key with TTL 5 minutes; if it already exists, skip processing
+  const setResult = await redis.set(idemKey, "1", "NX", "EX", 300);
+  if (setResult === null) {
+    console.log(`[DriverService] Duplicate booking detected for ${tripId}; skipping.`);
+    return [];
+  }
+
   // Tìm tài xế gần điểm đón
   const nearby = await findNearby(origin.longitude, origin.latitude, 5); // 5km radius
 
