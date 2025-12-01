@@ -5,6 +5,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -15,6 +16,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
  * when SQS has latency spikes (400-700ms).
  */
 @EnableAsync
+@EnableRetry
 @Configuration
 public class AsyncConfig {
 

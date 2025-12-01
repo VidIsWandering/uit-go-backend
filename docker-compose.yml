@@ -27,7 +27,7 @@ services:
       - POSTGRES_USER=${TRIP_DB_USER}
       - POSTGRES_PASSWORD=${TRIP_DB_PASSWORD}
       - POSTGRES_DB=${TRIP_DB_NAME}
-    command: postgres -c max_connections=2000 -c shared_buffers=512MB -c effective_cache_size=1GB -c work_mem=16MB
+    command: postgres -c max_connections=300 -c shared_buffers=256MB -c effective_cache_size=1GB -c work_mem=8MB -c maintenance_work_mem=64MB
     ports:
       - "5432:5432" # Map port 5432 ở máy bạn vào 5432 của container
     volumes:
@@ -62,7 +62,7 @@ services:
   # --- CSDL CHO DRIVER-SERVICE (ROLE B) ---
   redis-driver:
     image: redis:7-alpine
-    command: redis-server --maxclients 10000 --maxmemory 512mb --maxmemory-policy allkeys-lru
+    command: redis-server --maxclients 10000 --maxmemory 512mb --maxmemory-policy allkeys-lru --tcp-backlog 511 --timeout 30
     ports:
       - "6379:6379" # Map port 6379 ở máy bạn
     volumes:
@@ -71,8 +71,8 @@ services:
   # --- SERVICE 1: USER-SERVICE (JAVA) ---
   user-service:
     build: ./user-service
-    ports:
-      - "8089:8080" # Changed from 8080 to 8089 to avoid port conflict on host
+    # Do not expose host port; nginx will route internally to user-service:8080.
+    # Removing ports enables scaling multiple replicas without host port conflicts.
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-user:5432/${USER_DB_NAME}
@@ -114,7 +114,15 @@ services:
       - AWS_SECRET_ACCESS_KEY=test
       - AWS_SQS_ENDPOINT=http://localstack:4566
       - SQS_QUEUE_URL=http://localstack:4566/000000000000/uit-go-booking-request-queue
-      - JAVA_OPTS=-Xms1g -Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:InitiatingHeapOccupancyPercent=40
+      - JAVA_OPTS=-Xms1536m -Xmx2560m -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -XX:InitiatingHeapOccupancyPercent=35 -XX:+ParallelRefProcEnabled
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 3G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
     depends_on:
       postgres-trip:
         condition: service_healthy
