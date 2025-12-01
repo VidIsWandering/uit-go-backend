@@ -23,8 +23,9 @@ export const options = {
 };
 
 const BASE_URL = __ENV.BASE_URL || "http://localhost:8081";
+const API_PREFIX = __ENV.API_PREFIX || ""; // use "/api" when going through nginx
 const ASYNC = __ENV.ASYNC === "1";
-const CREATE_ENDPOINT = ASYNC ? "/trips/async" : "/trips";
+const CREATE_ENDPOINT = ASYNC ? `${API_PREFIX}/trips/async` : `${API_PREFIX}/trips`;
 const PASSENGER_TOKEN = __ENV.PASSENGER_TOKEN || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDIiLCJpYXQiOjE3NjQ0NDUwNjYsImV4cCI6MTc2NDUzMTQ2Nn0.YWSKNvT-cdoD26fMBPGKelXL7brGcy1yrLk4SmfXpo4';
 
 export function setup() {
