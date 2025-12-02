@@ -1,0 +1,213 @@
+PS D:\uit-go-backend> & D:\uit-go-backend\.venv\Scripts\Activate.ps1
+(.venv) PS D:\uit-go-backend> make r2-spike
+
+[TEST] =========================================
+       ROUND 2: SPIKE TEST
+=========================================
+[CFG]  Cau hinh: 300 VUs dong thoi trong 50 giay
+[TGT]  Muc tieu: p95 < 3.7s, error rate < 1%
+[DATA] Metrics: Latency, throughput, error rate
+[TIME] Thoi luong: ~2 phut (test + recovery)
+=========================================
+
+Payload: {"sub":"00000000-0000-0000-0000-000000000001","role":"passenger","iat":1764659209,"exp":1764662809}
+
+Token (first 80 chars): eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0...
+
+âœ… Token saved to $env:PASSENGER_TOKEN
+Running k6 test: spike-test.js
+Target VUs: 300
+Token generated successfully
+
+         /\      Grafana   /ΓÇ╛ΓÇ╛/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ΓÇ╛ΓÇ╛\ 
+  /          \   |   (  |  (ΓÇ╛)  |
+ / __________ \  |_|\_\  \_____/ 
+
+     execution: local
+        script: /scripts/spike-test.js
+        output: InfluxDBv1 (http://influxdb:8086)
+
+     scenarios: (100.00%) 1 scenario, 300 max VUs, 1m20s max duration (incl. graceful stop):
+              * default: Up to 300 looping VUs for 50s over 3 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+
+
+running (0m00.9s), 003/300 VUs, 2 complete and 0 interrupted iterations
+default   [   2% ] 003/300 VUs  00.9s/50.0s
+
+running (0m01.9s), 006/300 VUs, 10 complete and 0 interrupted iterations
+default   [   4% ] 006/300 VUs  01.9s/50.0s
+
+running (0m02.9s), 009/300 VUs, 23 complete and 0 interrupted iterations
+default   [   6% ] 009/300 VUs  02.9s/50.0s
+
+running (0m03.9s), 012/300 VUs, 40 complete and 0 interrupted iterations
+default   [   8% ] 012/300 VUs  03.9s/50.0s
+
+running (0m04.9s), 015/300 VUs, 65 complete and 0 interrupted iterations
+default   [  10% ] 015/300 VUs  04.9s/50.0s
+
+running (0m05.9s), 018/300 VUs, 96 complete and 0 interrupted iterations
+default   [  12% ] 018/300 VUs  05.9s/50.0s
+
+running (0m06.9s), 021/300 VUs, 133 complete and 0 interrupted iterations
+default   [  14% ] 021/300 VUs  06.9s/50.0s
+
+running (0m07.9s), 023/300 VUs, 176 complete and 0 interrupted iterations
+default   [  16% ] 023/300 VUs  07.9s/50.0s
+
+running (0m08.9s), 026/300 VUs, 221 complete and 0 interrupted iterations
+default   [  18% ] 026/300 VUs  08.9s/50.0s
+
+running (0m09.9s), 029/300 VUs, 274 complete and 0 interrupted iterations
+default   [  20% ] 029/300 VUs  09.9s/50.0s
+
+running (0m10.9s), 038/300 VUs, 335 complete and 0 interrupted iterations
+default   [  22% ] 038/300 VUs  10.9s/50.0s
+
+running (0m11.9s), 047/300 VUs, 413 complete and 0 interrupted iterations
+default   [  24% ] 047/300 VUs  11.9s/50.0s
+
+running (0m12.9s), 056/300 VUs, 484 complete and 0 interrupted iterations
+default   [  26% ] 056/300 VUs  12.9s/50.0s
+
+running (0m13.9s), 065/300 VUs, 596 complete and 0 interrupted iterations
+default   [  28% ] 065/300 VUs  13.9s/50.0s
+
+running (0m14.9s), 074/300 VUs, 702 complete and 0 interrupted iterations
+default   [  30% ] 074/300 VUs  14.9s/50.0s
+
+running (0m15.9s), 083/300 VUs, 836 complete and 0 interrupted iterations
+default   [  32% ] 083/300 VUs  15.9s/50.0s
+
+running (0m16.9s), 092/300 VUs, 1003 complete and 0 interrupted iterations
+default   [  34% ] 092/300 VUs  16.9s/50.0s
+
+running (0m17.9s), 101/300 VUs, 1189 complete and 0 interrupted iterations
+default   [  36% ] 101/300 VUs  17.9s/50.0s
+
+running (0m18.9s), 110/300 VUs, 1390 complete and 0 interrupted iterations
+default   [  38% ] 110/300 VUs  18.9s/50.0s
+
+running (0m19.9s), 119/300 VUs, 1611 complete and 0 interrupted iterations
+default   [  40% ] 119/300 VUs  19.9s/50.0s
+
+running (0m20.9s), 128/300 VUs, 1851 complete and 0 interrupted iterations
+default   [  42% ] 128/300 VUs  20.9s/50.0s
+
+running (0m21.9s), 137/300 VUs, 2090 complete and 0 interrupted iterations
+default   [  44% ] 137/300 VUs  21.9s/50.0s
+
+running (0m22.9s), 146/300 VUs, 2304 complete and 0 interrupted iterations
+default   [  46% ] 146/300 VUs  22.9s/50.0s
+
+running (0m23.9s), 155/300 VUs, 2510 complete and 0 interrupted iterations
+default   [  48% ] 155/300 VUs  23.9s/50.0s
+
+running (0m24.9s), 164/300 VUs, 2786 complete and 0 interrupted iterations
+default   [  50% ] 164/300 VUs  24.9s/50.0s
+
+running (0m25.9s), 173/300 VUs, 3038 complete and 0 interrupted iterations
+default   [  52% ] 173/300 VUs  25.9s/50.0s
+
+running (0m26.9s), 182/300 VUs, 3038 complete and 0 interrupted iterations
+default   [  54% ] 182/300 VUs  26.9s/50.0s
+
+running (0m27.9s), 191/300 VUs, 3150 complete and 0 interrupted iterations
+default   [  56% ] 191/300 VUs  27.9s/50.0s
+
+running (0m28.9s), 200/300 VUs, 3217 complete and 0 interrupted iterations
+default   [  58% ] 200/300 VUs  28.9s/50.0s
+
+running (0m29.9s), 209/300 VUs, 3319 complete and 0 interrupted iterations
+default   [  60% ] 209/300 VUs  29.9s/50.0s
+
+running (0m30.9s), 218/300 VUs, 3424 complete and 0 interrupted iterations
+default   [  62% ] 218/300 VUs  30.9s/50.0s
+
+running (0m31.9s), 227/300 VUs, 3552 complete and 0 interrupted iterations
+default   [  64% ] 227/300 VUs  31.9s/50.0s
+
+running (0m32.9s), 236/300 VUs, 3611 complete and 0 interrupted iterations
+default   [  66% ] 236/300 VUs  32.9s/50.0s
+
+running (0m33.9s), 245/300 VUs, 3715 complete and 0 interrupted iterations
+default   [  68% ] 245/300 VUs  33.9s/50.0s
+
+running (0m34.9s), 254/300 VUs, 3802 complete and 0 interrupted iterations
+default   [  70% ] 254/300 VUs  34.9s/50.0s
+
+running (0m35.9s), 263/300 VUs, 3917 complete and 0 interrupted iterations
+default   [  72% ] 263/300 VUs  35.9s/50.0s
+
+running (0m36.9s), 272/300 VUs, 3994 complete and 0 interrupted iterations
+default   [  74% ] 272/300 VUs  36.9s/50.0s
+
+running (0m37.9s), 281/300 VUs, 4113 complete and 0 interrupted iterations
+default   [  76% ] 281/300 VUs  37.9s/50.0s
+
+running (0m38.9s), 290/300 VUs, 4181 complete and 0 interrupted iterations
+default   [  78% ] 290/300 VUs  38.9s/50.0s
+
+running (0m39.9s), 299/300 VUs, 4317 complete and 0 interrupted iterations
+default   [  80% ] 299/300 VUs  39.9s/50.0s
+
+running (0m40.9s), 300/300 VUs, 4368 complete and 0 interrupted iterations
+default   [  82% ] 300/300 VUs  40.9s/50.0s
+
+running (0m41.9s), 275/300 VUs, 4487 complete and 0 interrupted iterations
+default   [  84% ] 275/300 VUs  41.9s/50.0s
+
+running (0m42.9s), 267/300 VUs, 4526 complete and 0 interrupted iterations
+default   [  86% ] 267/300 VUs  42.9s/50.0s
+
+running (0m43.9s), 244/300 VUs, 4604 complete and 0 interrupted iterations
+default   [  88% ] 244/300 VUs  43.9s/50.0s
+
+running (0m44.9s), 220/300 VUs, 4651 complete and 0 interrupted iterations
+default   [  90% ] 220/300 VUs  44.9s/50.0s
+
+running (0m45.9s), 191/300 VUs, 4712 complete and 0 interrupted iterations
+default   [  92% ] 191/300 VUs  45.9s/50.0s
+
+running (0m46.9s), 170/300 VUs, 4747 complete and 0 interrupted iterations
+default   [  94% ] 170/300 VUs  46.9s/50.0s
+
+running (0m47.9s), 105/300 VUs, 4849 complete and 0 interrupted iterations
+default   [  96% ] 105/300 VUs  47.9s/50.0s
+
+running (0m48.9s), 088/300 VUs, 4872 complete and 0 interrupted iterations
+default   [  98% ] 088/300 VUs  48.9s/50.0s
+
+running (0m49.9s), 053/300 VUs, 4923 complete and 0 interrupted iterations
+default   [ 100% ] 053/300 VUs  49.9s/50.0s
+
+running (0m50.9s), 016/300 VUs, 4960 complete and 0 interrupted iterations
+default Γåô [ 100% ] 053/300 VUs  50s
+{"label":"round2-spike-300vus","p95":3614.2397867500003,"vus":300}
+
+running (0m51.8s), 000/300 VUs, 4976 complete and 0 interrupted iterations
+default Γ£ô [ 100% ] 000/300 VUs  50s
+time="2025-12-02T00:07:42Z" level=error msg="thresholds on metrics 'http_req_duration' have been crossed"
+
+=========================================
+TEST RESULTS SUMMARY
+=========================================
+
+Test Label: round2-spike-300vus
+Max VUs: 300
+Total Iterations: 4976
+
+p95 Latency: 3614.24ms
+Error Rate: 0% (no HTTP errors)
+
+=========================================
+ALL THRESHOLDS PASSED
+   p95: 3614.24ms < 3700ms
+   error rate: 0%
+=========================================
+
+
+[WAIT] Cooldown: 60s...
+[OK] Ready for next test
