@@ -11,7 +11,7 @@ Write-Host "Payload: $payload" -ForegroundColor Cyan
 function ConvertTo-Base64Url($text) {
     $bytes = [Text.Encoding]::UTF8.GetBytes($text)
     $b64 = [Convert]::ToBase64String($bytes)
-    return $b64.TrimEnd('=').Replace('+','-').Replace('/','_')
+    return $b64.TrimEnd('=').Replace('+', '-').Replace('/', '_')
 }
 
 $headerEncoded = ConvertTo-Base64Url $header
@@ -21,7 +21,7 @@ $data = "$headerEncoded.$payloadEncoded"
 # Sign with HMACSHA384
 $hmac = [Security.Cryptography.HMACSHA384]::new([Text.Encoding]::UTF8.GetBytes($secret))
 $signature = [Convert]::ToBase64String($hmac.ComputeHash([Text.Encoding]::UTF8.GetBytes($data)))
-$signatureEncoded = $signature.TrimEnd('=').Replace('+','-').Replace('/','_')
+$signatureEncoded = $signature.TrimEnd('=').Replace('+', '-').Replace('/', '_')
 
 $token = "$data.$signatureEncoded"
 

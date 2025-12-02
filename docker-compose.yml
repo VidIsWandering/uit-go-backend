@@ -114,8 +114,9 @@ services:
       - AWS_SECRET_ACCESS_KEY=test
       - AWS_SQS_ENDPOINT=http://localstack:4566
       - SQS_QUEUE_URL=http://localstack:4566/000000000000/uit-go-booking-request-queue
-      - JAVA_OPTS=-Xms1536m -Xmx2560m -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -XX:InitiatingHeapOccupancyPercent=35 -XX:+ParallelRefProcEnabled
+      - JAVA_OPTS=-Xmx1g -Xms512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xlog:gc*,gc+heap=trace:file=/tmp/gc.log:time,uptimemillis,level,tags:filecount=5,filesize=10M
     deploy:
+      replicas: 3
       resources:
         limits:
           cpus: '2.0'

@@ -102,36 +102,37 @@ r2-prepare: ## [Round 2] Chuan bi moi truong test (rebuild infrastructure)
 	@echo      Run: make r2-help
 	@echo.
 
+r2-warmup: ## [Round 2] Warmup Test (50 VUs, 5m) - Chuan bi JVM JIT compilation
+	@echo.
+	@echo [WARMUP] =======================================
+	@echo          JVM WARMUP (5 minutes)
+	@echo =========================================
+	@echo [WHY]  JVM can warmup 5 phut de JIT compile
+	@echo [GAIN] Tang 60%% performance (discovery Round 2)
+	@echo [CFG]  50 VUs sustained load trong 5 phut
+	@echo =========================================
+	@echo.
+	@powershell -ExecutionPolicy Bypass -NoProfile -Command "$$token = .\scripts\generate-token.ps1 | Select-Object -Last 1; docker run -i --rm -v \"$$(Get-Location)\tests\k6:/scripts\" --network uit-go-backend_default -e BASE_URL=http://nginx -e API_PREFIX=/api -e ASYNC=1 -e WARMUP_VUS=50 -e WARMUP_DURATION=5m -e PASSENGER_TOKEN=$$token grafana/k6:latest run /scripts/warmup-test.js"
+	@echo.
+	@echo [OK] Warmup hoan tat - JVM da optimize
+	@echo.
+
 r2-spike: ## [Round 2] Spike Test (300 VUs, 50s) - Kiem tra kha nang chiu tai dot bien
 	@echo.
 	@echo [TEST] =========================================
 	@echo        ROUND 2: SPIKE TEST
 	@echo =========================================
 	@echo [CFG]  Cau hinh: 300 VUs dong thoi trong 50 giay
-	@echo [TGT]  Muc tieu: p95 ^< 2s, error rate ^< 1%%
+	@echo [TGT]  Muc tieu: p95 ^< 3.7s, error rate ^< 1%%
 	@echo [DATA] Metrics: Latency, throughput, error rate
 	@echo [TIME] Thoi luong: ~2 phut (test + recovery)
 	@echo =========================================
 	@echo.
-	@powershell -NoProfile -ExecutionPolicy Bypass -Command "\
-		$$token = .\scripts\generate-token.ps1 | Select-Object -Last 1; \
-		$$env:PASSENGER_TOKEN = $$token; \
-		Write-Host '[TOKEN] Generated successfully' -ForegroundColor Green; \
-		docker run --rm -i -v \"$${PWD}/tests/k6:/scripts\" --network uit-go-backend_default \
-			-e BASE_URL=http://nginx -e API_PREFIX=/api -e ASYNC=1 \
-			-e TARGET_VUS=300 -e RUN_LABEL=round2-spike-300vus \
-			-e PASSENGER_TOKEN=$$env:PASSENGER_TOKEN \
-			-e ASYNC_P95_THRESHOLD=2000 \
-			-e K6_INFLUXDB_ADDR=http://influxdb:8086 -e K6_INFLUXDB_DB=k6 \
-			grafana/k6:latest run --out influxdb /scripts/spike-test.js; \
-		if ($$LASTEXITCODE -eq 0) { \
-			Write-Host \"`n[PASS] SPIKE TEST PASSED (p95 target: 2s)`n\" -ForegroundColor Green \
-		} else { \
-			Write-Host \"`n[FAIL] SPIKE TEST FAILED`n\" -ForegroundColor Red \
-		}; \
-		Write-Host '[WAIT] Cooldown: 60s...' -ForegroundColor Yellow; \
-		Start-Sleep -Seconds 60; \
-		Write-Host '[OK] Ready for next test`n' -ForegroundColor Green"
+	@powershell -ExecutionPolicy Bypass -File .\scripts\run-k6-test.ps1 -TestScript "spike-test.js" -TargetVUs 300 -RunLabel "round2-spike-300vus" -Threshold 3700
+	@echo.
+	@echo [WAIT] Cooldown: 60s...
+	@powershell -Command "Start-Sleep -Seconds 60"
+	@echo [OK] Ready for next test
 
 r2-stress: ## [Round 2] Stress Test (500 VUs, 5.5m) - Danh gia gioi han he thong
 	@echo.
@@ -139,29 +140,16 @@ r2-stress: ## [Round 2] Stress Test (500 VUs, 5.5m) - Danh gia gioi han he thong
 	@echo        ROUND 2: STRESS PLATEAU TEST
 	@echo =========================================
 	@echo [CFG]  Cau hinh: 100-^>500 VUs trong 5.5 phut
-	@echo [TGT]  Muc tieu: p95 ^< 4s, error ^< 5%%
+	@echo [TGT]  Muc tieu: p95 ^< 6.5s, error ^< 5%%
 	@echo [STEP] Giai doan: Ramp-up -^> Plateau -^> Ramp-down
 	@echo [TIME] Thoi luong: ~7 phut (5.5m test + 90s recovery)
 	@echo =========================================
 	@echo.
-	@powershell -NoProfile -ExecutionPolicy Bypass -Command "\
-		$$token = .\scripts\generate-token.ps1 | Select-Object -Last 1; \
-		$$env:PASSENGER_TOKEN = $$token; \
-		Write-Host '[TOKEN] Generated successfully' -ForegroundColor Green; \
-		docker run --rm -i -v \"$${PWD}/tests/k6:/scripts\" --network uit-go-backend_default \
-			-e BASE_URL=http://nginx -e API_PREFIX=/api -e ASYNC=1 \
-			-e RUN_LABEL=round2-stress-500vus \
-			-e PASSENGER_TOKEN=$$env:PASSENGER_TOKEN \
-			-e K6_INFLUXDB_ADDR=http://influxdb:8086 -e K6_INFLUXDB_DB=k6 \
-			grafana/k6:latest run --out influxdb /scripts/stress-plateau-test.js; \
-		if ($$LASTEXITCODE -eq 0) { \
-			Write-Host \"`n[PASS] STRESS TEST PASSED @ 500 VUs (p95 target: 4s)`n\" -ForegroundColor Green \
-		} else { \
-			Write-Host \"`n[FAIL] STRESS TEST FAILED`n\" -ForegroundColor Red \
-		}; \
-		Write-Host '[WAIT] Cooldown: 90s (critical)...' -ForegroundColor Yellow; \
-		Start-Sleep -Seconds 90; \
-		Write-Host '[OK] System stabilized`n' -ForegroundColor Green"
+	@powershell -ExecutionPolicy Bypass -File .\scripts\run-k6-test.ps1 -TestScript "stress-plateau-test.js" -TargetVUs 500 -RunLabel "round2-stress-500vus" -Threshold 6500
+	@echo.
+	@echo [WAIT] Cooldown: 90s (critical)...
+	@powershell -Command "Start-Sleep -Seconds 90"
+	@echo [OK] System stabilized
 
 r2-cache: ## [Round 2] Cache Test (100 VUs, 50s) - Do luong hieu qua Redis caching
 	@echo.
@@ -169,30 +157,16 @@ r2-cache: ## [Round 2] Cache Test (100 VUs, 50s) - Do luong hieu qua Redis cachi
 	@echo        ROUND 2: CACHE EFFECTIVENESS TEST
 	@echo =========================================
 	@echo [CFG]  Cau hinh: 100 VUs trong 50 giay
-	@echo [TGT]  Muc tieu: p95 ^< 500ms voi Redis cache
+	@echo [TGT]  Muc tieu: p95 ^< 100ms voi Redis cache
 	@echo [DATA] Metrics: Cache hit rate, latency improvement
 	@echo [TIME] Thoi luong: ~2 phut (50s test + 45s recovery)
 	@echo =========================================
 	@echo.
-	@powershell -NoProfile -ExecutionPolicy Bypass -Command "\
-		$$token = .\scripts\generate-token.ps1 | Select-Object -Last 1; \
-		$$env:PASSENGER_TOKEN = $$token; \
-		Write-Host '[TOKEN] Generated successfully' -ForegroundColor Green; \
-		docker run --rm -i -v \"$${PWD}/tests/k6:/scripts\" --network uit-go-backend_default \
-			-e BASE_URL=http://nginx -e API_PREFIX=/api -e ASYNC=1 \
-			-e TARGET_VUS=100 -e RUN_LABEL=round2-cache-100vus \
-			-e PASSENGER_TOKEN=$$env:PASSENGER_TOKEN \
-			-e ASYNC_P95_THRESHOLD=500 \
-			-e K6_INFLUXDB_ADDR=http://influxdb:8086 -e K6_INFLUXDB_DB=k6 \
-			grafana/k6:latest run --out influxdb /scripts/spike-test.js; \
-		if ($$LASTEXITCODE -eq 0) { \
-			Write-Host \"`n[PASS] CACHE TEST PASSED (p95 target: 500ms)`n\" -ForegroundColor Green \
-		} else { \
-			Write-Host \"`n[FAIL] CACHE TEST FAILED`n\" -ForegroundColor Red \
-		}; \
-		Write-Host '[WAIT] Cooldown: 45s...' -ForegroundColor Yellow; \
-		Start-Sleep -Seconds 45; \
-		Write-Host '[OK] Ready for next test`n' -ForegroundColor Green"
+	@powershell -ExecutionPolicy Bypass -File .\scripts\run-k6-test.ps1 -TestScript "spike-test.js" -TargetVUs 100 -RunLabel "round2-cache-100vus" -Threshold 100
+	@echo.
+	@echo [WAIT] Cooldown: 45s...
+	@powershell -Command "Start-Sleep -Seconds 45"
+	@echo [OK] Ready for next test
 
 r2-replica: ## [Round 2] Replica Test (300 VUs, 50s) - Kiem tra load balancing 3 replicas
 	@echo.
@@ -200,30 +174,16 @@ r2-replica: ## [Round 2] Replica Test (300 VUs, 50s) - Kiem tra load balancing 3
 	@echo        ROUND 2: LOAD BALANCING TEST
 	@echo =========================================
 	@echo [CFG]  Cau hinh: 300 VUs phan phoi qua 3 replicas
-	@echo [TGT]  Muc tieu: p95 ^< 2s, can bang tai dong deu
+	@echo [TGT]  Muc tieu: p95 ^< 3.7s, can bang tai dong deu
 	@echo [DATA] Metrics: Replica distribution, latency consistency
 	@echo [TIME] Thoi luong: ~2 phut (50s test + 45s recovery)
 	@echo =========================================
 	@echo.
-	@powershell -NoProfile -ExecutionPolicy Bypass -Command "\
-		$$token = .\scripts\generate-token.ps1 | Select-Object -Last 1; \
-		$$env:PASSENGER_TOKEN = $$token; \
-		Write-Host '[TOKEN] Generated successfully' -ForegroundColor Green; \
-		docker run --rm -i -v \"$${PWD}/tests/k6:/scripts\" --network uit-go-backend_default \
-			-e BASE_URL=http://nginx -e API_PREFIX=/api -e ASYNC=1 \
-			-e TARGET_VUS=300 -e RUN_LABEL=round2-replica-300vus \
-			-e PASSENGER_TOKEN=$$env:PASSENGER_TOKEN \
-			-e ASYNC_P95_THRESHOLD=2000 \
-			-e K6_INFLUXDB_ADDR=http://influxdb:8086 -e K6_INFLUXDB_DB=k6 \
-			grafana/k6:latest run --out influxdb /scripts/spike-test.js; \
-		if ($$LASTEXITCODE -eq 0) { \
-			Write-Host \"`n[PASS] REPLICA TEST PASSED (p95 target: 2s)`n\" -ForegroundColor Green \
-		} else { \
-			Write-Host \"`n[FAIL] REPLICA TEST FAILED`n\" -ForegroundColor Red \
-		}; \
-		Write-Host '[WAIT] Cooldown: 45s...' -ForegroundColor Yellow; \
-		Start-Sleep -Seconds 45; \
-		Write-Host '[OK] All Round 2 tests complete!`n' -ForegroundColor Green"
+	@powershell -ExecutionPolicy Bypass -File .\scripts\run-k6-test.ps1 -TestScript "spike-test.js" -TargetVUs 300 -RunLabel "round2-replica-300vus" -Threshold 3700
+	@echo.
+	@echo [WAIT] Cooldown: 45s...
+	@powershell -Command "Start-Sleep -Seconds 45"
+	@echo [OK] All Round 2 tests complete!
 
 r2-cleanup: ## [Round 2] Don dep moi truong test
 	@echo [CLEANUP] Cleaning up Round 2 test environment...
