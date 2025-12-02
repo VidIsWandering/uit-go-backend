@@ -65,7 +65,7 @@ export default function (data) {
     const res = http.post(`${BASE_URL}${CREATE_ENDPOINT}`, payload, params);
     check(res, { 'accepted': r => r.status === 200 || r.status === 201 || r.status === 202 });
     statusCounts.add(1, { code: String(res.status) });
-    sleep(1);
+    sleep(0.5);
 }
 
 export function handleSummary(data) {

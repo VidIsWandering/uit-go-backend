@@ -13,4 +13,4 @@ WORKDIR /app
 # Port đã thống nhất
 EXPOSE 8081
 COPY --from=builder /workspace/target/*.jar app.jar
-CMD ["java", "-jar", "app.jar"]
+CMD ["sh", "-c", "java ${JAVA_OPTS} -jar app.jar"]

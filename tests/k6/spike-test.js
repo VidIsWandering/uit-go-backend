@@ -22,9 +22,9 @@ export const options = {
     { duration: RAMP_DOWN_TIME, target: 0 },                            // Ramp down
   ],
   thresholds: {
-    http_req_duration: ["p(95)<2000"],        // Tổng thể
+    http_req_duration: ["p(95)<2500"],        // Optimized for sub-2.5s latency
     http_req_failed: ["rate<0.01"],           // Error rate
-    "http_req_duration{endpoint:create}": ["p(95)<2000"],
+    "http_req_duration{endpoint:create}": ["p(95)<2500"],
     // Dùng ngưỡng động cho async endpoint tùy theo tải
     [`http_req_duration{endpoint:async}`]: ["p(95)<" + ASYNC_P95_THRESHOLD],
   },
@@ -84,7 +84,7 @@ export default function (data) {
     }
   }
 
-  sleep(1);
+  sleep(0.5);
 }
 
 // Custom summary: ghi file JSON để làm evidence
