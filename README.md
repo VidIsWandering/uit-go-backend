@@ -1,5 +1,20 @@
 # UIT-Go Backend
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.7.14-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-blue.svg)](https://www.docker.com/)
+[![AWS](https://img.shields.io/badge/AWS-ECS%20%7C%20RDS%20%7C%20ElastiCache%20%7C%20SQS-FF9900.svg?logo=amazonaws&logoColor=white)](https://aws.amazon.com/)
+[![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC.svg?logo=terraform&logoColor=white)](https://www.terraform.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791.svg?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-7-DC382D.svg?logo=redis&logoColor=white)](https://redis.io/)
+[![Nginx](https://img.shields.io/badge/Nginx-API%20Gateway-009639.svg?logo=nginx&logoColor=white)](https://nginx.org/)
+[![LocalStack](https://img.shields.io/badge/LocalStack-AWS%20Mock-4D4D4D.svg)](https://localstack.cloud/)
+[![Prometheus](https://img.shields.io/badge/Prometheus-Monitoring-E6522C.svg?logo=prometheus&logoColor=white)](https://prometheus.io/)
+[![Grafana](https://img.shields.io/badge/Grafana-Dashboards-F46800.svg?logo=grafana&logoColor=white)](https://grafana.com/)
+[![Architecture](https://img.shields.io/badge/Architecture-Microservices-brightgreen.svg)](docs/ARCHITECTURE.md)
+
 UIT-Go là hệ thống backend microservices cho ứng dụng gọi xe, được thiết kế cloud-native, triển khai trên AWS với hạ tầng IaC (Terraform), hỗ trợ auto-scaling, caching, event-driven và tối ưu cho hiệu năng cao.
 
 ## 1. Kiến trúc tổng quan
