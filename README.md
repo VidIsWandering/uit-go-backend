@@ -4,9 +4,10 @@ UIT-Go là hệ thống backend microservices cho ứng dụng gọi xe, đượ
 
 ## 1. Kiến trúc tổng quan
 
+![AWS Cloud Architecture](images/architecture/aws-cloud-architecture.png)
+
 - Xem chi tiết sơ đồ và giải thích tại [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - Toàn bộ quyết định thiết kế, trade-off: [`docs/adr/README.md`](docs/adr/README.md)
-- Đặc tả API (OpenAPI/Swagger): [`docs/specs/api/`](docs/specs/api/)
 
 ## 2. Cài đặt & chạy hệ thống LOCAL (Docker Compose)
 
@@ -102,5 +103,3 @@ uit-go-backend/
 ```
 
 ---
-
-
